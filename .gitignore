@@ -1,0 +1,15 @@
+# Secrets / local notes
+admin details.txt
+
+# Node
+node_modules/
+urban-company-react/images/
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Uploaded media (stored locally)
+urbanclone-dev/UrbanApi/wwwroot/uploads/
+   

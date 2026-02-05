@@ -1,0 +1,29 @@
+﻿# Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# dotnet
+*.db
+*.log
+*.vsconfig
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Rider
+.idea/
+
+# Node (if frontend will be here later)
+node_modules/
+
+# OS
+Thumbs.db
+ehthumbs.db
+.DS_Store
