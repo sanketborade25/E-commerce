@@ -1,0 +1,39 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "urbanclone-dev", "urbanclone-dev", "{8FEB8696-C77C-D6D4-3774-2CE896E5A293}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbanApi", "urbanclone-dev\UrbanApi\UrbanApi.csproj", "{535F3117-F3B6-CEE3-33A1-D45295B2BF6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{6B8EE486-52E6-1071-786F-BA92F5088D7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoleUpdater", "urbanclone-dev\Tools\RoleUpdater\RoleUpdater.csproj", "{20DDE63A-8D9C-06CC-6C70-AFC3E161B282}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{535F3117-F3B6-CEE3-33A1-D45295B2BF6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{535F3117-F3B6-CEE3-33A1-D45295B2BF6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{535F3117-F3B6-CEE3-33A1-D45295B2BF6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{535F3117-F3B6-CEE3-33A1-D45295B2BF6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20DDE63A-8D9C-06CC-6C70-AFC3E161B282}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20DDE63A-8D9C-06CC-6C70-AFC3E161B282}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20DDE63A-8D9C-06CC-6C70-AFC3E161B282}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20DDE63A-8D9C-06CC-6C70-AFC3E161B282}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{535F3117-F3B6-CEE3-33A1-D45295B2BF6A} = {8FEB8696-C77C-D6D4-3774-2CE896E5A293}
+		{6B8EE486-52E6-1071-786F-BA92F5088D7E} = {8FEB8696-C77C-D6D4-3774-2CE896E5A293}
+		{20DDE63A-8D9C-06CC-6C70-AFC3E161B282} = {6B8EE486-52E6-1071-786F-BA92F5088D7E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D1E9B308-CC80-460C-9E89-200E238BE9EE}
+	EndGlobalSection
+EndGlobal

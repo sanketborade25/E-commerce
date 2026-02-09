@@ -42,7 +42,6 @@ public class CategoriesController : ControllerBase
             return Ok(_mapper.Map<CategoryDto>(item));
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CategoryCreateDto input, CancellationToken ct)
         {
@@ -52,7 +51,6 @@ public class CategoriesController : ControllerBase
             return CreatedAtAction(nameof(Get), new { id = entity.Id }, _mapper.Map<CategoryDto>(entity));
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] CategoryCreateDto input, CancellationToken ct)
         {
@@ -64,7 +62,6 @@ public class CategoriesController : ControllerBase
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {

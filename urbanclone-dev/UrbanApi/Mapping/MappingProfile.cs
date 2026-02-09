@@ -66,6 +66,10 @@ namespace UrbanApi.Mapping
             // Notification
             CreateMap<Notification, NotificationDto>().ReverseMap();
             CreateMap<NotificationCreateDto, Notification>();
+
+            // Cart
+            CreateMap<Cart, CartDto>().ReverseMap();
+            CreateMap<CartItem, CartItemDto>().ReverseMap();
         }
     }
 }

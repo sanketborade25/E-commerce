@@ -83,6 +83,17 @@ export const api = {
     form.append("file", file);
     return upload("/api/Uploads/image", form);
   },
+  getCart: () => request("/api/Cart"),
+  addCartItem: (body) =>
+    request("/api/Cart/items", { method: "POST", body: JSON.stringify(body) }),
+  updateCartItem: (id, body) =>
+    request(`/api/Cart/items/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body)
+    }),
+  deleteCartItem: (id) =>
+    request(`/api/Cart/items/${id}`, { method: "DELETE" }),
+  clearCart: () => request("/api/Cart/clear", { method: "DELETE" }),
   login: (body) =>
     request("/api/Auth/login", { method: "POST", body: JSON.stringify(body) }),
   setToken: (token) => localStorage.setItem(TOKEN_KEY, token),

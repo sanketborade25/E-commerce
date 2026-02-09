@@ -31,20 +31,6 @@ namespace UrbanApi.Controllers
             _mapper = mapper;
         }
 
-        // small DTOs local to this controller
-        public class LoginRequest
-        {
-            public string Phone { get; set; } = null!;
-            public string Password { get; set; } = null!;
-        }
-
-        public class LoginResponse
-        {
-            public string AccessToken { get; set; } = null!;
-            public DateTime ExpiresAt { get; set; }
-            public UserDto User { get; set; } = null!;
-        }
-
         // helper: same SHA256 hex hashing used in UsersController
         private static string HashPassword(string plain)
         {
@@ -80,7 +66,7 @@ namespace UrbanApi.Controllers
 
             var now = DateTime.UtcNow;
             var expires = now.AddMinutes(expiresIn);
-            var role = string.IsNullOrWhiteSpace(user.Role) ? "Customer" : user.Role;
+            var role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;
             if (string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase))
                 role = "Admin";
 

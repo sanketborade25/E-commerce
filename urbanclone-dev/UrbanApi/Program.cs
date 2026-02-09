@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using System.Text;
-using Microsoft.OpenApi; // use the root OpenApi namespace (works in your env)
 using UrbanApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,45 +15,12 @@ var jwtIssuer = jwtSection.GetValue<string>("Issuer");
 var jwtAudience = jwtSection.GetValue<string>("Audience");
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
-// ------------ AUTHENTICATION ------------
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false; // dev
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-
-        ValidateIssuer = true,
-        ValidIssuer = jwtIssuer,
-
-        ValidateAudience = true,
-        ValidAudience = jwtAudience,
-
-        ValidateLifetime = true,
-        RoleClaimType = "role",
-        ClockSkew = TimeSpan.FromSeconds(30)
-    };
-});
-
-
-// ------------ AUTHORIZATION ------------
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
+// ------------ AUTHENTICATION / AUTHORIZATION ------------
+// Disabled per request: all endpoints are publicly accessible.
 
 // ------------ DB CONTEXT ------------
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ------------ AUTOMAPPER ------------
 builder.Services.AddAutoMapper(typeof(UrbanApi.Mapping.MappingProfile));
@@ -65,7 +32,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    // basic doc using root OpenApi type (worked earlier for you)
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "UrbanClone API",
@@ -73,19 +39,23 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Backend API (development)"
     });
 
-    // JWT definition (root OpenApi types)
-    //c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    //{
-    //    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
-    //    Name = "Authorization",
-    //    In = ParameterLocation.Header,
-    //    Type = SecuritySchemeType.Http,
-    //    Scheme = "bearer",
-    //    BearerFormat = "JWT"
-    //});
+    // Avoid schema ID collisions
+    c.CustomSchemaIds(type => type.FullName);
+    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 
-    // OperationFilter registration (we'll use an operation filter to mark [Authorize] endpoints)
-    //c.OperationFilter<UrbanApi.Filters.SwaggerAuthorizeOperationFilter>();
+    // JWT definition for Swagger UI
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    // Mark [Authorize] endpoints with the Bearer scheme
+    c.OperationFilter<UrbanApi.Filters.SwaggerAuthorizeOperationFilter>();
 });
 
 // ------------ CORS ------------
@@ -127,8 +97,6 @@ app.UseRouting();
 app.UseHttpsRedirection();
 
 app.UseCors(AllowLocalDev);
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllers();
 

@@ -51,16 +51,23 @@ namespace UrbanApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] UserCreateDto input, CancellationToken ct)
         {
+            if (input == null)
+                return BadRequest("Invalid payload.");
+            if (string.IsNullOrWhiteSpace(input.FullName) ||
+                string.IsNullOrWhiteSpace(input.Email) ||
+                string.IsNullOrWhiteSpace(input.Phone) ||
+                string.IsNullOrWhiteSpace(input.Password))
+            {
+                return BadRequest("Full name, email, phone, and password are required.");
+            }
+
             var entity = _mapper.Map<User>(input);
             if (!string.IsNullOrWhiteSpace(input.Password))
             {
                 entity.PasswordHash = HashPassword(input.Password);
             }
             var role = input.Role?.Trim();
-            if (!string.IsNullOrWhiteSpace(role))
-            {
-                entity.Role = role;
-            }
+            entity.Role = string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase) ? "Admin" : "User";
             _db.Users.Add(entity);
             await _db.SaveChangesAsync(ct);
             return CreatedAtAction(nameof(Get), new { id = entity.Id }, _mapper.Map<UserDto>(entity));

@@ -50,7 +50,6 @@ public class CitiesController : ControllerBase
         }
 
         // POST: api/Cities
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CityCreateDto input, CancellationToken cancellationToken)
         {
@@ -65,7 +64,6 @@ public class CitiesController : ControllerBase
         }
 
         // PUT: api/Cities/5
-        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] CityCreateDto input, CancellationToken cancellationToken)
         {
@@ -80,7 +78,6 @@ public class CitiesController : ControllerBase
         }
 
         // DELETE: api/Cities/5  (soft delete)
-        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {

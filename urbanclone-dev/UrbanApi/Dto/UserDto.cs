@@ -8,7 +8,7 @@ namespace UrbanApi.Dto
         public string FullName { get; set; } = null!;
         public string? Email { get; set; }
         public string Phone { get; set; } = null!;
-        public string Role { get; set; } = "Customer";
+        public string Role { get; set; } = "User";
     }
 
     public class UserCreateDto
@@ -17,6 +17,6 @@ namespace UrbanApi.Dto
         public string? Email { get; set; }
         public string Phone { get; set; } = null!;
         public string? Password { get; set; } // raw password; controller should hash it
-        public string? Role { get; set; } // optional; default is Customer
+        public string? Role { get; set; } // optional; only Admin is honored
     }
 }

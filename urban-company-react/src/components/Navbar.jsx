@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import leftData from "../data/servicesLeftSidebarData";
 import { useCart } from "../context/CartContext";
@@ -12,6 +12,9 @@ export default function Navbar() {
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState(
     () => localStorage.getItem("selected_city_id") || ""
+  );
+  const adminVersionRef = useRef(
+    localStorage.getItem("admin_data_version") || ""
   );
   const totalQty = cartItems.reduce((sum, item) => sum + item.qty, 0);
   const subtotal = cartItems.reduce(
@@ -60,9 +63,9 @@ export default function Navbar() {
 
   useEffect(() => {
     let mounted = true;
-    api
-      .getCities()
-      .then((data) => {
+    const loadCities = async () => {
+      try {
+        const data = await api.getCities();
         if (!mounted) return;
         setCities(data || []);
         if (!selectedCity && data?.length) {
@@ -70,10 +73,47 @@ export default function Navbar() {
           setSelectedCity(firstId);
           localStorage.setItem("selected_city_id", firstId);
         }
-      })
-      .catch(() => {});
+      } catch {
+        // ignore
+      }
+    };
+    const handleAdminChange = () => loadCities();
+    const handleStorage = (e) => {
+      if (e.key === "admin_data_version") loadCities();
+    };
+    const handleFocus = () => loadCities();
+    const handleVisibility = () => {
+      if (!document.hidden) loadCities();
+    };
+    const poll = window.setInterval(() => {
+      const next = localStorage.getItem("admin_data_version") || "";
+      if (next && next !== adminVersionRef.current) {
+        adminVersionRef.current = next;
+        loadCities();
+      }
+    }, 2000);
+    const channel =
+      typeof BroadcastChannel === "undefined"
+        ? null
+        : new BroadcastChannel("admin-data");
+    const handleChannel = (event) => {
+      if (event?.data?.type === "refresh") loadCities();
+    };
+    window.addEventListener("admin-data-changed", handleAdminChange);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    channel?.addEventListener("message", handleChannel);
+    loadCities();
     return () => {
       mounted = false;
+      window.removeEventListener("admin-data-changed", handleAdminChange);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      channel?.removeEventListener("message", handleChannel);
+      channel?.close();
+      window.clearInterval(poll);
     };
   }, []);
 
@@ -184,9 +224,43 @@ export default function Navbar() {
         setSearchIndex([]);
       }
     };
+    const handleAdminChange = () => load();
+    const handleStorage = (e) => {
+      if (e.key === "admin_data_version") load();
+    };
+    const handleFocus = () => load();
+    const handleVisibility = () => {
+      if (!document.hidden) load();
+    };
+    const poll = window.setInterval(() => {
+      const next = localStorage.getItem("admin_data_version") || "";
+      if (next && next !== adminVersionRef.current) {
+        adminVersionRef.current = next;
+        load();
+      }
+    }, 2000);
+    const channel =
+      typeof BroadcastChannel === "undefined"
+        ? null
+        : new BroadcastChannel("admin-data");
+    const handleChannel = (event) => {
+      if (event?.data?.type === "refresh") load();
+    };
+    window.addEventListener("admin-data-changed", handleAdminChange);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    channel?.addEventListener("message", handleChannel);
     load();
     return () => {
       mounted = false;
+      window.removeEventListener("admin-data-changed", handleAdminChange);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      channel?.removeEventListener("message", handleChannel);
+      channel?.close();
+      window.clearInterval(poll);
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ServiceGrid from "../components/ServiceGrid";
 import DynamicPopup from "../components/DynamicPopup";
 import Navbar from "../components/Navbar";
@@ -11,6 +11,9 @@ export default function Home() {
   const [services, setServices] = useState([]);
   const [options, setOptions] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
+  const adminVersionRef = useRef(
+    localStorage.getItem("admin_data_version") || ""
+  );
 
   const slugify = (value = "") =>
     value
@@ -18,7 +21,23 @@ export default function Home() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
 
-  const resolveCategoryImage = (category) => category?.imageUrl || "";
+  const categoryIconMap = {
+    "women": "1Homepage/serviceCategory/SalonForWomen.png",
+    "men": "1Homepage/serviceCategory/MenSalon.png",
+    "cleaning": "1Homepage/serviceCategory/Cleaning.png",
+    "electrician-plumber-carpenter": "1Homepage/serviceCategory/ECP.png",
+    "ac-appliance-repair": "1Homepage/serviceCategory/ACRepair.png",
+    "painting-waterproofing": "1Homepage/serviceCategory/Painting.png",
+    "water-purifier": "1Homepage/serviceCategory/Purifier.png",
+    "wall-make-over": "1Homepage/serviceCategory/Wall.png",
+    "insta-help": "1Homepage/serviceCategory/InstaHelp.png"
+  };
+
+  const resolveCategoryImage = (category) => {
+    if (category?.imageUrl) return category.imageUrl;
+    const key = slugify(category?.slug || category?.name || "");
+    return categoryIconMap[key] || "Homepage/serviceCategory/InstaHelp.png";
+  };
 
   const resolveServiceKey = (category) => {
     if (!category) return "";
@@ -60,9 +79,43 @@ export default function Home() {
         setOptions([]);
       }
     };
+    const handleAdminChange = () => load();
+    const handleStorage = (e) => {
+      if (e.key === "admin_data_version") load();
+    };
+    const handleFocus = () => load();
+    const handleVisibility = () => {
+      if (!document.hidden) load();
+    };
+    const poll = window.setInterval(() => {
+      const next = localStorage.getItem("admin_data_version") || "";
+      if (next && next !== adminVersionRef.current) {
+        adminVersionRef.current = next;
+        load();
+      }
+    }, 2000);
+    const channel =
+      typeof BroadcastChannel === "undefined"
+        ? null
+        : new BroadcastChannel("admin-data");
+    const handleChannel = (event) => {
+      if (event?.data?.type === "refresh") load();
+    };
+    window.addEventListener("admin-data-changed", handleAdminChange);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    channel?.addEventListener("message", handleChannel);
     load();
     return () => {
       mounted = false;
+      window.removeEventListener("admin-data-changed", handleAdminChange);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.clearInterval(poll);
+      channel?.removeEventListener("message", handleChannel);
+      channel?.close();
     };
   }, []);
 
@@ -87,13 +140,13 @@ export default function Home() {
         svcOptions.length > 0
           ? svcOptions.map((opt) => ({
               name: opt.name || svc.title,
-              img: opt.imageUrl || svc.imageUrl || activeCategory.img,
+              img: opt.imageUrl || activeCategory.img,
               link: `/services/${serviceKey}#${slugify(svc.title)}`
             }))
           : [
               {
                 name: svc.title,
-                img: svc.imageUrl || activeCategory.img,
+                img: activeCategory.img,
                 link: `/services/${serviceKey}#${slugify(svc.title)}`
               }
             ];
@@ -141,21 +194,31 @@ export default function Home() {
       <section className="offers">
         <h2>Offers & discounts</h2>
         <div className="offer-row">
-          <p className="admin-muted">Add offers from the admin panel.</p>
+          <div className="offer-card"><img src="/images/FullRoomCleaning/image_14.png"/><p>Sofa cleaning ₹569</p><button>Book now</button></div>
+          <div className="offer-card"><img src="/images/FullHomePainting/image_24.png"/><p>Home painting</p><button>Book now</button></div>
+          <div className="offer-card"><img src="/images/massageForMen/image_14.png"/><p>Massage for men</p><button>Book now</button></div>
         </div>
       </section>
 
       <section className="products">
         <h2>New and noteworthy</h2>
         <div className="product-row">
-          <p className="admin-muted">Add new items from the admin panel.</p>
+          <div className="product-card"><img src="images/1Homepage/nnn_1.png"/><p>Insta Help</p></div>
+          <div className="product-card"><img src="images/1Homepage/nnn_3.png"/><p>Electrician</p></div>
+          <div className="product-card"><img src="images/1Homepage/nnn_4.png"/><p>Stove</p></div>
+          <div className="product-card"><img src="images/1Homepage/nnn_9.png"/><p>Laptop</p></div>
+          <div className="product-card"><img src="images/1Homepage/nnn_6.png"/><p>Door Locker</p></div>
         </div>
       </section>
 
       <section className="most-booked">
         <h2>Most booked services</h2>
         <div className="booked-row">
-          <p className="admin-muted">Most booked services will appear here.</p>
+          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (1).png" /><p>Bathroom Cleaning ₹1016</p></div>
+          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (1).png" /><p>Classic Cleaning ₹905</p></div>
+          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (3).png" /><p>Men Haircut ₹139</p></div>
+          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (4).png" /><p>Washing Machine ₹199</p></div>
+          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (7).png" /><p>Women Waxing ₹129</p></div>
         </div>
       </section>
 
@@ -168,4 +231,3 @@ export default function Home() {
     </>
   );
 }
-

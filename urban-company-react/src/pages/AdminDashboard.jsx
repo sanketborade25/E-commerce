@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import { Link } from "react-router-dom";
 import { api } from "../api/client";
 
 export default function AdminDashboard() {
@@ -26,35 +26,65 @@ export default function AdminDashboard() {
   const [serviceCityId, setServiceCityId] = useState("");
   const [optionInput, setOptionInput] = useState({
     name: "",
-    price: "",
-    imageUrl: ""
+    imageUrl: "",
+    price: ""
   });
   const [uploading, setUploading] = useState({
     category: false,
     service: false,
-    option: false
+    option: false,
+    optionBanner: false
   });
   const [uploadError, setUploadError] = useState({
     category: "",
     service: "",
-    option: ""
+    option: "",
+    optionBanner: ""
   });
+  const [fileInputKey, setFileInputKey] = useState({
+    category: 0,
+    service: 0,
+    option: 0
+  });
+  const adminChannel = useMemo(() => {
+    if (typeof BroadcastChannel === "undefined") return null;
+    return new BroadcastChannel("admin-data");
+  }, []);
 
   const loadAll = async () => {
-    const [citiesRes, categoriesRes, optionsRes] = await Promise.all([
-      api.getCities(),
-      api.getCategories(),
-      api.getServiceOptions()
-    ]);
-    const servicesRes = await api.getServices();
-    setCities(citiesRes || []);
-    setCategories(categoriesRes || []);
-    setServices(servicesRes || []);
-    setServiceOptions(optionsRes || []);
+    const [citiesRes, categoriesRes, optionsRes, servicesRes] =
+      await Promise.allSettled([
+        api.getCities(),
+        api.getCategories(),
+        api.getServiceOptions(),
+        api.getServices()
+      ]);
+
+    if (citiesRes.status === "fulfilled") {
+      setCities(citiesRes.value || []);
+    }
+    if (categoriesRes.status === "fulfilled") {
+      setCategories(categoriesRes.value || []);
+    }
+    if (servicesRes.status === "fulfilled") {
+      setServices(servicesRes.value || []);
+    }
+    if (optionsRes.status === "fulfilled") {
+      setServiceOptions(optionsRes.value || []);
+    }
+  };
+
+  const notifyDataChanged = () => {
+    localStorage.setItem("admin_data_version", String(Date.now()));
+    window.dispatchEvent(new Event("admin-data-changed"));
+    adminChannel?.postMessage({ type: "refresh", ts: Date.now() });
   };
 
   useEffect(() => {
     loadAll();
+    return () => {
+      adminChannel?.close();
+    };
   }, []);
 
   const handleToggleService = async (svc) => {
@@ -68,7 +98,8 @@ export default function AdminDashboard() {
       durationMinutes: svc.durationMinutes,
       isActive: !svc.isActive
     });
-    loadAll();
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleAddCategory = async () => {
@@ -76,7 +107,9 @@ export default function AdminDashboard() {
     if (!name) return;
     await api.createCategory({ name, imageUrl: categoryInput.imageUrl || null });
     setCategoryInput({ name: "", imageUrl: "" });
-    loadAll();
+    setFileInputKey((prev) => ({ ...prev, category: prev.category + 1 }));
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleAddService = async () => {
@@ -99,21 +132,30 @@ export default function AdminDashboard() {
       shortDescription: "",
       imageUrl: ""
     });
+    setFileInputKey((prev) => ({ ...prev, service: prev.service + 1 }));
     setServiceCityId("");
-    loadAll();
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleAddOption = async () => {
-    if (!selectedServiceId) return;
+    const optionName = optionInput.name.trim();
+    if (!selectedServiceId) {
+      alert("Please select a service first.");
+      return;
+    }
+    if (!optionName) return;
     await api.createServiceOption({
       serviceId: Number(selectedServiceId),
-      name: optionInput.name,
+      name: optionName,
       imageUrl: optionInput.imageUrl || null,
       price: Number(optionInput.price) || 0,
       durationMinutes: null
     });
-    setOptionInput({ name: "", price: "", imageUrl: "" });
-    loadAll();
+    setOptionInput({ name: "", imageUrl: "", price: "" });
+    setFileInputKey((prev) => ({ ...prev, option: prev.option + 1 }));
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleImageUpload = async (file, target) => {
@@ -133,6 +175,18 @@ export default function AdminDashboard() {
       if (target === "option") {
         setOptionInput((prev) => ({ ...prev, imageUrl: url }));
       }
+      if (target === "optionBanner") {
+        setUploadError((prev) => ({
+          ...prev,
+          optionBanner: "Banner upload is not supported by the API."
+        }));
+      }
+      if (target === "banner") {
+        setUploadError((prev) => ({
+          ...prev,
+          optionBanner: "Banner upload is not supported by the API."
+        }));
+      }
     } catch (e) {
       setUploadError((prev) => ({
         ...prev,
@@ -143,14 +197,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAddBanner = async () => {
+    alert("Banner images are not supported by the current API.");
+  };
+
   const handleDeleteService = async (id) => {
     await api.deleteService(id);
-    loadAll();
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleDeleteOption = async (id) => {
     await api.deleteServiceOption(id);
-    loadAll();
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleAddCity = async () => {
@@ -158,12 +218,24 @@ export default function AdminDashboard() {
     if (!name) return;
     await api.createCity({ name });
     setCityInput("");
-    loadAll();
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleDeleteCity = async (id) => {
     await api.deleteCity(id);
-    loadAll();
+    await loadAll();
+    notifyDataChanged();
+  };
+
+  const handleDeleteCategory = async (id) => {
+    setCategories((prev) => prev.filter((cat) => cat.id !== id));
+    if (String(selectedCategoryId) === String(id)) {
+      setSelectedCategoryId("");
+    }
+    await api.deleteCategory(id);
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleLogout = () => {
@@ -177,35 +249,201 @@ export default function AdminDashboard() {
     [services]
   );
 
-  const filteredServices = selectedCategoryId
-    ? services.filter((s) => String(s.categoryId) === String(selectedCategoryId))
-    : services;
+  const filteredServices = services.filter((s) => {
+    if (selectedCategoryId && String(s.categoryId) !== String(selectedCategoryId))
+      return false;
+    if (selectedServiceId && String(s.id) !== String(selectedServiceId))
+      return false;
+    return true;
+  });
 
   const filteredOptions = selectedServiceId
     ? serviceOptions.filter(
         (o) => String(o.serviceId) === String(selectedServiceId)
       )
-    : [];
+    : serviceOptions;
+
+  useEffect(() => {
+    if (!selectedServiceId) return;
+    const exists = serviceOptions.some(
+      (o) => String(o.serviceId) === String(selectedServiceId)
+    );
+    if (!exists) {
+      setSelectedServiceId("");
+    }
+  }, [selectedServiceId, serviceOptions]);
 
   return (
     <>
-      <Navbar />
       <div className="admin-page">
+        <div className="admin-topbar">
+          <Link to="/" className="admin-logo">
+            <img src="/images/1Homepage/logo (1).png" alt="Urban Company" />
+          </Link>
+          <nav className="admin-top-nav">
+            <a href="#admin-categories">Categories</a>
+            <a href="#admin-options">Service Options</a>
+            <a href="#admin-services">Services</a>
+            <a href="#admin-cities">Cities</a>
+            <a href="#admin-banners">Banner Images</a>
+          </nav>
+          <div className="admin-top-actions">
+            <Link to="/" className="admin-home-link">Home</Link>
+            <button className="admin-btn outline" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        </div>
         <div className="admin-header">
           <div>
             <h2>Admin Dashboard</h2>
-            <p className="admin-sub">
-              Manage services, sections, and cities.
-            </p>
           </div>
-          <button className="admin-btn outline" onClick={handleLogout}>
-            Logout
-          </button>
         </div>
 
         <div className="admin-grid">
-          <div className="admin-card">
+          <div className="admin-card" id="admin-categories">
+            <h3>Categories</h3>
+            <div className="admin-input-row admin-input-row-small">
+              <input
+                type="text"
+                placeholder="Add category"
+                value={categoryInput.name}
+                onChange={(e) =>
+                  setCategoryInput((prev) => ({ ...prev, name: e.target.value }))
+                }
+              />
+              <input
+                type="text"
+                placeholder="Image URL (optional)"
+                value={categoryInput.imageUrl}
+                onChange={(e) =>
+                  setCategoryInput((prev) => ({
+                    ...prev,
+                    imageUrl: e.target.value
+                  }))
+                }
+              />
+              <input
+                key={`category-file-${fileInputKey.category}`}
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleImageUpload(e.target.files?.[0], "category")
+                }
+              />
+              <button className="admin-btn admin-btn-add" onClick={handleAddCategory}>
+                Add
+              </button>
+            </div>
+            <hr/>
+            {uploading.category && (
+              <p className="admin-muted">Uploading category image...</p>
+            )}
+            {uploadError.category && (
+              <p className="admin-error">{uploadError.category}</p>
+            )}
+            <div className="admin-list admin-list-grid">
+              {categories.map((cat) => (
+                <div key={cat.id} className="admin-list-item">
+                  <div>{cat.name}</div>
+                  <button
+                    className="admin-btn outline"
+                    onClick={() => handleDeleteCategory(cat.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="admin-card" id="admin-options">
+            <h3>Service Options</h3>
+            <div className="admin-input-row admin-input-row-small">
+              <select
+                value={selectedServiceId}
+                onChange={(e) => setSelectedServiceId(e.target.value)}
+              >
+                <option value="">Select a service</option>
+                {services.map((s) => (
+                  <option key={s.id} value={String(s.id)}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Service option name"
+                value={optionInput.name}
+                onChange={(e) =>
+                  setOptionInput((prev) => ({ ...prev, name: e.target.value }))
+                }
+              />
+              <input
+                key={`option-file-${fileInputKey.option}`}
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleImageUpload(e.target.files?.[0], "option")
+                }
+              />
+              <input
+                type="text"
+                placeholder="Option image URL (optional)"
+                value={optionInput.imageUrl}
+                onChange={(e) =>
+                  setOptionInput((prev) => ({ ...prev, imageUrl: e.target.value }))
+                }
+              />
+              <input
+                type="number"
+                placeholder="Price"
+                value={optionInput.price}
+                onChange={(e) =>
+                  setOptionInput((prev) => ({ ...prev, price: e.target.value }))
+                }
+              />
+              <button className="admin-btn admin-btn-add" onClick={handleAddOption}>
+                Add
+              </button>
+            </div>
+             <hr/>
+            {uploading.option && (
+              <p className="admin-muted">Uploading option image...</p>
+            )}
+            {uploading.optionBanner && (
+              <p className="admin-muted">Uploading banner image...</p>
+            )}
+            {uploadError.option && (
+              <p className="admin-error">{uploadError.option}</p>
+            )}
+            {uploadError.optionBanner && (
+              <p className="admin-error">{uploadError.optionBanner}</p>
+            )}
+            <div className="admin-list admin-list-grid">
+              {filteredOptions.length === 0 ? (
+              <p className="admin-muted">No options for this service.</p>
+            ) : (
+              filteredOptions.map((opt) => (
+                <div key={opt.id} className="admin-list-item">
+                  <div>
+                    <strong>{opt.name || "Option"}</strong>
+                  </div>
+                    <button
+                      className="admin-btn outline"
+                      onClick={() => handleDeleteOption(opt.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="admin-card" id="admin-services">
             <h3>Services ({enabledCount} active)</h3>
+            <p className="admin-muted">Choose service option</p>
             <div className="admin-input-row admin-input-row-small">
               <select
                 value={selectedCategoryId}
@@ -222,15 +460,15 @@ export default function AdminDashboard() {
                 value={selectedServiceId}
                 onChange={(e) => setSelectedServiceId(e.target.value)}
               >
-                <option value="">Select service</option>
-                {filteredServices.map((s) => (
+                <option value="">Filter by service (optional)</option>
+                {services.map((s) => (
                   <option key={s.id} value={String(s.id)}>
                     {s.title}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="admin-input-row admin-input-row-wide">
+            <div className="admin-input-row admin-input-row-small">
               <input
                 type="text"
                 placeholder="Service title"
@@ -273,6 +511,7 @@ export default function AdminDashboard() {
                 }
               />
               <input
+                key={`service-file-${fileInputKey.service}`}
                 type="file"
                 accept="image/*"
                 onChange={(e) =>
@@ -290,17 +529,18 @@ export default function AdminDashboard() {
                   }))
                 }
               />
-              <button className="admin-btn" onClick={handleAddService}>
+              <button className="admin-btn admin-btn-add" onClick={handleAddService}>
                 Add
               </button>
             </div>
+             <hr/>
             {uploading.service && (
               <p className="admin-muted">Uploading service image...</p>
             )}
             {uploadError.service && (
               <p className="admin-error">{uploadError.service}</p>
             )}
-            <div className="admin-list">
+            <div className="admin-list admin-list-grid">
               {filteredServices.map((service) => (
                 <div key={service.id} className="admin-list-item">
                   <div>
@@ -328,7 +568,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="admin-card">
+          <div className="admin-card" id="admin-cities">
             <h3>Cities</h3>
             <div className="admin-input-row admin-input-row-small">
               <input
@@ -337,11 +577,12 @@ export default function AdminDashboard() {
                 value={cityInput}
                 onChange={(e) => setCityInput(e.target.value)}
               />
-              <button className="admin-btn" onClick={handleAddCity}>
+              <button className="admin-btn admin-btn-add" onClick={handleAddCity}>
                 Add
               </button>
             </div>
-            <div className="admin-list">
+             <hr/>
+            <div className="admin-list admin-list-grid">
               {cities.map((city) => (
                 <div key={city.id} className="admin-list-item">
                   <div>{city.name}</div>
@@ -356,137 +597,40 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="admin-card admin-wide">
-            <h3>Categories</h3>
+          <div className="admin-card admin-wide" id="admin-banners">
+            <h3>Banner Images</h3>
             <div className="admin-input-row admin-input-row-small">
-              <input
-                type="text"
-                placeholder="Add category"
-                value={categoryInput.name}
-                onChange={(e) =>
-                  setCategoryInput((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-              <input
-                type="text"
-                placeholder="Image URL (optional)"
-                value={categoryInput.imageUrl}
-                onChange={(e) =>
-                  setCategoryInput((prev) => ({
-                    ...prev,
-                    imageUrl: e.target.value
-                  }))
-                }
-              />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  handleImageUpload(e.target.files?.[0], "category")
-                }
-              />
-              <button className="admin-btn" onClick={handleAddCategory}>
-                Add
-              </button>
-            </div>
-            {uploading.category && (
-              <p className="admin-muted">Uploading category image...</p>
-            )}
-            {uploadError.category && (
-              <p className="admin-error">{uploadError.category}</p>
-            )}
-            <div className="admin-list">
-              {categories.map((cat) => (
-                <div key={cat.id} className="admin-list-item">
-                  <div>{cat.name}</div>
-                  <button
-                    className="admin-btn outline"
-                    onClick={() => api.deleteCategory(cat.id).then(loadAll)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="admin-card admin-wide">
-            <h3>Service Options</h3>
-            <div className="admin-input-row admin-input-row-wide">
               <select
-                value={selectedServiceId}
-                onChange={(e) => setSelectedServiceId(e.target.value)}
+                value=""
+                onChange={() => {}}
               >
-                <option value="">Select service</option>
-                {services.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {s.title}
-                  </option>
-                ))}
+                <option value="">Banner images are not supported</option>
               </select>
               <input
                 type="text"
-                placeholder="Option name"
-                value={optionInput.name}
-                onChange={(e) =>
-                  setOptionInput((prev) => ({ ...prev, name: e.target.value }))
-                }
+                placeholder="Banner title"
+                value=""
+                readOnly
               />
-              <input
-                type="text"
-                placeholder="Image URL (optional)"
-                value={optionInput.imageUrl}
-                onChange={(e) =>
-                  setOptionInput((prev) => ({
-                    ...prev,
-                    imageUrl: e.target.value
-                  }))
-                }
-              />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  handleImageUpload(e.target.files?.[0], "option")
-                }
-              />
-              <input
-                type="number"
-                placeholder="Price"
-                value={optionInput.price}
-                onChange={(e) =>
-                  setOptionInput((prev) => ({ ...prev, price: e.target.value }))
-                }
-              />
-              <button className="admin-btn" onClick={handleAddOption}>
+                <input
+                  key={`option-banner-file-${fileInputKey.option}`}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    handleImageUpload(e.target.files?.[0], "banner")
+                  }
+                />
+              <button className="admin-btn admin-btn-add" onClick={handleAddBanner}>
                 Add
               </button>
             </div>
-            {uploading.option && (
-              <p className="admin-muted">Uploading option image...</p>
-            )}
-            {uploadError.option && (
-              <p className="admin-error">{uploadError.option}</p>
-            )}
-            <div className="admin-sections">
-              {filteredOptions.length === 0 ? (
-                <p className="admin-muted">No options for this service.</p>
-              ) : (
-                filteredOptions.map((opt) => (
-                  <div key={opt.id} className="admin-list-item">
-                    <div>
-                      <strong>{opt.name || "Option"}</strong>
-                      <span className="admin-pill">Rs {opt.price}</span>
-                    </div>
-                    <button
-                      className="admin-btn outline"
-                      onClick={() => handleDeleteOption(opt.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))
-              )}
+             <hr/>
+            <div className="admin-list admin-list-grid">
+              {true ? (
+                <div className="admin-list-item">
+                  <div>Banner images are not supported by the API.</div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

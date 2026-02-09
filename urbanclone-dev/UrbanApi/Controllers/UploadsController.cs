@@ -22,9 +22,9 @@ namespace UrbanApi.Controllers
             _env = env;
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost("image")]
         [RequestSizeLimit(10 * 1024 * 1024)]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> UploadImage([FromForm] IFormFile file, CancellationToken ct)
         {
             if (file == null || file.Length == 0) return BadRequest("No file uploaded.");

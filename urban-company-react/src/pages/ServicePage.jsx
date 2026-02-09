@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import leftData from "../data/servicesLeftSidebarData";
 import ServiceLayout from "../components/ServiceLayout";
@@ -14,6 +14,9 @@ export default function ServicePage() {
   const [sections, setSections] = useState([]);
   const [cityId, setCityId] = useState(
     () => localStorage.getItem("selected_city_id") || ""
+  );
+  const adminVersionRef = useRef(
+    localStorage.getItem("admin_data_version") || ""
   );
 
   const slugify = (value = "") =>
@@ -130,9 +133,48 @@ export default function ServicePage() {
         setSections([]);
       }
     };
+    const handleAdminChange = () => {
+      if (leftPageData) load();
+    };
+    const handleStorage = (e) => {
+      if (e.key === "admin_data_version" && leftPageData) load();
+    };
+    const handleFocus = () => {
+      if (leftPageData) load();
+    };
+    const handleVisibility = () => {
+      if (!document.hidden && leftPageData) load();
+    };
+    const poll = window.setInterval(() => {
+      if (!leftPageData) return;
+      const next = localStorage.getItem("admin_data_version") || "";
+      if (next && next !== adminVersionRef.current) {
+        adminVersionRef.current = next;
+        load();
+      }
+    }, 2000);
+    const channel =
+      typeof BroadcastChannel === "undefined"
+        ? null
+        : new BroadcastChannel("admin-data");
+    const handleChannel = (event) => {
+      if (event?.data?.type === "refresh" && leftPageData) load();
+    };
+    window.addEventListener("admin-data-changed", handleAdminChange);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    channel?.addEventListener("message", handleChannel);
     if (leftPageData) load();
     return () => {
       mounted = false;
+      window.removeEventListener("admin-data-changed", handleAdminChange);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      channel?.removeEventListener("message", handleChannel);
+      channel?.close();
+      window.clearInterval(poll);
     };
   }, [serviceKey, cityId]);
 

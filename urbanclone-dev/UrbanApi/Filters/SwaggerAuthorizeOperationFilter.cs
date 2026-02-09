@@ -23,7 +23,11 @@ namespace UrbanApi.Filters
             var requirement = new OpenApiSecurityRequirement
             {
                 {
-                    new OpenApiSecuritySchemeReference("Bearer"),
+                    new OpenApiSecuritySchemeReference(
+                        "Bearer",
+                        new OpenApiDocument(),
+                        null
+                    ),
                     new List<string>()
                 }
             };

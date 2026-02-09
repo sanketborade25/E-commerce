@@ -52,7 +52,6 @@ public class ServicesController : ControllerBase
             return Ok(_mapper.Map<ServiceDto>(service));
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ServiceCreateDto input, CancellationToken ct)
         {
@@ -62,7 +61,6 @@ public class ServicesController : ControllerBase
             return CreatedAtAction(nameof(Get), new { id = entity.Id }, _mapper.Map<ServiceDto>(entity));
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] ServiceCreateDto input, CancellationToken ct)
         {
@@ -74,7 +72,6 @@ public class ServicesController : ControllerBase
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {

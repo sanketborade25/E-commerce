@@ -18,10 +18,10 @@ namespace UrbanApi.Data
 
             var config = builder.Build();
             var conn = config.GetConnectionString("DefaultConnection")
-                       ?? "Data Source=UrbanClone.db";
+                       ?? "Server=(localdb)\\MSSQLLocalDB;Database=UrbanCloneDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseSqlite(conn);
+            optionsBuilder.UseSqlServer(conn);
             return new AppDbContext(optionsBuilder.Options);
         }
     }

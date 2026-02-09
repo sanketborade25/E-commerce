@@ -12,12 +12,13 @@ namespace UrbanApi.Models
         public string? Email { get; set; }
         public string Phone { get; set; } = null!;
         public string? PasswordHash { get; set; }
-        public string Role { get; set; } = "Customer";
+        public string Role { get; set; } = "User";
 
         // Navigation
         public ICollection<Address> Addresses { get; set; } = new List<Address>();
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
         public ICollection<Document> Documents { get; set; } = new List<Document>();
+        public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     }
 }
