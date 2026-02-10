@@ -10,6 +10,7 @@ export default function Home() {
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
   const [options, setOptions] = useState([]);
+  const [popupSubCategories, setPopupSubCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
   const adminVersionRef = useRef(
     localStorage.getItem("admin_data_version") || ""
@@ -50,6 +51,15 @@ export default function Home() {
     return byTitle?.[0] || catKey;
   };
 
+  const loadPopupSubCategories = () => {
+    try {
+      const stored = localStorage.getItem("popup_subcategories");
+      setPopupSubCategories(stored ? JSON.parse(stored) : []);
+    } catch {
+      setPopupSubCategories([]);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
     const load = async () => {
@@ -72,16 +82,22 @@ export default function Home() {
         setCategories(mappedCats);
         setServices(svcs || []);
         setOptions(opts || []);
+        loadPopupSubCategories();
       } catch (e) {
         if (!mounted) return;
         setCategories([]);
         setServices([]);
         setOptions([]);
+        loadPopupSubCategories();
       }
     };
-    const handleAdminChange = () => load();
+    const handleAdminChange = () => {
+      load();
+      loadPopupSubCategories();
+    };
     const handleStorage = (e) => {
       if (e.key === "admin_data_version") load();
+      if (e.key === "popup_subcategories") loadPopupSubCategories();
     };
     const handleFocus = () => load();
     const handleVisibility = () => {
@@ -119,10 +135,34 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    if (activeCategory) {
+      loadPopupSubCategories();
+    }
+  }, [activeCategory]);
+
   const popupData = useMemo(() => {
     if (!activeCategory) return null;
     const category = activeCategory.raw || activeCategory;
     const serviceKey = resolveServiceKey(category);
+    const subItems = popupSubCategories.filter(
+      (item) => String(item.categoryId) === String(category.id)
+    );
+    if (subItems.length > 0) {
+      return {
+        title: activeCategory.name,
+        sections: [
+          {
+            heading: "Sub Categories",
+            items: subItems.map((item) => ({
+              name: item.title,
+              img: item.imageUrl || activeCategory.img,
+              link: `/services/${serviceKey}#${slugify(item.title)}`
+            }))
+          }
+        ]
+      };
+    }
     const categoryServices = services.filter(
       (s) => s.categoryId === category.id
     );

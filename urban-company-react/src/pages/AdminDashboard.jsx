@@ -11,6 +11,14 @@ export default function AdminDashboard() {
   const [serviceOptions, setServiceOptions] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState("");
+  const [popupCategories, setPopupCategories] = useState(() => {
+    try {
+      const stored = localStorage.getItem("popup_subcategories");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const [cityInput, setCityInput] = useState("");
   const [categoryInput, setCategoryInput] = useState({
@@ -24,6 +32,12 @@ export default function AdminDashboard() {
     imageUrl: ""
   });
   const [serviceCityId, setServiceCityId] = useState("");
+  const [popupCategoryInput, setPopupCategoryInput] = useState({
+    categoryId: "",
+    title: "",
+    imageUrl: ""
+  });
+  const [editingPopupCategoryId, setEditingPopupCategoryId] = useState("");
   const [optionInput, setOptionInput] = useState({
     name: "",
     imageUrl: "",
@@ -33,18 +47,21 @@ export default function AdminDashboard() {
     category: false,
     service: false,
     option: false,
-    optionBanner: false
+    optionBanner: false,
+    popupCategory: false
   });
   const [uploadError, setUploadError] = useState({
     category: "",
     service: "",
     option: "",
-    optionBanner: ""
+    optionBanner: "",
+    popupCategory: ""
   });
   const [fileInputKey, setFileInputKey] = useState({
     category: 0,
     service: 0,
-    option: 0
+    option: 0,
+    popupCategory: 0
   });
   const adminChannel = useMemo(() => {
     if (typeof BroadcastChannel === "undefined") return null;
@@ -158,6 +175,66 @@ export default function AdminDashboard() {
     notifyDataChanged();
   };
 
+  const handleAddPopupCategory = () => {
+    if (!popupCategoryInput.categoryId) return;
+    const title = popupCategoryInput.title.trim();
+    if (!title) return;
+    const isEditing = Boolean(editingPopupCategoryId);
+    const next = isEditing
+      ? popupCategories.map((item) =>
+          item.id === editingPopupCategoryId
+            ? {
+                ...item,
+                categoryId: popupCategoryInput.categoryId,
+                title,
+                imageUrl: popupCategoryInput.imageUrl || ""
+              }
+            : item
+        )
+      : [
+          ...popupCategories,
+          {
+            id: `${popupCategoryInput.categoryId}-${Date.now()}`,
+            categoryId: popupCategoryInput.categoryId,
+            title,
+            imageUrl: popupCategoryInput.imageUrl || ""
+          }
+        ];
+    setPopupCategories(next);
+    localStorage.setItem("popup_subcategories", JSON.stringify(next));
+    setPopupCategoryInput({ categoryId: "", title: "", imageUrl: "" });
+    setEditingPopupCategoryId("");
+    setFileInputKey((prev) => ({
+      ...prev,
+      popupCategory: prev.popupCategory + 1
+    }));
+    notifyDataChanged();
+  };
+
+  const handleEditPopupCategory = (item) => {
+    setPopupCategoryInput({
+      categoryId: String(item.categoryId),
+      title: item.title || "",
+      imageUrl: item.imageUrl || ""
+    });
+    setEditingPopupCategoryId(item.id);
+  };
+
+  const handleDeletePopupCategory = (id) => {
+    const next = popupCategories.filter((item) => item.id !== id);
+    setPopupCategories(next);
+    localStorage.setItem("popup_subcategories", JSON.stringify(next));
+    if (editingPopupCategoryId === id) {
+      setEditingPopupCategoryId("");
+      setPopupCategoryInput({ categoryId: "", title: "", imageUrl: "" });
+      setFileInputKey((prev) => ({
+        ...prev,
+        popupCategory: prev.popupCategory + 1
+      }));
+    }
+    notifyDataChanged();
+  };
+
   const handleImageUpload = async (file, target) => {
     if (!file) return;
     setUploading((prev) => ({ ...prev, [target]: true }));
@@ -174,6 +251,9 @@ export default function AdminDashboard() {
       }
       if (target === "option") {
         setOptionInput((prev) => ({ ...prev, imageUrl: url }));
+      }
+      if (target === "popupCategory") {
+        setPopupCategoryInput((prev) => ({ ...prev, imageUrl: url }));
       }
       if (target === "optionBanner") {
         setUploadError((prev) => ({
@@ -282,6 +362,7 @@ export default function AdminDashboard() {
           </Link>
           <nav className="admin-top-nav">
             <a href="#admin-categories">Categories</a>
+            <a href="#admin-popup-categories">Popup Sub Categories</a>
             <a href="#admin-options">Service Options</a>
             <a href="#admin-services">Services</a>
             <a href="#admin-cities">Cities</a>
@@ -354,6 +435,98 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="admin-card" id="admin-popup-categories">
+            <h3>Popup Sub Categories</h3>
+            <div className="admin-input-row admin-input-row-small">
+              <select
+                value={popupCategoryInput.categoryId}
+                onChange={(e) =>
+                  setPopupCategoryInput((prev) => ({
+                    ...prev,
+                    categoryId: e.target.value
+                  }))
+                }
+              >
+                <option value="">Select category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Sub-category title"
+                value={popupCategoryInput.title}
+                onChange={(e) =>
+                  setPopupCategoryInput((prev) => ({
+                    ...prev,
+                    title: e.target.value
+                  }))
+                }
+              />
+              <input
+                key={`popup-category-file-${fileInputKey.popupCategory}`}
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleImageUpload(e.target.files?.[0], "popupCategory")
+                }
+              />
+              <input
+                type="text"
+                placeholder="Image URL (optional)"
+                value={popupCategoryInput.imageUrl}
+                onChange={(e) =>
+                  setPopupCategoryInput((prev) => ({
+                    ...prev,
+                    imageUrl: e.target.value
+                  }))
+                }
+              />
+              <button
+                className="admin-btn admin-btn-add"
+                onClick={handleAddPopupCategory}
+              >
+                {editingPopupCategoryId ? "Update" : "Add"}
+              </button>
+            </div>
+            <hr/>
+            {uploading.popupCategory && (
+              <p className="admin-muted">Uploading image...</p>
+            )}
+            {uploadError.popupCategory && (
+              <p className="admin-error">{uploadError.popupCategory}</p> 
+            )}
+            <div className="admin-list admin-list-grid">
+              {popupCategories.length === 0 ? (
+                <p className="admin-muted">No popup sub-categories yet.</p>
+              ) : (
+                popupCategories.map((item) => (
+                  <div key={item.id} className="admin-list-item">
+                    <div>
+                      <strong>{item.title}</strong>
+                    </div>
+                    <div className="admin-actions">
+                      <button
+                        className="admin-btn outline"
+                        onClick={() => handleEditPopupCategory(item)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="admin-btn outline"
+                        onClick={() => handleDeletePopupCategory(item.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
