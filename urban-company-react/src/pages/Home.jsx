@@ -4,12 +4,11 @@ import DynamicPopup from "../components/DynamicPopup";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { api } from "../api/client";
-import leftData from "../data/servicesLeftSidebarData";
 
 export default function Home() {
   const [categories, setCategories] = useState([]);
-  const [services, setServices] = useState([]);
-  const [options, setOptions] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
+  // Sub-categories are loaded from the API, not local storage.
   const [popupSubCategories, setPopupSubCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
   const adminVersionRef = useRef(
@@ -22,39 +21,22 @@ export default function Home() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
 
-  const categoryIconMap = {
-    "women": "1Homepage/serviceCategory/SalonForWomen.png",
-    "men": "1Homepage/serviceCategory/MenSalon.png",
-    "cleaning": "1Homepage/serviceCategory/Cleaning.png",
-    "electrician-plumber-carpenter": "1Homepage/serviceCategory/ECP.png",
-    "ac-appliance-repair": "1Homepage/serviceCategory/ACRepair.png",
-    "painting-waterproofing": "1Homepage/serviceCategory/Painting.png",
-    "water-purifier": "1Homepage/serviceCategory/Purifier.png",
-    "wall-make-over": "1Homepage/serviceCategory/Wall.png",
-    "insta-help": "1Homepage/serviceCategory/InstaHelp.png"
-  };
+
 
   const resolveCategoryImage = (category) => {
     if (category?.imageUrl) return category.imageUrl;
-    const key = slugify(category?.slug || category?.name || "");
-    return categoryIconMap[key] || "Homepage/serviceCategory/InstaHelp.png";
+    return "Homepage/serviceCategory/InstaHelp.png";
   };
 
-  const resolveServiceKey = (category) => {
-    if (!category) return "";
-    const catKey = slugify(category.slug || category.name);
-    const byKey = Object.keys(leftData).find((k) => slugify(k) === catKey);
-    if (byKey) return byKey;
-    const byTitle = Object.entries(leftData).find(
-      ([, v]) => slugify(v.title) === catKey
-    );
-    return byTitle?.[0] || catKey;
-  };
+  // Use API-provided slug/name for links (avoid local data mapping).
+  const resolveServiceKey = (category) =>
+    slugify(category?.slug || category?.name || "");
 
-  const loadPopupSubCategories = () => {
+  // Pull sub-categories from backend API
+  const loadPopupSubCategories = async () => {
     try {
-      const stored = localStorage.getItem("popup_subcategories");
-      setPopupSubCategories(stored ? JSON.parse(stored) : []);
+      const data = await api.getSubCategories();
+      setPopupSubCategories(data || []);
     } catch {
       setPopupSubCategories([]);
     }
@@ -62,15 +44,17 @@ export default function Home() {
 
   useEffect(() => {
     let mounted = true;
+    // Load categories + sub-categories from backend API.
     const load = async () => {
       try {
-        const [cats, svcs, opts] = await Promise.all([
+        const [cats, subcats] = await Promise.all([
           api.getCategories(),
-          api.getServices(),
-          api.getServiceOptions()
+          api.getSubCategories()
         ]);
         if (!mounted) return;
-        const mappedCats = (cats || [])
+        const allCats = cats || [];
+        const mappedCats = allCats
+          .filter((c) => c.parentCategoryId == null)
           .map((c) => ({
             id: c.id,
             name: c.name,
@@ -80,24 +64,26 @@ export default function Home() {
           }))
           .sort((a, b) => b.id - a.id);
         setCategories(mappedCats);
-        setServices(svcs || []);
-        setOptions(opts || []);
-        loadPopupSubCategories();
+        setAllCategories(allCats);
+        const derivedSubcats = (allCats || []).filter(
+          (c) => c.parentCategoryId != null
+        );
+        setPopupSubCategories(
+          subcats && subcats.length > 0 ? subcats : derivedSubcats
+        );
       } catch (e) {
         if (!mounted) return;
         setCategories([]);
-        setServices([]);
-        setOptions([]);
-        loadPopupSubCategories();
+        setAllCategories([]);
+        setPopupSubCategories([]);
       }
     };
+    // Keep data in sync with admin updates.
     const handleAdminChange = () => {
       load();
-      loadPopupSubCategories();
     };
     const handleStorage = (e) => {
       if (e.key === "admin_data_version") load();
-      if (e.key === "popup_subcategories") loadPopupSubCategories();
     };
     const handleFocus = () => load();
     const handleVisibility = () => {
@@ -141,66 +127,38 @@ export default function Home() {
     }
   }, [activeCategory]);
 
+  // Build popup data from sub-categories API response.
   const popupData = useMemo(() => {
     if (!activeCategory) return null;
     const category = activeCategory.raw || activeCategory;
     const serviceKey = resolveServiceKey(category);
-    const subItems = popupSubCategories.filter(
-      (item) => String(item.categoryId) === String(category.id)
+    const subSource =
+      popupSubCategories.length > 0
+        ? popupSubCategories
+        : allCategories.filter((c) => c.parentCategoryId != null);
+    const getParentId = (item) =>
+      item.parentCategoryId ??
+      item.parentCategoryID ??
+      item.categoryId ??
+      item.categoryID ??
+      null;
+    const subItems = subSource.filter(
+      (item) => String(getParentId(item)) === String(category.id)
     );
-    if (subItems.length > 0) {
-      return {
-        title: activeCategory.name,
-        sections: [
-          {
-            heading: "Sub Categories",
-            items: subItems.map((item) => ({
-              name: item.title,
-              img: item.imageUrl || activeCategory.img,
-              link: `/services/${serviceKey}#${slugify(item.title)}`
-            }))
-          }
-        ]
-      };
-    }
-    const categoryServices = services.filter(
-      (s) => s.categoryId === category.id
-    );
-    const optionsByService = new Map();
-    options.forEach((opt) => {
-      if (!optionsByService.has(opt.serviceId)) {
-        optionsByService.set(opt.serviceId, []);
-      }
-      optionsByService.get(opt.serviceId).push(opt);
-    });
-
-    const sections = categoryServices.map((svc) => {
-      const svcOptions = optionsByService.get(svc.id) || [];
-      const items =
-        svcOptions.length > 0
-          ? svcOptions.map((opt) => ({
-              name: opt.name || svc.title,
-              img: opt.imageUrl || activeCategory.img,
-              link: `/services/${serviceKey}#${slugify(svc.title)}`
-            }))
-          : [
-              {
-                name: svc.title,
-                img: activeCategory.img,
-                link: `/services/${serviceKey}#${slugify(svc.title)}`
-              }
-            ];
-      return {
-        heading: svc.title,
-        items
-      };
-    });
-
     return {
       title: activeCategory.name,
-      sections
+      sections: [
+        {
+          heading: "",
+          items: subItems.map((item) => ({
+            name: item.name || item.title,
+            img: item.imageUrl || activeCategory.img,
+            link: `/services/${serviceKey}`
+          }))
+        }
+      ]
     };
-  }, [activeCategory, services, options]);
+  }, [activeCategory, popupSubCategories, allCategories]);
 
   return (
     <>

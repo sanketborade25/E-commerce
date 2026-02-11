@@ -212,7 +212,10 @@ export default function Navbar() {
           optionsByService.get(opt.serviceId).push(opt);
         });
 
-        const categoryMap = new Map(categories.map((c) => [c.id, c]));
+        const topCategories = (categories || []).filter(
+          (c) => c.parentCategoryId == null
+        );
+        const categoryMap = new Map(topCategories.map((c) => [c.id, c]));
         const rows = [];
 
         services.forEach((svc) => {

@@ -54,6 +54,19 @@ export const api = {
       body: JSON.stringify(body)
     }),
   deleteCategory: (id) => request(`/api/Categories/${id}`, { method: "DELETE" }),
+  getSubCategories: () => request("/api/SubCategories"),
+  createSubCategory: (body) =>
+    request("/api/SubCategories", {
+      method: "POST",
+      body: JSON.stringify(body)
+    }),
+  updateSubCategory: (id, body) =>
+    request(`/api/SubCategories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body)
+    }),
+  deleteSubCategory: (id) =>
+    request(`/api/SubCategories/${id}`, { method: "DELETE" }),
   getServices: (params = {}) => {
     const search = new URLSearchParams();
     if (params.cityId) search.set("cityId", params.cityId);

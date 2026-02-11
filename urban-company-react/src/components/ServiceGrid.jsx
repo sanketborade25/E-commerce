@@ -3,8 +3,11 @@ import { resolveImage } from "../utils/image";
 export default function ServiceGrid({ categories = [], openPopup }) {
   const items = categories.map((c) => ({
     key: c.key || c.id,
+    id: c.id,
+    slug: c.slug,
     name: c.name,
-    img: c.img
+    img: c.img,
+    raw: c.raw
   }));
 
   return (

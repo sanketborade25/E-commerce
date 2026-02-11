@@ -11,14 +11,7 @@ export default function AdminDashboard() {
   const [serviceOptions, setServiceOptions] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState("");
-  const [popupCategories, setPopupCategories] = useState(() => {
-    try {
-      const stored = localStorage.getItem("popup_subcategories");
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [popupCategories, setPopupCategories] = useState([]);
 
   const [cityInput, setCityInput] = useState("");
   const [categoryInput, setCategoryInput] = useState({
@@ -69,25 +62,32 @@ export default function AdminDashboard() {
   }, []);
 
   const loadAll = async () => {
-    const [citiesRes, categoriesRes, optionsRes, servicesRes] =
+    const [citiesRes, categoriesRes, optionsRes, servicesRes, subCatsRes] =
       await Promise.allSettled([
         api.getCities(),
         api.getCategories(),
         api.getServiceOptions(),
-        api.getServices()
+        api.getServices(),
+        api.getSubCategories()
       ]);
 
     if (citiesRes.status === "fulfilled") {
       setCities(citiesRes.value || []);
     }
     if (categoriesRes.status === "fulfilled") {
-      setCategories(categoriesRes.value || []);
+      const onlyParents = (categoriesRes.value || []).filter(
+        (c) => c.parentCategoryId == null
+      );
+      setCategories(onlyParents);
     }
     if (servicesRes.status === "fulfilled") {
       setServices(servicesRes.value || []);
     }
     if (optionsRes.status === "fulfilled") {
       setServiceOptions(optionsRes.value || []);
+    }
+    if (subCatsRes.status === "fulfilled") {
+      setPopupCategories(subCatsRes.value || []);
     }
   };
 
@@ -175,56 +175,46 @@ export default function AdminDashboard() {
     notifyDataChanged();
   };
 
-  const handleAddPopupCategory = () => {
+  const handleAddPopupCategory = async () => {
     if (!popupCategoryInput.categoryId) return;
     const title = popupCategoryInput.title.trim();
     if (!title) return;
     const isEditing = Boolean(editingPopupCategoryId);
-    const next = isEditing
-      ? popupCategories.map((item) =>
-          item.id === editingPopupCategoryId
-            ? {
-                ...item,
-                categoryId: popupCategoryInput.categoryId,
-                title,
-                imageUrl: popupCategoryInput.imageUrl || ""
-              }
-            : item
-        )
-      : [
-          ...popupCategories,
-          {
-            id: `${popupCategoryInput.categoryId}-${Date.now()}`,
-            categoryId: popupCategoryInput.categoryId,
-            title,
-            imageUrl: popupCategoryInput.imageUrl || ""
-          }
-        ];
-    setPopupCategories(next);
-    localStorage.setItem("popup_subcategories", JSON.stringify(next));
+    if (isEditing) {
+      await api.updateSubCategory(editingPopupCategoryId, {
+        name: title,
+        imageUrl: popupCategoryInput.imageUrl || null,
+        parentCategoryId: Number(popupCategoryInput.categoryId)
+      });
+    } else {
+      await api.createSubCategory({
+        name: title,
+        imageUrl: popupCategoryInput.imageUrl || null,
+        parentCategoryId: Number(popupCategoryInput.categoryId)
+      });
+    }
     setPopupCategoryInput({ categoryId: "", title: "", imageUrl: "" });
     setEditingPopupCategoryId("");
     setFileInputKey((prev) => ({
       ...prev,
       popupCategory: prev.popupCategory + 1
     }));
+    await loadAll();
     notifyDataChanged();
   };
 
   const handleEditPopupCategory = (item) => {
     setPopupCategoryInput({
-      categoryId: String(item.categoryId),
-      title: item.title || "",
+      categoryId: String(item.parentCategoryId || ""),
+      title: item.name || "",
       imageUrl: item.imageUrl || ""
     });
-    setEditingPopupCategoryId(item.id);
+    setEditingPopupCategoryId(String(item.id));
   };
 
-  const handleDeletePopupCategory = (id) => {
-    const next = popupCategories.filter((item) => item.id !== id);
-    setPopupCategories(next);
-    localStorage.setItem("popup_subcategories", JSON.stringify(next));
-    if (editingPopupCategoryId === id) {
+  const handleDeletePopupCategory = async (id) => {
+    await api.deleteSubCategory(id);
+    if (String(editingPopupCategoryId) === String(id)) {
       setEditingPopupCategoryId("");
       setPopupCategoryInput({ categoryId: "", title: "", imageUrl: "" });
       setFileInputKey((prev) => ({
@@ -232,6 +222,7 @@ export default function AdminDashboard() {
         popupCategory: prev.popupCategory + 1
       }));
     }
+    await loadAll();
     notifyDataChanged();
   };
 
@@ -362,7 +353,7 @@ export default function AdminDashboard() {
           </Link>
           <nav className="admin-top-nav">
             <a href="#admin-categories">Categories</a>
-            <a href="#admin-popup-categories">Popup Sub Categories</a>
+            <a href="#admin-popup-categories">Sub Categories</a>
             <a href="#admin-options">Service Options</a>
             <a href="#admin-services">Services</a>
             <a href="#admin-cities">Cities</a>
@@ -439,7 +430,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="admin-card" id="admin-popup-categories">
-            <h3>Popup Sub Categories</h3>
+            <h3>Sub Categories</h3>
             <div className="admin-input-row admin-input-row-small">
               <select
                 value={popupCategoryInput.categoryId}
@@ -503,12 +494,17 @@ export default function AdminDashboard() {
             )}
             <div className="admin-list admin-list-grid">
               {popupCategories.length === 0 ? (
-                <p className="admin-muted">No popup sub-categories yet.</p>
+                <p className="admin-muted">No sub-categories yet.</p>
               ) : (
                 popupCategories.map((item) => (
                   <div key={item.id} className="admin-list-item">
                     <div>
-                      <strong>{item.title}</strong>
+                      <strong>{item.name}</strong>
+                      <div className="admin-muted">
+                        {categories.find(
+                          (cat) => String(cat.id) === String(item.parentCategoryId)
+                        )?.name || "Unknown category"}
+                      </div>
                     </div>
                     <div className="admin-actions">
                       <button
