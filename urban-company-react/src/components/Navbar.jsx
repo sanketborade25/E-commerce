@@ -198,8 +198,8 @@ export default function Navbar() {
     const load = async () => {
       try {
         const [categories, services, options] = await Promise.all([
-          api.getCategories(),
-          api.getServices(),
+          api.getCategories({ cityId: selectedCity || undefined }),
+          api.getServices({ cityId: selectedCity || undefined }),
           api.getServiceOptions()
         ]);
         if (!mounted) return;

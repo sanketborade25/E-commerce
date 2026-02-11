@@ -23,12 +23,22 @@ namespace UrbanApi.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken ct)
+        public async Task<IActionResult> GetAll([FromQuery] int? cityId, CancellationToken ct)
         {
-            var list = await _db.Categories
+            var q = _db.Categories
                 .Where(c => !c.IsDeleted && c.ParentCategoryId != null)
-                .AsNoTracking()
-                .ToListAsync(ct);
+                .AsQueryable();
+
+            if (cityId.HasValue)
+            {
+                var citySubCategoryIds = _db.Services
+                    .Where(s => !s.IsDeleted && s.CityId == cityId.Value && s.SubCategoryId != null)
+                    .Select(s => s.SubCategoryId!.Value)
+                    .Distinct();
+                q = q.Where(c => citySubCategoryIds.Contains(c.Id));
+            }
+
+            var list = await q.AsNoTracking().ToListAsync(ct);
             return Ok(_mapper.Map<List<CategoryDto>>(list));
         }
 

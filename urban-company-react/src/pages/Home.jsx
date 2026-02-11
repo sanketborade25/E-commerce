@@ -11,6 +11,9 @@ export default function Home() {
   // Sub-categories are loaded from the API, not local storage.
   const [popupSubCategories, setPopupSubCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
+  const [cityId, setCityId] = useState(
+    () => localStorage.getItem("selected_city_id") || ""
+  );
   const adminVersionRef = useRef(
     localStorage.getItem("admin_data_version") || ""
   );
@@ -43,13 +46,22 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const handleCity = (e) => {
+      const next = e.detail?.cityId || "";
+      setCityId(next);
+    };
+    window.addEventListener("city-changed", handleCity);
+    return () => window.removeEventListener("city-changed", handleCity);
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
     // Load categories + sub-categories from backend API.
     const load = async () => {
       try {
         const [cats, subcats] = await Promise.all([
-          api.getCategories(),
-          api.getSubCategories()
+          api.getCategories({ cityId: cityId || undefined }),
+          api.getSubCategories({ cityId: cityId || undefined })
         ]);
         if (!mounted) return;
         const allCats = cats || [];
@@ -119,7 +131,7 @@ export default function Home() {
       channel?.removeEventListener("message", handleChannel);
       channel?.close();
     };
-  }, []);
+  }, [cityId]);
 
   useEffect(() => {
     if (activeCategory) {

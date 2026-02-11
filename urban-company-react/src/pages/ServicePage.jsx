@@ -107,7 +107,7 @@ export default function ServicePage() {
     const load = async () => {
       try {
         const [categories, options] = await Promise.all([
-          api.getCategories(),
+          api.getCategories({ cityId: cityId || undefined }),
           api.getServiceOptions()
         ]);
         const category = resolveCategory(categories);
@@ -118,23 +118,11 @@ export default function ServicePage() {
           return;
         }
         setPageTitle(category.name || "");
-        let services = await api.getServices({
+        const services = await api.getServices({
           categoryId: category.id,
           subCategoryId: subCategoryId || undefined,
           cityId: cityId || undefined
         });
-        if (!services?.length && cityId) {
-          services = await api.getServices({
-            categoryId: category.id,
-            subCategoryId: subCategoryId || undefined
-          });
-        }
-        if (!services?.length && subCategoryId) {
-          services = await api.getServices({
-            categoryId: category.id,
-            cityId: cityId || undefined
-          });
-        }
         if (!mounted) return;
 
         const newSections = buildSectionsFromApi(services, options);

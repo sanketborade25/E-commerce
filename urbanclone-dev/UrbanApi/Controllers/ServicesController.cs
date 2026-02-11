@@ -31,7 +31,7 @@ public class ServicesController : ControllerBase
                 .AsQueryable();
 
             if (cityId.HasValue)
-                q = q.Where(s => s.CityId == cityId.Value || s.CityId == null);
+                q = q.Where(s => s.CityId == cityId.Value);
             if (categoryId.HasValue) q = q.Where(s => s.CategoryId == categoryId.Value);
             if (subCategoryId.HasValue) q = q.Where(s => s.SubCategoryId == subCategoryId.Value);
 

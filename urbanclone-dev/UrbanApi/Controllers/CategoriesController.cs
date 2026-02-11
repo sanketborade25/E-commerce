@@ -24,12 +24,22 @@ public class CategoriesController : ControllerBase
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken ct)
+        public async Task<IActionResult> GetAll([FromQuery] int? cityId, CancellationToken ct)
         {
-            var categories = await _db.Categories
-                .Where(c => !c.IsDeleted)
-                .AsNoTracking()
-                .ToListAsync(ct);
+            var q = _db.Categories
+                .Where(c => !c.IsDeleted && c.ParentCategoryId == null)
+                .AsQueryable();
+
+            if (cityId.HasValue)
+            {
+                var cityCategoryIds = _db.Services
+                    .Where(s => !s.IsDeleted && s.CityId == cityId.Value)
+                    .Select(s => s.CategoryId)
+                    .Distinct();
+                q = q.Where(c => cityCategoryIds.Contains(c.Id));
+            }
+
+            var categories = await q.AsNoTracking().ToListAsync(ct);
             return Ok(_mapper.Map<List<CategoryDto>>(categories));
         }
 

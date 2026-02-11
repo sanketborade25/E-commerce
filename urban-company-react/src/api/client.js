@@ -45,7 +45,12 @@ export const api = {
   updateCity: (id, body) =>
     request(`/api/Cities/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   deleteCity: (id) => request(`/api/Cities/${id}`, { method: "DELETE" }),
-  getCategories: () => request("/api/Categories"),
+  getCategories: (params = {}) => {
+    const search = new URLSearchParams();
+    if (params.cityId) search.set("cityId", params.cityId);
+    const qs = search.toString();
+    return request(`/api/Categories${qs ? `?${qs}` : ""}`);
+  },
   createCategory: (body) =>
     request("/api/Categories", { method: "POST", body: JSON.stringify(body) }),
   updateCategory: (id, body) =>
@@ -54,7 +59,12 @@ export const api = {
       body: JSON.stringify(body)
     }),
   deleteCategory: (id) => request(`/api/Categories/${id}`, { method: "DELETE" }),
-  getSubCategories: () => request("/api/SubCategories"),
+  getSubCategories: (params = {}) => {
+    const search = new URLSearchParams();
+    if (params.cityId) search.set("cityId", params.cityId);
+    const qs = search.toString();
+    return request(`/api/SubCategories${qs ? `?${qs}` : ""}`);
+  },
   createSubCategory: (body) =>
     request("/api/SubCategories", {
       method: "POST",
