@@ -14,6 +14,11 @@ async function request(path, options = {}) {
     const text = await res.text();
     throw new Error(text || `Request failed: ${res.status}`);
   }
+  if (res.status === 204) return null;
+  const contentLength = res.headers.get("content-length");
+  if (contentLength === "0") return null;
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) return null;
   return res.json();
 }
 
@@ -96,6 +101,11 @@ export const api = {
   clearCart: () => request("/api/Cart/clear", { method: "DELETE" }),
   login: (body) =>
     request("/api/Auth/login", { method: "POST", body: JSON.stringify(body) }),
+  createUser: (body) =>
+    request("/api/Users", { method: "POST", body: JSON.stringify(body) }),
+  updateUser: (id, body) =>
+    request(`/api/Users/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+  getBookings: () => request("/api/Bookings"),
   setToken: (token) => localStorage.setItem(TOKEN_KEY, token),
   clearToken: () => localStorage.removeItem(TOKEN_KEY)
 };

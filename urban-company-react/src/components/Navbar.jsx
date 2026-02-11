@@ -8,6 +8,35 @@ import { resolveImage } from "../utils/image";
 export default function Navbar() {
   const [query, setQuery] = useState("");
   const [showCart, setShowCart] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileView, setProfileView] = useState("login");
+  const [authUser, setAuthUser] = useState(() => {
+    const raw = localStorage.getItem("auth_user");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  });
+  const [authError, setAuthError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const profileSuccessTimerRef = useRef(null);
+  const [signupErrors, setSignupErrors] = useState({});
+  const [authBusy, setAuthBusy] = useState(false);
+  const [loginPhone, setLoginPhone] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [signupName, setSignupName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPhone, setSignupPhone] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [profilePassword, setProfilePassword] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingsError, setBookingsError] = useState("");
   const { cartItems, removeFromCart } = useCart();
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState(
@@ -25,6 +54,7 @@ export default function Navbar() {
   const total = Math.max(0, subtotal - discount);
 
   const [searchIndex, setSearchIndex] = useState([]);
+  const isAuthed = Boolean(authUser);
 
   const normalizeText = (text) =>
     text
@@ -116,6 +146,29 @@ export default function Navbar() {
       window.clearInterval(poll);
     };
   }, []);
+
+  useEffect(() => {
+    if (!showProfile) return;
+    setAuthError("");
+    setProfileSuccess("");
+    if (profileSuccessTimerRef.current) {
+      window.clearTimeout(profileSuccessTimerRef.current);
+      profileSuccessTimerRef.current = null;
+    }
+    setBookingsError("");
+    if (isAuthed) {
+      setProfileView("menu");
+    } else {
+      setProfileView("login");
+    }
+  }, [showProfile, isAuthed]);
+
+  useEffect(() => {
+    if (!authUser) return;
+    setProfileName(authUser.fullName || "");
+    setProfileEmail(authUser.email || "");
+    setProfilePhone(authUser.phone || "");
+  }, [authUser]);
 
   const slugify = (value = "") =>
     value
@@ -273,6 +326,140 @@ export default function Navbar() {
     );
   };
 
+  const persistAuth = (res) => {
+    if (!res?.accessToken || !res?.user) {
+      throw new Error("Invalid login response.");
+    }
+    api.setToken(res.accessToken);
+    localStorage.setItem("auth_user", JSON.stringify(res.user));
+    setAuthUser(res.user);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!loginPhone || !loginPassword) {
+      setAuthError("Phone and password are required.");
+      return;
+    }
+    setAuthBusy(true);
+    setAuthError("");
+    try {
+      const res = await api.login({
+        phone: loginPhone,
+        password: loginPassword
+      });
+      persistAuth(res);
+      setProfileView("menu");
+      setLoginPassword("");
+    } catch (err) {
+      setAuthError(err?.message || "Login failed.");
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    const nextErrors = {};
+    if (!signupName) nextErrors.fullName = "Full name is required.";
+    if (!signupPhone) nextErrors.phone = "Mobile number is required.";
+    if (!signupPassword) nextErrors.password = "New password is required.";
+    setSignupErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+    setAuthBusy(true);
+    setAuthError("");
+    try {
+      await api.createUser({
+        fullName: signupName,
+        email: signupEmail || null,
+        phone: signupPhone,
+        password: signupPassword
+      });
+      const res = await api.login({
+        phone: signupPhone,
+        password: signupPassword
+      });
+      persistAuth(res);
+      setProfileView("menu");
+      setSignupPassword("");
+    } catch (err) {
+      setAuthError(err?.message || "Signup failed.");
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
+    if (!authUser) return;
+    if (!profileName || !profilePhone) {
+      setAuthError("Full name and phone are required.");
+      return;
+    }
+    setAuthBusy(true);
+    setAuthError("");
+    try {
+      await api.updateUser(authUser.id, {
+        fullName: profileName,
+        email: profileEmail || null,
+        phone: profilePhone,
+        password: profilePassword || null
+      });
+      const nextUser = {
+        ...authUser,
+        fullName: profileName,
+        email: profileEmail || "",
+        phone: profilePhone
+      };
+      localStorage.setItem("auth_user", JSON.stringify(nextUser));
+      setAuthUser(nextUser);
+      setProfilePassword("");
+      setProfileView("menu");
+      setProfileSuccess("Profile updated successfully.");
+      if (profileSuccessTimerRef.current) {
+        window.clearTimeout(profileSuccessTimerRef.current);
+      }
+      profileSuccessTimerRef.current = window.setTimeout(() => {
+        setProfileSuccess("");
+        profileSuccessTimerRef.current = null;
+      }, 2000);
+    } catch (err) {
+      setAuthError(err?.message || "Update failed.");
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleLogout = () => {
+    api.clearToken();
+    localStorage.removeItem("auth_user");
+    setAuthUser(null);
+    setProfileView("login");
+  };
+
+  const loadBookings = async () => {
+    if (!authUser) return;
+    setBookingsLoading(true);
+    setBookingsError("");
+    try {
+      const list = await api.getBookings();
+      const mine = (list || []).filter((b) => b.userId === authUser.id);
+      setBookings(mine);
+    } catch (err) {
+      setBookingsError(err?.message || "Unable to load bookings.");
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (profileView !== "bookings") return;
+    if (!authUser) return;
+    loadBookings();
+  }, [profileView, authUser]);
+
   return (
     <header className="navbar">
       <div className="logo">
@@ -280,13 +467,6 @@ export default function Navbar() {
           <img src="/images/1Homepage/logo (1).png" alt="Urban" />
         </Link>
       </div>
-
-      <nav>
-        <Link to="/">Home</Link>
-        <a href="#">Native</a>
-        <a href="#">Beauty</a>
-        <Link to="/admin">Admin</Link>
-      </nav>
 
       <div className="nav-right">
         <select value={selectedCity} onChange={handleCityChange}>
@@ -340,11 +520,16 @@ export default function Navbar() {
 </svg>
           {totalQty > 0 && <span className="cart-badge">{totalQty}</span>}
         </button>
-        <a href="#" className="icon">
+        <button
+          type="button"
+          className="icon profile-trigger"
+          onClick={() => setShowProfile(true)}
+          aria-label="Open profile drawer"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-person-fill" viewBox="0 0 16 16">
   <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
 </svg>
-        </a>
+        </button>
       </div>
 
       {showCart && (
@@ -425,6 +610,236 @@ export default function Navbar() {
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {showProfile && (
+        <div className="profile-overlay" onClick={() => setShowProfile(false)}>
+          <div
+            className="profile-drawer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="profile-drawer-header">
+              <h3>Your Account</h3>
+              <button
+                type="button"
+                className="cart-close-btn"
+                onClick={() => setShowProfile(false)}
+              >
+                x
+              </button>
+            </div>
+            {isAuthed && (
+              <div className="profile-drawer-actions">
+                <button
+                  type="button"
+                  className="profile-drawer-btn light"
+                  onClick={() => {
+                    setAuthError("");
+                    setProfileView("profile");
+                  }}
+                >
+                  Manage Profile
+                </button>
+                <button
+                  type="button"
+                  className="profile-drawer-btn"
+                  onClick={() => {
+                    setAuthError("");
+                    setProfileView("bookings");
+                  }}
+                >
+                  My Bookings
+                </button>
+                <button
+                  type="button"
+                  className="profile-drawer-btn outline"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+            <div className="profile-drawer-content">
+              {isAuthed && profileSuccess && (
+                <div className="profile-success">{profileSuccess}</div>
+              )}
+              {!isAuthed && (
+                <>
+                  {profileView === "login" && (
+                    <form className="profile-login" onSubmit={handleLogin}>
+                      <input
+                        type="tel"
+                        placeholder="Mobile number"
+                        value={loginPhone}
+                        onChange={(e) => setLoginPhone(e.target.value)}
+                      />
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                      />
+                      {authError && (
+                        <span className="profile-error">{authError}</span>
+                      )}
+                      <div className="profile-login-actions">
+                        <button
+                          type="submit"
+                          className="profile-login-btn"
+                          disabled={authBusy}
+                        >
+                          {authBusy ? "Logging in..." : "Login"}
+                        </button>
+                        <button
+                          type="button"
+                          className="profile-login-btn outline"
+                          onClick={() => {
+                            setAuthError("");
+                            setProfileView("signup");
+                          }}
+                        >
+                          Sign Up
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {profileView === "signup" && (
+                    <form className="profile-login" onSubmit={handleSignup}>
+                      <input
+                        type="text"
+                        placeholder="Full name"
+                        value={signupName}
+                        onChange={(e) => {
+                          setSignupName(e.target.value);
+                          if (signupErrors.fullName) {
+                            setSignupErrors((prev) => ({ ...prev, fullName: "" }));
+                          }
+                        }}
+                      />
+                      {signupErrors.fullName && (
+                        <span className="profile-error">{signupErrors.fullName}</span>
+                      )}
+                      <input
+                        type="email"
+                        placeholder="Email (optional)"
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                      />
+                      <input
+                        type="tel"
+                        placeholder="Mobile number"
+                        value={signupPhone}
+                        onChange={(e) => {
+                          setSignupPhone(e.target.value);
+                          if (signupErrors.phone) {
+                            setSignupErrors((prev) => ({ ...prev, phone: "" }));
+                          }
+                        }}
+                      />
+                      {signupErrors.phone && (
+                        <span className="profile-error">{signupErrors.phone}</span>
+                      )}
+                      <input
+                        type="password"
+                        placeholder="New password"
+                        value={signupPassword}
+                        onChange={(e) => {
+                          setSignupPassword(e.target.value);
+                          if (signupErrors.password) {
+                            setSignupErrors((prev) => ({ ...prev, password: "" }));
+                          }
+                        }}
+                      />
+                      {signupErrors.password && (
+                        <span className="profile-error">{signupErrors.password}</span>
+                      )}
+                      {authError && (
+                        <span className="profile-error">{authError}</span>
+                      )}
+                      <button
+                        type="submit"
+                        className="profile-login-btn"
+                        disabled={authBusy}
+                      >
+                        {authBusy ? "Creating..." : "Sign Up"}
+                      </button>
+                    </form>
+                  )}
+                </>
+              )}
+
+              {isAuthed && profileView === "profile" && (
+                <form className="profile-edit" onSubmit={handleProfileSave}>
+                  <div className="profile-title">Manage Profile</div>
+                  <input
+                    type="text"
+                    placeholder="Full name"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={profileEmail}
+                    onChange={(e) => setProfileEmail(e.target.value)}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Mobile number"
+                    value={profilePhone}
+                    onChange={(e) => setProfilePhone(e.target.value)}
+                  />
+                  <input
+                    type="password"
+                    placeholder="New password (optional)"
+                    value={profilePassword}
+                    onChange={(e) => setProfilePassword(e.target.value)}
+                  />
+                  {authError && <span className="profile-error">{authError}</span>}
+                  <button
+                    type="submit"
+                    className="profile-login-btn"
+                    disabled={authBusy}
+                  >
+                    {authBusy ? "Saving..." : "Save Changes"}
+                  </button>
+                </form>
+              )}
+
+              {isAuthed && profileView === "bookings" && (
+                <div className="profile-bookings">
+                  <div className="profile-title">My Bookings</div>
+                  {bookingsLoading && <p>Loading bookings...</p>}
+                  {bookingsError && (
+                    <span className="profile-error">{bookingsError}</span>
+                  )}
+                  {!bookingsLoading && !bookingsError && bookings.length === 0 && (
+                    <p>No bookings found.</p>
+                  )}
+                  <div className="booking-list">
+                    {bookings.map((b) => (
+                      <div key={b.id} className="booking-item">
+                        <div className="booking-row">
+                          <span className="booking-ref">
+                            {b.bookingReference}
+                          </span>
+                          <span className="booking-status">{b.status}</span>
+                        </div>
+                        <div className="booking-row">
+                          <span>
+                            {new Date(b.scheduledAt).toLocaleString()}
+                          </span>
+                          <span>Rs {b.totalAmount}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
