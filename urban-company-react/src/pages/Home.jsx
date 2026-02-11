@@ -153,7 +153,7 @@ export default function Home() {
           items: subItems.map((item) => ({
             name: item.name || item.title,
             img: item.imageUrl || activeCategory.img,
-            link: `/services/${serviceKey}`
+            link: `/services/${serviceKey}?subCategoryId=${item.id}`
           }))
         }
       ]

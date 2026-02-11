@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import leftData from "../data/servicesLeftSidebarData";
 import ServiceLayout from "../components/ServiceLayout";
 import Navbar from "../components/Navbar";
 import { api } from "../api/client";
@@ -8,10 +7,12 @@ import { api } from "../api/client";
 export default function ServicePage() {
   const { serviceKey } = useParams();
   const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const subCategoryId = searchParams.get("subCategoryId");
 
-  const leftPageData = leftData[serviceKey];
   const [menu, setMenu] = useState([]);
   const [sections, setSections] = useState([]);
+  const [pageTitle, setPageTitle] = useState("");
   const [cityId, setCityId] = useState(
     () => localStorage.getItem("selected_city_id") || ""
   );
@@ -25,8 +26,8 @@ export default function ServicePage() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
 
-  const buildLongDesc = (label, existing) => {
-    const base = existing || `Includes ${label.toLowerCase()} service.`;
+  const buildLongDesc = (label) => {
+    const base = `Includes ${label.toLowerCase()} service.`;
     return (
       `${base} ` +
       "Detailed inspection and preparation included. " +
@@ -37,19 +38,13 @@ export default function ServicePage() {
 
   const resolveCategory = (categories) => {
     if (!categories?.length) return null;
-    const matchBySlug = categories.find(
-      (c) => c.slug && slugify(c.slug) === slugify(serviceKey)
+    return (
+      categories.find(
+        (c) => c.slug && slugify(c.slug) === slugify(serviceKey)
+      ) ||
+      categories.find((c) => slugify(c.name) === slugify(serviceKey)) ||
+      null
     );
-    if (matchBySlug) return matchBySlug;
-    const leftTitle = leftPageData?.title || "";
-    const byKey = categories.find(
-      (c) => slugify(c.name) === slugify(serviceKey)
-    );
-    if (byKey) return byKey;
-    const byTitle = categories.find(
-      (c) => slugify(c.name) === slugify(leftTitle)
-    );
-    return byTitle || null;
   };
 
   const pickImageForService = (serviceTitle, fallbackUrl) => {
@@ -71,17 +66,21 @@ export default function ServicePage() {
       const items =
         svcOptions.length > 0
           ? svcOptions.map((opt) => ({
+              serviceId: svc.id,
+              serviceOptionId: opt.id,
               img: pickImageForService(svc.title, opt.imageUrl || svc.imageUrl),
               name: opt.name || svc.title,
-              desc: buildLongDesc(opt.name || svc.title, svc.shortDescription),
-              price: Number(opt.price) || Number(svc.basePrice) || 0
+              desc: buildLongDesc(opt.name || svc.title),
+              price: Number(opt.price) || 0
             }))
           : [
               {
+                serviceId: svc.id,
+                serviceOptionId: null,
                 img: pickImageForService(svc.title, svc.imageUrl),
                 name: svc.title,
-                desc: buildLongDesc(svc.title, svc.shortDescription),
-                price: Number(svc.basePrice) || 0
+                desc: buildLongDesc(svc.title),
+                price: 0
               }
             ];
 
@@ -112,11 +111,30 @@ export default function ServicePage() {
           api.getServiceOptions()
         ]);
         const category = resolveCategory(categories);
-        if (!category) return;
-        const services = await api.getServices({
+        if (!category) {
+          setSections([]);
+          setMenu([]);
+          setPageTitle("");
+          return;
+        }
+        setPageTitle(category.name || "");
+        let services = await api.getServices({
           categoryId: category.id,
+          subCategoryId: subCategoryId || undefined,
           cityId: cityId || undefined
         });
+        if (!services?.length && cityId) {
+          services = await api.getServices({
+            categoryId: category.id,
+            subCategoryId: subCategoryId || undefined
+          });
+        }
+        if (!services?.length && subCategoryId) {
+          services = await api.getServices({
+            categoryId: category.id,
+            cityId: cityId || undefined
+          });
+        }
         if (!mounted) return;
 
         const newSections = buildSectionsFromApi(services, options);
@@ -134,19 +152,18 @@ export default function ServicePage() {
       }
     };
     const handleAdminChange = () => {
-      if (leftPageData) load();
+      load();
     };
     const handleStorage = (e) => {
-      if (e.key === "admin_data_version" && leftPageData) load();
+      if (e.key === "admin_data_version") load();
     };
     const handleFocus = () => {
-      if (leftPageData) load();
+      load();
     };
     const handleVisibility = () => {
-      if (!document.hidden && leftPageData) load();
+      if (!document.hidden) load();
     };
     const poll = window.setInterval(() => {
-      if (!leftPageData) return;
       const next = localStorage.getItem("admin_data_version") || "";
       if (next && next !== adminVersionRef.current) {
         adminVersionRef.current = next;
@@ -158,14 +175,14 @@ export default function ServicePage() {
         ? null
         : new BroadcastChannel("admin-data");
     const handleChannel = (event) => {
-      if (event?.data?.type === "refresh" && leftPageData) load();
+      if (event?.data?.type === "refresh") load();
     };
     window.addEventListener("admin-data-changed", handleAdminChange);
     window.addEventListener("storage", handleStorage);
     window.addEventListener("focus", handleFocus);
     document.addEventListener("visibilitychange", handleVisibility);
     channel?.addEventListener("message", handleChannel);
-    if (leftPageData) load();
+    load();
     return () => {
       mounted = false;
       window.removeEventListener("admin-data-changed", handleAdminChange);
@@ -176,7 +193,7 @@ export default function ServicePage() {
       channel?.close();
       window.clearInterval(poll);
     };
-  }, [serviceKey, cityId]);
+  }, [serviceKey, cityId, subCategoryId]);
 
   useEffect(() => {
     if (!location.hash) return;
@@ -187,7 +204,7 @@ export default function ServicePage() {
     }
   }, [location.hash, serviceKey, sections.length]);
 
-  if (!leftPageData) return <h2>Not Found</h2>;
+  if (!pageTitle) return <h2>Not Found</h2>;
 
   const finalSections = sections.length ? sections : [];
   const finalMenu = menu.length ? menu : [];

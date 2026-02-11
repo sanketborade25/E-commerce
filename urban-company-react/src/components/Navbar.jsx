@@ -252,7 +252,7 @@ export default function Navbar() {
                 svc.title,
                 svc.imageUrl || category?.imageUrl
               ),
-              price: svc.basePrice,
+              price: 0,
               tags
             });
           } else {
@@ -268,7 +268,7 @@ export default function Navbar() {
                   opt.name || svc.title,
                   opt.imageUrl || svc.imageUrl || category?.imageUrl
                 ),
-                price: opt.price || svc.basePrice,
+                price: opt.price || 0,
                 tags
               });
             });

@@ -715,10 +715,6 @@ namespace UrbanApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("BasePrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
@@ -730,9 +726,6 @@ namespace UrbanApi.Migrations
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("DurationMinutes")
-                        .HasColumnType("int");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
@@ -746,9 +739,8 @@ namespace UrbanApi.Migrations
                     b.Property<string>("LongDescription")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ShortDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<int?>("SubCategoryId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -767,21 +759,20 @@ namespace UrbanApi.Migrations
 
                     b.HasIndex("CityId");
 
+                    b.HasIndex("SubCategoryId");
+
                     b.ToTable("Services");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            BasePrice = 499.00m,
                             CategoryId = 1,
                             CityId = 1,
                             CreatedAt = new DateTime(2025, 11, 16, 0, 0, 0, 0, DateTimeKind.Utc),
-                            DurationMinutes = 60,
                             IsActive = true,
                             IsDeleted = false,
                             LongDescription = "Basic leakage repair service for taps, pipelines.",
-                            ShortDescription = "Fix home leakages",
                             Title = "Leakage Repair"
                         });
                 });
@@ -1109,9 +1100,16 @@ namespace UrbanApi.Migrations
                         .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("UrbanApi.Models.Category", "SubCategory")
+                        .WithMany()
+                        .HasForeignKey("SubCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Category");
 
                     b.Navigation("City");
+
+                    b.Navigation("SubCategory");
                 });
 
             modelBuilder.Entity("UrbanApi.Models.ServiceOption", b =>

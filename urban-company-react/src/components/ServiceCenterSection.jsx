@@ -30,7 +30,9 @@ export default function ServiceCenterSection({ sections = [] }) {
                   className="add-btn"
                   onClick={() =>
                     addToCart({
-                      key: `${section.id}-${item.name}`,
+                      key: `${section.id}-${item.serviceId || "svc"}-${item.serviceOptionId || item.name}`,
+                      serviceId: item.serviceId,
+                      serviceOptionId: item.serviceOptionId,
                       name: item.name,
                       price: item.price,
                       img: item.img

@@ -16,7 +16,23 @@ var jwtAudience = jwtSection.GetValue<string>("Audience");
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 // ------------ AUTHENTICATION / AUTHORIZATION ------------
-// Disabled per request: all endpoints are publicly accessible.
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization();
 
 // ------------ DB CONTEXT ------------
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -97,6 +113,9 @@ app.UseRouting();
 app.UseHttpsRedirection();
 
 app.UseCors(AllowLocalDev);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

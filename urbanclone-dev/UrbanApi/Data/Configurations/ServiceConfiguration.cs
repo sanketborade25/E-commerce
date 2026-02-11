@@ -11,12 +11,15 @@ namespace UrbanApi.Data.Configurations
         {
             builder.HasKey(s => s.Id);
             builder.Property(s => s.Title).IsRequired().HasMaxLength(200);
-            builder.Property(s => s.BasePrice).HasPrecision(18, 2);
-            builder.Property(s => s.ShortDescription).HasMaxLength(500);
 
             builder.HasOne(s => s.Category)
                    .WithMany(c => c.Services)
                    .HasForeignKey(s => s.CategoryId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(s => s.SubCategory)
+                   .WithMany()
+                   .HasForeignKey(s => s.SubCategoryId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(s => s.City)
@@ -29,12 +32,10 @@ namespace UrbanApi.Data.Configurations
             {
                 Id = 1,
                 CategoryId = 1,
+                SubCategoryId = null,
                 CityId = 1,
                 Title = "Leakage Repair",
-                ShortDescription = "Fix home leakages",
                 LongDescription = "Basic leakage repair service for taps, pipelines.",
-                BasePrice = 499.00m,
-                DurationMinutes = 60,
                 IsActive = true,
                 CreatedAt = new DateTime(2025, 11, 16, 0, 0, 0, DateTimeKind.Utc)
             });

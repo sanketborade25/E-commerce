@@ -12,6 +12,7 @@ namespace UrbanApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CartController : ControllerBase
     {
         private readonly AppDbContext _db;
@@ -90,7 +91,7 @@ namespace UrbanApi.Controllers
 
             var unitPrice = input.UnitPrice.GetValueOrDefault();
             if (unitPrice <= 0)
-                unitPrice = option?.Price ?? service.BasePrice;
+                unitPrice = option?.Price ?? 0;
 
             var existing = await _db.CartItems
                 .FirstOrDefaultAsync(i =>

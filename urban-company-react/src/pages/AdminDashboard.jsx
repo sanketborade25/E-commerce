@@ -20,11 +20,10 @@ export default function AdminDashboard() {
   });
   const [serviceInput, setServiceInput] = useState({
     title: "",
-    basePrice: "",
-    shortDescription: "",
     imageUrl: ""
   });
   const [serviceCityId, setServiceCityId] = useState("");
+  const [serviceSubCategoryId, setServiceSubCategoryId] = useState("");
   const [popupCategoryInput, setPopupCategoryInput] = useState({
     categoryId: "",
     title: "",
@@ -107,12 +106,10 @@ export default function AdminDashboard() {
   const handleToggleService = async (svc) => {
     await api.updateService(svc.id, {
       categoryId: svc.categoryId,
+      subCategoryId: svc.subCategoryId,
       cityId: svc.cityId,
       title: svc.title,
-      shortDescription: svc.shortDescription,
       imageUrl: svc.imageUrl || null,
-      basePrice: svc.basePrice,
-      durationMinutes: svc.durationMinutes,
       isActive: !svc.isActive
     });
     await loadAll();
@@ -131,25 +128,26 @@ export default function AdminDashboard() {
 
   const handleAddService = async () => {
     if (!selectedCategoryId) return;
+    if (!serviceSubCategoryId) {
+      alert("Please select a sub category.");
+      return;
+    }
     const title = serviceInput.title.trim();
     if (!title) return;
     await api.createService({
       categoryId: Number(selectedCategoryId),
-      cityId: serviceCityId ? Number(serviceCityId) : null,
+      subCategoryId: Number(serviceSubCategoryId),
       title,
-      shortDescription: serviceInput.shortDescription || null,
+      cityId: serviceCityId ? Number(serviceCityId) : null,
       imageUrl: serviceInput.imageUrl || null,
-      basePrice: Number(serviceInput.basePrice) || 0,
-      durationMinutes: null,
       isActive: true
     });
     setServiceInput({
       title: "",
-      basePrice: "",
-      shortDescription: "",
       imageUrl: ""
     });
     setFileInputKey((prev) => ({ ...prev, service: prev.service + 1 }));
+    setServiceSubCategoryId("");
     setServiceCityId("");
     await loadAll();
     notifyDataChanged();
@@ -354,23 +352,22 @@ export default function AdminDashboard() {
           <nav className="admin-top-nav">
             <a href="#admin-categories">Categories</a>
             <a href="#admin-popup-categories">Sub Categories</a>
-            <a href="#admin-options">Service Options</a>
             <a href="#admin-services">Services</a>
+            <a href="#admin-options">Service Options</a>
             <a href="#admin-cities">Cities</a>
             <a href="#admin-banners">Banner Images</a>
           </nav>
           <div className="admin-top-actions">
+            <div>
+            <h2>Admin Dashboard</h2>
+            </div>
             <Link to="/" className="admin-home-link">Home</Link>
             <button className="admin-btn outline" onClick={handleLogout}>
               Logout
             </button>
           </div>
         </div>
-        <div className="admin-header">
-          <div>
-            <h2>Admin Dashboard</h2>
-          </div>
-        </div>
+
 
         <div className="admin-grid">
           <div className="admin-card" id="admin-categories">
@@ -526,7 +523,132 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="admin-card" id="admin-options">
+          <div className="admin-card" id="admin-services">
+            <h3>Services ({enabledCount} active)</h3>
+            <p className="admin-muted">Choose service option</p>
+            <div className="admin-input-row admin-input-row-small">
+              <select
+                value={selectedCategoryId}
+                onChange={(e) => {
+                  setSelectedCategoryId(e.target.value);
+                  setServiceSubCategoryId("");
+                }}
+              >
+                <option value="">All categories</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={selectedServiceId}
+                onChange={(e) => setSelectedServiceId(e.target.value)}
+              >
+                <option value="">Filter by service (optional)</option>
+                {services.map((s) => (
+                  <option key={s.id} value={String(s.id)}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="admin-input-row admin-input-row-small">
+              <select
+                value={serviceSubCategoryId}
+                onChange={(e) => setServiceSubCategoryId(e.target.value)}
+              >
+                <option value="">Select sub category</option>
+                {popupCategories
+                  .filter(
+                    (sc) =>
+                      String(sc.parentCategoryId) ===
+                      String(selectedCategoryId)
+                  )
+                  .map((sc) => (
+                    <option key={sc.id} value={String(sc.id)}>
+                      {sc.name}
+                    </option>
+                  ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Service title"
+                value={serviceInput.title}
+                onChange={(e) =>
+                  setServiceInput((prev) => ({ ...prev, title: e.target.value }))
+                }
+              />
+              <select
+                value={serviceCityId}
+                onChange={(e) => setServiceCityId(e.target.value)}
+              >
+                <option value="">Select city</option>
+                {cities.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Image URL (optional)"
+                value={serviceInput.imageUrl}
+                onChange={(e) =>
+                  setServiceInput((prev) => ({
+                    ...prev,
+                    imageUrl: e.target.value
+                  }))
+                }
+              />
+              <input
+                key={`service-file-${fileInputKey.service}`}
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleImageUpload(e.target.files?.[0], "service")
+                }
+              />
+              <button className="admin-btn admin-btn-add" onClick={handleAddService}>
+                Add
+              </button>
+            </div>
+             <hr/>
+            {uploading.service && (
+              <p className="admin-muted">Uploading service image...</p>
+            )}
+            {uploadError.service && (
+              <p className="admin-error">{uploadError.service}</p>
+            )}
+            <div className="admin-list admin-list-grid">
+              {filteredServices.map((service) => (
+                <div key={service.id} className="admin-list-item">
+                  <div>
+                    <strong>{service.title}</strong>
+                    <span className="admin-pill">
+                      {service.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <div className="admin-actions">
+                    <button
+                      className="admin-btn outline"
+                      onClick={() => handleToggleService(service)}
+                    >
+                      {service.isActive ? "Disable" : "Enable"}
+                    </button>
+                    <button
+                      className="admin-btn outline"
+                      onClick={() => handleDeleteService(service.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+ <div className="admin-card" id="admin-options">
             <h3>Service Options</h3>
             <div className="admin-input-row admin-input-row-small">
               <select
@@ -607,133 +729,6 @@ export default function AdminDashboard() {
                   </div>
                 ))
               )}
-            </div>
-          </div>
-
-          <div className="admin-card" id="admin-services">
-            <h3>Services ({enabledCount} active)</h3>
-            <p className="admin-muted">Choose service option</p>
-            <div className="admin-input-row admin-input-row-small">
-              <select
-                value={selectedCategoryId}
-                onChange={(e) => setSelectedCategoryId(e.target.value)}
-              >
-                <option value="">All categories</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={selectedServiceId}
-                onChange={(e) => setSelectedServiceId(e.target.value)}
-              >
-                <option value="">Filter by service (optional)</option>
-                {services.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {s.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="admin-input-row admin-input-row-small">
-              <input
-                type="text"
-                placeholder="Service title"
-                value={serviceInput.title}
-                onChange={(e) =>
-                  setServiceInput((prev) => ({ ...prev, title: e.target.value }))
-                }
-              />
-              <input
-                type="number"
-                placeholder="Base price"
-                value={serviceInput.basePrice}
-                onChange={(e) =>
-                  setServiceInput((prev) => ({
-                    ...prev,
-                    basePrice: e.target.value
-                  }))
-                }
-              />
-              <select
-                value={serviceCityId}
-                onChange={(e) => setServiceCityId(e.target.value)}
-              >
-                <option value="">All cities</option>
-                {cities.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                placeholder="Short description"
-                value={serviceInput.shortDescription}
-                onChange={(e) =>
-                  setServiceInput((prev) => ({
-                    ...prev,
-                    shortDescription: e.target.value
-                  }))
-                }
-              />
-              <input
-                key={`service-file-${fileInputKey.service}`}
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  handleImageUpload(e.target.files?.[0], "service")
-                }
-              />
-              <input
-                type="text"
-                placeholder="Image URL (optional)"
-                value={serviceInput.imageUrl}
-                onChange={(e) =>
-                  setServiceInput((prev) => ({
-                    ...prev,
-                    imageUrl: e.target.value
-                  }))
-                }
-              />
-              <button className="admin-btn admin-btn-add" onClick={handleAddService}>
-                Add
-              </button>
-            </div>
-             <hr/>
-            {uploading.service && (
-              <p className="admin-muted">Uploading service image...</p>
-            )}
-            {uploadError.service && (
-              <p className="admin-error">{uploadError.service}</p>
-            )}
-            <div className="admin-list admin-list-grid">
-              {filteredServices.map((service) => (
-                <div key={service.id} className="admin-list-item">
-                  <div>
-                    <strong>{service.title}</strong>
-                    <span className="admin-pill">
-                      {service.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-                  <div className="admin-actions">
-                    <button
-                      className="admin-btn outline"
-                      onClick={() => handleToggleService(service)}
-                    >
-                      {service.isActive ? "Disable" : "Enable"}
-                    </button>
-                    <button
-                      className="admin-btn outline"
-                      onClick={() => handleDeleteService(service.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 

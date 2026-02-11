@@ -71,6 +71,7 @@ export const api = {
     const search = new URLSearchParams();
     if (params.cityId) search.set("cityId", params.cityId);
     if (params.categoryId) search.set("categoryId", params.categoryId);
+    if (params.subCategoryId) search.set("subCategoryId", params.subCategoryId);
     const qs = search.toString();
     return request(`/api/Services${qs ? `?${qs}` : ""}`);
   },
