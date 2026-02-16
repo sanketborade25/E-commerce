@@ -102,6 +102,9 @@ export default function Navbar() {
           const firstId = String(data[0].id);
           setSelectedCity(firstId);
           localStorage.setItem("selected_city_id", firstId);
+          window.dispatchEvent(
+            new CustomEvent("city-changed", { detail: { cityId: firstId } })
+          );
         }
       } catch {
         // ignore

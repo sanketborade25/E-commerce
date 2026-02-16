@@ -32,13 +32,13 @@ header {
   width: 100%;
   box-sizing: border-box;
 }
-.logo img{
+.logo img {
   width: 150px;
   height: 100%;
   background: transparent;
 }
 
-.logo{
+.logo {
   width: 100%;
 }
 
@@ -51,10 +51,9 @@ header {
   justify-content: flex-end;
 }
 .nav-right select,
-.search-box input
-{
+.search-box input {
   min-width: 200px;
-  padding: 2px;
+  padding: 10px;
 }
 
 .location-button {
@@ -87,13 +86,13 @@ header {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* .address-pick {
+.address-pick {
   width: 100%;
   text-align: left;
   background: transparent;
   border: none;
   cursor: pointer;
-} */
+}
 .address-empty {
   font-size: 12px;
   color: #777;
@@ -101,23 +100,23 @@ header {
 }
 
 .search-results {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  max-height: 320px;
-  overflow-y: auto;
-  z-index: 5;
+position: absolute;
+    top: calc(70% + 7px);
+    left: 1026px;
+    right: 100px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    max-height: 350px;
+    overflow-y: scroll;
+    z-index: 14;
 }
 .search-result-item {
   display: grid;
   grid-template-columns: 44px 1fr;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 30px;
+  padding: 8px 6px;
   text-decoration: none;
   color: #111;
   border-bottom: 1px solid #f0f0f0;
@@ -129,10 +128,10 @@ header {
   background: #f7f7f7;
 }
 .search-result-item img {
-  width: 44px;
-  height: 44px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 .search-result-text {
   display: grid;
@@ -148,19 +147,19 @@ header {
 .icon {
   background: transparent;
   cursor: pointer;
-    padding: 0;
-    border: none;
+  padding: 0;
+  border: none;
 }
 
 .cart-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  background: #111;
+  top: 6px;
+  right: 54px;
+  background: #c62828;
   color: #fff;
   font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 999px;
+  padding: 3px 6px;
+  border-radius: 10px;
 }
 .profile-menu {
   position: relative;
@@ -559,18 +558,26 @@ header {
 /* ================= FOOTER ================= */
 footer {
   background: rgb(165, 160, 160);
-  padding: 10px;
+  padding: 24px 20px;
   border-top: 1px solid #ddd;
 }
 
 .footer-row {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
 }
 .social-icon {
   display: flex;
   gap: 10px;
   margin-top: 8px;
+}
+.footer-row > div {
+  min-width: 160px;
 }
 
 /* ================= POPUP MODAL (DYNAMIC) ================= */
@@ -1117,8 +1124,8 @@ footer {
   align-items: center;
   justify-content: center;
 }
-.admin-btn:hover{
-    background: #111;
+.admin-btn:hover {
+  background: #111;
   color: #fff;
   border: 1px solid #fff;
 }
@@ -1231,11 +1238,11 @@ footer {
 }
 
 .admin-input-row {
-    display: grid;
-    gap: 10px;
-    align-items: end;
-    margin-bottom: 15px;
-    grid-template-columns: repeat(2, minmax(25px, 1fr));
+  display: grid;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 15px;
+  grid-template-columns: repeat(2, minmax(25px, 1fr));
 }
 
 .admin-input-row input {
@@ -1286,8 +1293,7 @@ footer {
   margin-left: auto;
 }
 
-.admin-input-row-small
-.admin-input-row-options {
+.admin-input-row-small .admin-input-row-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(120px, 1fr));
   margin: 15px;
@@ -1337,7 +1343,6 @@ footer {
   min-width: 0;
 }
 
-
 .admin-input-row-options > *:nth-child(1) {
   grid-area: category;
 }
@@ -1354,14 +1359,14 @@ footer {
   grid-area: add;
 }
 
-.admin-list-grid{
- min-width: 22px;
- /* width: max-content; */
+.admin-list-grid {
+  min-width: 22px;
+  /* width: max-content; */
 }
 .admin-list {
-    display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
 }
 
 .admin-list-item {
@@ -1385,7 +1390,6 @@ footer {
   border-radius: 999px;
   font-size: 11px;
 }
-
 
 .admin-section-block h4 {
   margin: 0 0 6px;
