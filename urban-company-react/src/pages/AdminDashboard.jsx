@@ -9,11 +9,15 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
   const [serviceOptions, setServiceOptions] = useState([]);
+  const [banners, setBanners] = useState([]);
+  const [cityPage, setCityPage] = useState(1);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState("");
+  const [selectedBannerSection, setSelectedBannerSection] = useState("");
   const [popupCategories, setPopupCategories] = useState([]);
 
   const [cityInput, setCityInput] = useState("");
+  const [cityError, setCityError] = useState("");
   const [categoryInput, setCategoryInput] = useState({
     name: "",
     imageUrl: ""
@@ -35,24 +39,31 @@ export default function AdminDashboard() {
     imageUrl: "",
     price: ""
   });
+  const [bannerInput, setBannerInput] = useState({
+    title: "",
+    imageUrl: "",
+    linkUrl: "",
+    displayOrder: ""
+  });
   const [uploading, setUploading] = useState({
     category: false,
     service: false,
     option: false,
-    optionBanner: false,
+    banner: false,
     popupCategory: false
   });
   const [uploadError, setUploadError] = useState({
     category: "",
     service: "",
     option: "",
-    optionBanner: "",
+    banner: "",
     popupCategory: ""
   });
   const [fileInputKey, setFileInputKey] = useState({
     category: 0,
     service: 0,
     option: 0,
+    banner: 0,
     popupCategory: 0
   });
   const adminChannel = useMemo(() => {
@@ -61,17 +72,21 @@ export default function AdminDashboard() {
   }, []);
 
   const loadAll = async () => {
-    const [citiesRes, categoriesRes, optionsRes, servicesRes, subCatsRes] =
+    const [citiesRes, categoriesRes, optionsRes, servicesRes, subCatsRes, bannersRes] =
       await Promise.allSettled([
         api.getCities(),
         api.getCategories(),
         api.getServiceOptions(),
         api.getServices(),
-        api.getSubCategories()
+        api.getSubCategories(),
+        api.getBanners({ all: true })
       ]);
 
     if (citiesRes.status === "fulfilled") {
-      setCities(citiesRes.value || []);
+      const orderedCities = [...(citiesRes.value || [])].sort(
+        (a, b) => Number(a.id) - Number(b.id)
+      );
+      setCities(orderedCities);
     }
     if (categoriesRes.status === "fulfilled") {
       const onlyParents = (categoriesRes.value || []).filter(
@@ -87,6 +102,9 @@ export default function AdminDashboard() {
     }
     if (subCatsRes.status === "fulfilled") {
       setPopupCategories(subCatsRes.value || []);
+    }
+    if (bannersRes.status === "fulfilled") {
+      setBanners(bannersRes.value || []);
     }
   };
 
@@ -244,17 +262,8 @@ export default function AdminDashboard() {
       if (target === "popupCategory") {
         setPopupCategoryInput((prev) => ({ ...prev, imageUrl: url }));
       }
-      if (target === "optionBanner") {
-        setUploadError((prev) => ({
-          ...prev,
-          optionBanner: "Banner upload is not supported by the API."
-        }));
-      }
       if (target === "banner") {
-        setUploadError((prev) => ({
-          ...prev,
-          optionBanner: "Banner upload is not supported by the API."
-        }));
+        setBannerInput((prev) => ({ ...prev, imageUrl: url }));
       }
     } catch (e) {
       setUploadError((prev) => ({
@@ -267,7 +276,28 @@ export default function AdminDashboard() {
   };
 
   const handleAddBanner = async () => {
-    alert("Banner images are not supported by the current API.");
+    if (!selectedBannerSection) {
+      alert("Please select a section.");
+      return;
+    }
+    if (!bannerInput.imageUrl) {
+      alert("Please upload a banner image.");
+      return;
+    }
+
+    await api.createBanner({
+      section: selectedBannerSection,
+      title: bannerInput.title.trim() || null,
+      imageUrl: bannerInput.imageUrl,
+      linkUrl: bannerInput.linkUrl.trim() || null,
+      displayOrder: Number(bannerInput.displayOrder) || 0,
+      isActive: true
+    });
+
+    setBannerInput({ title: "", imageUrl: "", linkUrl: "", displayOrder: "" });
+    setFileInputKey((prev) => ({ ...prev, banner: prev.banner + 1 }));
+    await loadAll();
+    notifyDataChanged();
   };
 
   const handleDeleteService = async (id) => {
@@ -285,10 +315,15 @@ export default function AdminDashboard() {
   const handleAddCity = async () => {
     const name = cityInput.trim();
     if (!name) return;
-    await api.createCity({ name });
-    setCityInput("");
-    await loadAll();
-    notifyDataChanged();
+    setCityError("");
+    try {
+      await api.createCity({ name });
+      setCityInput("");
+      await loadAll();
+      notifyDataChanged();
+    } catch (e) {
+      setCityError(e?.message || "Unable to add city.");
+    }
   };
 
   const handleDeleteCity = async (id) => {
@@ -303,6 +338,12 @@ export default function AdminDashboard() {
       setSelectedCategoryId("");
     }
     await api.deleteCategory(id);
+    await loadAll();
+    notifyDataChanged();
+  };
+
+  const handleDeleteBanner = async (id) => {
+    await api.deleteBanner(id);
     await loadAll();
     notifyDataChanged();
   };
@@ -331,6 +372,26 @@ export default function AdminDashboard() {
         (o) => String(o.serviceId) === String(selectedServiceId)
       )
     : serviceOptions;
+  const filteredBanners = selectedBannerSection
+    ? banners.filter((b) => b.section === selectedBannerSection)
+    : banners;
+
+  const citiesPerPage = 20;
+  const totalCityPages = Math.max(1, Math.ceil(cities.length / citiesPerPage));
+  const pagedCities = cities.slice(
+    (cityPage - 1) * citiesPerPage,
+    cityPage * citiesPerPage
+  );
+  const cityPageNumbers = Array.from(
+    { length: totalCityPages },
+    (_, i) => i + 1
+  );
+
+  useEffect(() => {
+    if (cityPage > totalCityPages) {
+      setCityPage(totalCityPages);
+    }
+  }, [cityPage, totalCityPages]);
 
   useEffect(() => {
     if (!selectedServiceId) return;
@@ -702,14 +763,8 @@ export default function AdminDashboard() {
             {uploading.option && (
               <p className="admin-muted">Uploading option image...</p>
             )}
-            {uploading.optionBanner && (
-              <p className="admin-muted">Uploading banner image...</p>
-            )}
             {uploadError.option && (
               <p className="admin-error">{uploadError.option}</p>
-            )}
-            {uploadError.optionBanner && (
-              <p className="admin-error">{uploadError.optionBanner}</p>
             )}
             <div className="admin-list admin-list-grid">
               {filteredOptions.length === 0 ? (
@@ -739,15 +794,19 @@ export default function AdminDashboard() {
                 type="text"
                 placeholder="Add new city"
                 value={cityInput}
-                onChange={(e) => setCityInput(e.target.value)}
+                onChange={(e) => {
+                  setCityInput(e.target.value);
+                  if (cityError) setCityError("");
+                }}
               />
               <button className="admin-btn admin-btn-add" onClick={handleAddCity}>
                 Add
               </button>
             </div>
+            {cityError && <p className="admin-error">{cityError}</p>}
              <hr/>
             <div className="admin-list admin-list-grid">
-              {cities.map((city) => (
+              {pagedCities.map((city) => (
                 <div key={city.id} className="admin-list-item">
                   <div>{city.name}</div>
                   <button
@@ -759,42 +818,118 @@ export default function AdminDashboard() {
                 </div>
               ))}
             </div>
+            <div className="admin-pagination">
+              <button
+                className="admin-btn outline"
+                onClick={() => setCityPage((p) => Math.max(1, p - 1))}
+                disabled={cityPage === 1}
+              >
+                Prev
+              </button>
+              <div className="admin-page-numbers">
+                {cityPageNumbers.map((p) => (
+                  <button
+                    key={p}
+                    className={`admin-page-btn ${cityPage === p ? "active" : ""}`}
+                    onClick={() => setCityPage(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <span className="admin-muted">
+                Page {cityPage} of {totalCityPages}
+              </span>
+              <button
+                className="admin-btn outline"
+                onClick={() => setCityPage((p) => Math.min(totalCityPages, p + 1))}
+                disabled={cityPage === totalCityPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
 
           <div className="admin-card admin-wide" id="admin-banners">
             <h3>Banner Images</h3>
             <div className="admin-input-row admin-input-row-small">
               <select
-                value=""
-                onChange={() => {}}
+                value={selectedBannerSection}
+                onChange={(e) => setSelectedBannerSection(e.target.value)}
               >
-                <option value="">Banner images are not supported</option>
+                <option value="">Select section</option>
+                <option value="offers">Offers & discounts</option>
+                <option value="new_noteworthy">New and noteworthy</option>
+                <option value="most_booked">Most booked services</option>
               </select>
               <input
                 type="text"
                 placeholder="Banner title"
-                value=""
-                readOnly
+                value={bannerInput.title}
+                onChange={(e) =>
+                  setBannerInput((prev) => ({ ...prev, title: e.target.value }))
+                }
+              />
+              <input
+                type="text"
+                placeholder="Banner link URL (optional)"
+                value={bannerInput.linkUrl}
+                onChange={(e) =>
+                  setBannerInput((prev) => ({ ...prev, linkUrl: e.target.value }))
+                }
               />
                 <input
-                  key={`option-banner-file-${fileInputKey.option}`}
+                  key={`banner-file-${fileInputKey.banner}`}
                   type="file"
                   accept="image/*"
                   onChange={(e) =>
                     handleImageUpload(e.target.files?.[0], "banner")
                   }
                 />
+              <input
+                type="number"
+                placeholder="Order (0,1,2..)"
+                value={bannerInput.displayOrder}
+                onChange={(e) =>
+                  setBannerInput((prev) => ({
+                    ...prev,
+                    displayOrder: e.target.value
+                  }))
+                }
+              />
               <button className="admin-btn admin-btn-add" onClick={handleAddBanner}>
                 Add
               </button>
             </div>
              <hr/>
+            {uploading.banner && (
+              <p className="admin-muted">Uploading banner image...</p>
+            )}
+            {uploadError.banner && (
+              <p className="admin-error">{uploadError.banner}</p>
+            )}
             <div className="admin-list admin-list-grid">
-              {true ? (
-                <div className="admin-list-item">
-                  <div>Banner images are not supported by the API.</div>
-                </div>
-              ) : null}
+              {filteredBanners.length === 0 ? (
+                <p className="admin-muted">No banners added yet.</p>
+              ) : (
+                filteredBanners.map((item) => (
+                  <div key={item.id} className="admin-list-item">
+                    <div>
+                      <strong>{item.title || "Untitled banner"}</strong>
+                      <div className="admin-muted">{item.section}</div>
+                      <div className="admin-muted">
+                        {item.imageUrl}
+                      </div>
+                    </div>
+                    <button
+                      className="admin-btn outline"
+                      onClick={() => handleDeleteBanner(item.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

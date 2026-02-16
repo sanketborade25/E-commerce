@@ -1309,6 +1309,42 @@ footer {
   font-size: 12px;
 }
 
+.admin-pagination {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-pagination .admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-page-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-page-btn {
+  border: 1px solid #111;
+  background: #fff;
+  color: #111;
+  border-radius: 4px;
+  min-width: 34px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.admin-page-btn.active {
+  background: #111;
+  color: #fff;
+}
+
 .cart-overlay {
   position: fixed;
   inset: 0;

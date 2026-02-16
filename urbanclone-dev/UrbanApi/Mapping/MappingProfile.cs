@@ -25,6 +25,10 @@ namespace UrbanApi.Mapping
             CreateMap<ServiceOption, ServiceOptionDto>().ReverseMap();
             CreateMap<ServiceOptionCreateDto, ServiceOption>();
 
+            // Banner
+            CreateMap<BannerItem, BannerDto>().ReverseMap();
+            CreateMap<BannerCreateDto, BannerItem>();
+
             // User
             CreateMap<User, UserDto>().ReverseMap();
             CreateMap<UserCreateDto, User>();

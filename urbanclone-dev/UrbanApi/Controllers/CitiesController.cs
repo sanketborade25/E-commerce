@@ -29,6 +29,7 @@ public class CitiesController : ControllerBase
         {
             var cities = await _db.Cities
                                  .Where(c => !c.IsDeleted)
+                                 .OrderBy(c => c.Id)
                                  .AsNoTracking()
                                  .ToListAsync(cancellationToken);
             var dto = _mapper.Map<List<CityDto>>(cities);
@@ -55,6 +56,18 @@ public class CitiesController : ControllerBase
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            var normalizedName = (input.Name ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName))
+                return BadRequest("City name is required.");
+
+            var normalizedLower = normalizedName.ToLower();
+            var exists = await _db.Cities.AnyAsync(
+                c => !c.IsDeleted && c.Name.ToLower() == normalizedLower,
+                cancellationToken
+            );
+            if (exists) return BadRequest("City already exists.");
+
+            input.Name = normalizedName;
             var entity = _mapper.Map<City>(input);
             _db.Cities.Add(entity);
             await _db.SaveChangesAsync(cancellationToken);
@@ -70,6 +83,18 @@ public class CitiesController : ControllerBase
             var entity = await _db.Cities.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, cancellationToken);
             if (entity == null) return NotFound();
 
+            var normalizedName = (input.Name ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName))
+                return BadRequest("City name is required.");
+
+            var normalizedLower = normalizedName.ToLower();
+            var exists = await _db.Cities.AnyAsync(
+                c => c.Id != id && !c.IsDeleted && c.Name.ToLower() == normalizedLower,
+                cancellationToken
+            );
+            if (exists) return BadRequest("City already exists.");
+
+            input.Name = normalizedName;
             _mapper.Map(input, entity);
             entity.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(cancellationToken);

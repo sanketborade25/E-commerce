@@ -107,6 +107,21 @@ export const api = {
     }),
   deleteServiceOption: (id) =>
     request(`/api/ServiceOptions/${id}`, { method: "DELETE" }),
+  getBanners: (params = {}) => {
+    const search = new URLSearchParams();
+    if (params.section) search.set("section", params.section);
+    if (params.all) return request("/api/Banners/all");
+    const qs = search.toString();
+    return request(`/api/Banners${qs ? `?${qs}` : ""}`);
+  },
+  createBanner: (body) =>
+    request("/api/Banners", { method: "POST", body: JSON.stringify(body) }),
+  updateBanner: (id, body) =>
+    request(`/api/Banners/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body)
+    }),
+  deleteBanner: (id) => request(`/api/Banners/${id}`, { method: "DELETE" }),
   uploadImage: (file) => {
     const form = new FormData();
     form.append("file", file);

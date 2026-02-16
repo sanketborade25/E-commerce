@@ -8,6 +8,7 @@ import { api } from "../api/client";
 export default function Home() {
   const [categories, setCategories] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
+  const [bannerItems, setBannerItems] = useState([]);
   // Sub-categories are loaded from the API, not local storage.
   const [popupSubCategories, setPopupSubCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -23,8 +24,6 @@ export default function Home() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
-
-
 
   const resolveCategoryImage = (category) => {
     if (category?.imageUrl) return category.imageUrl;
@@ -59,9 +58,10 @@ export default function Home() {
     // Load categories + sub-categories from backend API.
     const load = async () => {
       try {
-        const [cats, subcats] = await Promise.all([
+        const [cats, subcats, banners] = await Promise.all([
           api.getCategories({ cityId: cityId || undefined }),
-          api.getSubCategories({ cityId: cityId || undefined })
+          api.getSubCategories({ cityId: cityId || undefined }),
+          api.getBanners()
         ]);
         if (!mounted) return;
         const allCats = cats || [];
@@ -77,6 +77,7 @@ export default function Home() {
           .sort((a, b) => b.id - a.id);
         setCategories(mappedCats);
         setAllCategories(allCats);
+        setBannerItems(banners || []);
         const derivedSubcats = (allCats || []).filter(
           (c) => c.parentCategoryId != null
         );
@@ -87,6 +88,7 @@ export default function Home() {
         if (!mounted) return;
         setCategories([]);
         setAllCategories([]);
+        setBannerItems([]);
         setPopupSubCategories([]);
       }
     };
@@ -172,6 +174,22 @@ export default function Home() {
     };
   }, [activeCategory, popupSubCategories, allCategories]);
 
+  const mapSection = (sectionKey) => {
+    const rows = (bannerItems || [])
+      .filter((b) => b.section === sectionKey)
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    return rows.map((item) => ({
+      id: item.id,
+      title: item.title || "Banner",
+      imageUrl: item.imageUrl,
+      linkUrl: item.linkUrl || ""
+    }));
+  };
+
+  const offers = mapSection("offers");
+  const newNoteworthy = mapSection("new_noteworthy");
+  const mostBooked = mapSection("most_booked");
+
   return (
     <>
       <Navbar />
@@ -204,31 +222,37 @@ export default function Home() {
       <section className="offers">
         <h2>Offers & discounts</h2>
         <div className="offer-row">
-          <div className="offer-card"><img src="/images/FullRoomCleaning/image_14.png"/><p>Sofa cleaning ₹569</p><button>Book now</button></div>
-          <div className="offer-card"><img src="/images/FullHomePainting/image_24.png"/><p>Home painting</p><button>Book now</button></div>
-          <div className="offer-card"><img src="/images/massageForMen/image_14.png"/><p>Massage for men</p><button>Book now</button></div>
+          {offers.map((item, idx) => (
+            <div key={item.id || `${item.title}-${idx}`} className="offer-card">
+              <img src={item.imageUrl} />
+              <p>{item.title}</p>
+              <button>Book now</button>
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="products">
         <h2>New and noteworthy</h2>
         <div className="product-row">
-          <div className="product-card"><img src="images/1Homepage/nnn_1.png"/><p>Insta Help</p></div>
-          <div className="product-card"><img src="images/1Homepage/nnn_3.png"/><p>Electrician</p></div>
-          <div className="product-card"><img src="images/1Homepage/nnn_4.png"/><p>Stove</p></div>
-          <div className="product-card"><img src="images/1Homepage/nnn_9.png"/><p>Laptop</p></div>
-          <div className="product-card"><img src="images/1Homepage/nnn_6.png"/><p>Door Locker</p></div>
+          {newNoteworthy.map((item, idx) => (
+            <div key={item.id || `${item.title}-${idx}`} className="product-card">
+              <img src={item.imageUrl} />
+              <p>{item.title}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="most-booked">
         <h2>Most booked services</h2>
         <div className="booked-row">
-          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (1).png" /><p>Bathroom Cleaning ₹1016</p></div>
-          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (1).png" /><p>Classic Cleaning ₹905</p></div>
-          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (3).png" /><p>Men Haircut ₹139</p></div>
-          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (4).png" /><p>Washing Machine ₹199</p></div>
-          <div className="booked-card"><img src="/images/1Homepage/mostBookedS (7).png" /><p>Women Waxing ₹129</p></div>
+          {mostBooked.map((item, idx) => (
+            <div key={item.id || `${item.title}-${idx}`} className="booked-card">
+              <img src={item.imageUrl} />
+              <p>{item.title}</p>
+            </div>
+          ))}
         </div>
       </section>
 
