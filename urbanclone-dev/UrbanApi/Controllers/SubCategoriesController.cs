@@ -96,10 +96,43 @@ namespace UrbanApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
-            var entity = await _db.Categories.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, ct);
+            var entity = await _db.Categories.FirstOrDefaultAsync(
+                c => c.Id == id && !c.IsDeleted && c.ParentCategoryId != null,
+                ct
+            );
             if (entity == null) return NotFound();
+
+            var now = DateTime.UtcNow;
+            var serviceIds = await _db.Services
+                .Where(s => !s.IsDeleted && s.SubCategoryId == id)
+                .Select(s => s.Id)
+                .ToListAsync(ct);
+
+            if (serviceIds.Count > 0)
+            {
+                var relatedOptions = await _db.ServiceOptions
+                    .Where(o => !o.IsDeleted && serviceIds.Contains(o.ServiceId))
+                    .ToListAsync(ct);
+
+                foreach (var option in relatedOptions)
+                {
+                    option.IsDeleted = true;
+                    option.UpdatedAt = now;
+                }
+
+                var relatedServices = await _db.Services
+                    .Where(s => !s.IsDeleted && serviceIds.Contains(s.Id))
+                    .ToListAsync(ct);
+
+                foreach (var service in relatedServices)
+                {
+                    service.IsDeleted = true;
+                    service.UpdatedAt = now;
+                }
+            }
+
             entity.IsDeleted = true;
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = now;
             await _db.SaveChangesAsync(ct);
             return NoContent();
         }

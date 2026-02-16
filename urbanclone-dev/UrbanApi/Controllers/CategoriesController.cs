@@ -75,10 +75,61 @@ public class CategoriesController : ControllerBase
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
-            var entity = await _db.Categories.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, ct);
+            var entity = await _db.Categories.FirstOrDefaultAsync(
+                c => c.Id == id && !c.IsDeleted && c.ParentCategoryId == null,
+                ct
+            );
             if (entity == null) return NotFound();
+
+            var now = DateTime.UtcNow;
+            var subCategoryIds = await _db.Categories
+                .Where(c => !c.IsDeleted && c.ParentCategoryId == id)
+                .Select(c => c.Id)
+                .ToListAsync(ct);
+
+            var relatedServiceIds = await _db.Services
+                .Where(s => !s.IsDeleted && (s.CategoryId == id || (s.SubCategoryId != null && subCategoryIds.Contains(s.SubCategoryId.Value))))
+                .Select(s => s.Id)
+                .ToListAsync(ct);
+
+            if (relatedServiceIds.Count > 0)
+            {
+                var relatedOptions = await _db.ServiceOptions
+                    .Where(o => !o.IsDeleted && relatedServiceIds.Contains(o.ServiceId))
+                    .ToListAsync(ct);
+
+                foreach (var option in relatedOptions)
+                {
+                    option.IsDeleted = true;
+                    option.UpdatedAt = now;
+                }
+
+                var relatedServices = await _db.Services
+                    .Where(s => !s.IsDeleted && relatedServiceIds.Contains(s.Id))
+                    .ToListAsync(ct);
+
+                foreach (var service in relatedServices)
+                {
+                    service.IsDeleted = true;
+                    service.UpdatedAt = now;
+                }
+            }
+
+            if (subCategoryIds.Count > 0)
+            {
+                var childSubCategories = await _db.Categories
+                    .Where(c => !c.IsDeleted && subCategoryIds.Contains(c.Id))
+                    .ToListAsync(ct);
+
+                foreach (var subCategory in childSubCategories)
+                {
+                    subCategory.IsDeleted = true;
+                    subCategory.UpdatedAt = now;
+                }
+            }
+
             entity.IsDeleted = true;
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = now;
             await _db.SaveChangesAsync(ct);
             return NoContent();
         }

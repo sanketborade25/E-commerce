@@ -102,6 +102,17 @@ public class ServicesController : ControllerBase
         {
             var entity = await _db.Services.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, ct);
             if (entity == null) return NotFound();
+
+            var relatedOptions = await _db.ServiceOptions
+                .Where(o => o.ServiceId == id && !o.IsDeleted)
+                .ToListAsync(ct);
+
+            foreach (var option in relatedOptions)
+            {
+                option.IsDeleted = true;
+                option.UpdatedAt = DateTime.UtcNow;
+            }
+
             entity.IsDeleted = true;
             entity.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);
