@@ -189,6 +189,10 @@ export default function Home() {
   const offers = mapSection("offers");
   const newNoteworthy = mapSection("new_noteworthy");
   const mostBooked = mapSection("most_booked");
+  const handleBannerClick = (item) => {
+    if (!item?.linkUrl) return;
+    window.location.href = item.linkUrl;
+  };
 
   return (
     <>
@@ -224,9 +228,15 @@ export default function Home() {
         <div className="offer-row">
           {offers.map((item, idx) => (
             <div key={item.id || `${item.title}-${idx}`} className="offer-card">
-              <img src={item.imageUrl} />
+              <button
+                type="button"
+                className="banner-link"
+                aria-label={item.title || "Offer"}
+                onClick={() => handleBannerClick(item)}
+              >
+                <img src={item.imageUrl} />
+              </button>
               <p>{item.title}</p>
-              <button>Book now</button>
             </div>
           ))}
         </div>
@@ -237,7 +247,14 @@ export default function Home() {
         <div className="product-row">
           {newNoteworthy.map((item, idx) => (
             <div key={item.id || `${item.title}-${idx}`} className="product-card">
-              <img src={item.imageUrl} />
+              <button
+                type="button"
+                className="banner-link"
+                aria-label={item.title || "New and noteworthy"}
+                onClick={() => handleBannerClick(item)}
+              >
+                <img src={item.imageUrl} />
+              </button>
               <p>{item.title}</p>
             </div>
           ))}
@@ -249,7 +266,14 @@ export default function Home() {
         <div className="booked-row">
           {mostBooked.map((item, idx) => (
             <div key={item.id || `${item.title}-${idx}`} className="booked-card">
-              <img src={item.imageUrl} />
+              <button
+                type="button"
+                className="banner-link"
+                aria-label={item.title || "Most booked service"}
+                onClick={() => handleBannerClick(item)}
+              >
+                <img src={item.imageUrl} />
+              </button>
               <p>{item.title}</p>
             </div>
           ))}
