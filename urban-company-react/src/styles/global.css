@@ -1037,18 +1037,17 @@ footer {
   background: #fff;
 }
 .admin-logo img {
-  width: 140px;
+  min-width: 60px;
   height: 40px;
   object-fit: contain;
 }
 .admin-top-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 .admin-top-nav {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
 }
 .admin-top-nav a {
@@ -1057,8 +1056,9 @@ footer {
   font-size: 12px;
   font-weight: 600;
   padding: 5px 8px;
-  border-radius: 6px;
-  background: #f7f7f7;
+  border: 1px solid;
+  border-radius: 4px;
+  background: #fff;
 }
 .admin-top-nav a:hover {
   background: #eaeaea;
@@ -1072,7 +1072,7 @@ footer {
 
 .admin-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 20px;
 }
@@ -1243,10 +1243,14 @@ footer {
   grid-area: add;
 }
 
+.admin-list-grid{
+ min-width: 22px;
+ /* width: max-content; */
+}
 .admin-list {
     display: grid;
     gap: 10px;
-    grid-template-columns: repeat(2, minmax(204px, 1fr));
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
 }
 
 .admin-list-item {

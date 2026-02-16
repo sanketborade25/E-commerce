@@ -334,13 +334,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!selectedServiceId) return;
-    const exists = serviceOptions.some(
-      (o) => String(o.serviceId) === String(selectedServiceId)
+    const exists = services.some(
+      (s) => String(s.id) === String(selectedServiceId)
     );
     if (!exists) {
       setSelectedServiceId("");
     }
-  }, [selectedServiceId, serviceOptions]);
+  }, [selectedServiceId, services]);
 
   return (
     <>
@@ -349,6 +349,9 @@ export default function AdminDashboard() {
           <Link to="/" className="admin-logo">
             <img src="/images/1Homepage/logo (1).png" alt="Urban Company" />
           </Link>
+           <div>
+            <h2>Admin Dashboard</h2>
+            </div>
           <nav className="admin-top-nav">
             <a href="#admin-categories">Categories</a>
             <a href="#admin-popup-categories">Sub Categories</a>
@@ -358,9 +361,6 @@ export default function AdminDashboard() {
             <a href="#admin-banners">Banner Images</a>
           </nav>
           <div className="admin-top-actions">
-            <div>
-            <h2>Admin Dashboard</h2>
-            </div>
             <Link to="/" className="admin-home-link">Home</Link>
             <button className="admin-btn outline" onClick={handleLogout}>
               Logout
