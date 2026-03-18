@@ -9,6 +9,7 @@ export default function ServiceCenterSection({ sections = [] }) {
       {sections.length === 0 && <p>No services available</p>}
       {sections.map((section) => (
         <div key={section.id} id={section.id} className="service-section">
+          {/*Here banner image should display */}
           {section.img && (
             <img src={resolveImage(section.img)} alt={section.title} />
           )}
@@ -20,7 +21,9 @@ export default function ServiceCenterSection({ sections = [] }) {
                 <h4>{item.name}</h4>
                 {item.desc && <p>{item.desc}</p>}
                 <span className="service-price">Rs {item.price}</span>
-                <p>----------------------------------------------------------</p>
+                <p>
+                  ----------------------------------------------------------
+                </p>
               </div>
               <div className="service-card-action">
                 {item.img && (
@@ -35,7 +38,7 @@ export default function ServiceCenterSection({ sections = [] }) {
                       serviceOptionId: item.serviceOptionId,
                       name: item.name,
                       price: item.price,
-                      img: item.img
+                      img: item.img,
                     })
                   }
                 >

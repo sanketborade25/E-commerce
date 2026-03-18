@@ -86,7 +86,7 @@ export default function ServicePage() {
 
       return {
         id: slugify(svc.title),
-        img: pickImageForService(svc.title, svc.imageUrl),
+        img: pickImageForService(svc.title, svc.bannerImageUrl || svc.imageUrl),
         title: svc.title,
         items
       };
@@ -123,9 +123,12 @@ export default function ServicePage() {
           subCategoryId: subCategoryId || undefined,
           cityId: cityId || undefined
         });
+        console.log("Services loaded:", services);
+        console.log("Options loaded:", options);
         if (!mounted) return;
 
         const newSections = buildSectionsFromApi(services, options);
+        console.log("Sections built:", newSections);
         setSections(newSections);
         setMenu(
           newSections.map((s) => ({

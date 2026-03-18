@@ -1,12 +1,20 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
-  const token = localStorage.getItem("auth_token");
+  const [token, setToken] = useState(() => localStorage.getItem("auth_token"));
   const storageKey = "local_cart_items";
+  const cartChannel = useMemo(() => {
+    if (typeof BroadcastChannel === "undefined") return null;
+    return new BroadcastChannel("cart-sync");
+  }, []);
+
+  const notifyCartChanged = () => {
+    cartChannel?.postMessage({ type: "refresh", ts: Date.now() });
+  };
 
   const hydrateCartItems = async (items = []) => {
     if (items.length === 0) return [];
@@ -46,7 +54,10 @@ export function CartProvider({ children }) {
   const loadServerCart = async (setState = true) => {
     const cart = await api.getCart();
     const items = await hydrateCartItems(cart?.items || []);
-    if (setState) setCartItems(items);
+    if (setState) {
+      setCartItems(items);
+      notifyCartChanged();
+    }
     return items;
   };
 
@@ -78,8 +89,52 @@ export function CartProvider({ children }) {
   }, [token]);
 
   useEffect(() => {
+    const syncToken = () => setToken(localStorage.getItem("auth_token"));
+    const onStorage = (e) => {
+      if (e.key === "auth_token") {
+        syncToken();
+        return;
+      }
+      if (!token && e.key === storageKey) {
+        try {
+          const saved = JSON.parse(e.newValue || "[]");
+          setCartItems(saved);
+        } catch {
+          setCartItems([]);
+        }
+      }
+    };
+    const onChannelMessage = (event) => {
+      if (event?.data?.type !== "refresh") return;
+      const currentToken = localStorage.getItem("auth_token");
+      if (currentToken) {
+        loadServerCart().catch(() => {});
+        return;
+      }
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        setCartItems(saved);
+      } catch {
+        setCartItems([]);
+      }
+    };
+
+    window.addEventListener("auth-token-changed", syncToken);
+    window.addEventListener("storage", onStorage);
+    cartChannel?.addEventListener("message", onChannelMessage);
+
+    return () => {
+      window.removeEventListener("auth-token-changed", syncToken);
+      window.removeEventListener("storage", onStorage);
+      cartChannel?.removeEventListener("message", onChannelMessage);
+      cartChannel?.close();
+    };
+  }, [cartChannel]);
+
+  useEffect(() => {
     if (!token) {
       localStorage.setItem(storageKey, JSON.stringify(cartItems));
+      notifyCartChanged();
     }
   }, [cartItems, token]);
 
@@ -106,6 +161,7 @@ export function CartProvider({ children }) {
       }
       return [...prev, { ...item, key, qty: 1 }];
     });
+    notifyCartChanged();
   };
 
   const removeFromCart = (key) => {
@@ -117,6 +173,7 @@ export function CartProvider({ children }) {
         .catch(() => {});
     }
     setCartItems((prev) => prev.filter((i) => i.key !== key));
+    notifyCartChanged();
   };
 
   const updateQty = (key, delta) => {
@@ -135,6 +192,7 @@ export function CartProvider({ children }) {
       }
       return next;
     });
+    notifyCartChanged();
   };
 
   const setQty = (key, qty) => {
@@ -152,6 +210,7 @@ export function CartProvider({ children }) {
       }
       return next;
     });
+    notifyCartChanged();
   };
 
   const clearCart = () => {
@@ -163,6 +222,7 @@ export function CartProvider({ children }) {
     }
     setCartItems([]);
     if (!token) localStorage.removeItem(storageKey);
+    notifyCartChanged();
   };
 
   return (

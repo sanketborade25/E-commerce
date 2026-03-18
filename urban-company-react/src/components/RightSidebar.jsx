@@ -1,7 +1,9 @@
 import { useCart } from "../context/CartContext";
 import { resolveImage } from "../utils/image";
+import { useNavigate } from "react-router-dom";
 
 export default function RightSidebar() {
+  const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQty, setQty } = useCart();
   const totalQty = cartItems.reduce((sum, item) => sum + item.qty, 0);
   const totalPrice = cartItems.reduce(
@@ -73,7 +75,12 @@ export default function RightSidebar() {
             <span>Total</span>
             <strong>Rs {totalPrice}</strong>
           </div>
-          <button className="view-cart-btn">View Cart</button>
+          <button
+            className="view-cart-btn"
+            onClick={() => navigate("/checkout")}
+          >
+            View Cart
+          </button>
         </div>
       )}
 

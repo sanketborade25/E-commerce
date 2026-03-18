@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import leftData from "../data/servicesLeftSidebarData";
 import { useCart } from "../context/CartContext";
 import { api } from "../api/client";
 import { resolveImage } from "../utils/image";
 
 export default function Navbar() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [showCart, setShowCart] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -93,7 +94,30 @@ export default function Navbar() {
 
   useEffect(() => {
     let mounted = true;
+    let inFlight = false;
+    let retryTimer = null;
+    let retryAttempt = 0;
+
+    const clearRetry = () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+        retryTimer = null;
+      }
+    };
+
+    const scheduleRetry = () => {
+      if (!mounted || retryTimer) return;
+      const delayMs = Math.min(15000, 1000 * 2 ** Math.min(retryAttempt, 4));
+      retryAttempt += 1;
+      retryTimer = window.setTimeout(() => {
+        retryTimer = null;
+        loadCities();
+      }, delayMs);
+    };
+
     const loadCities = async () => {
+      if (inFlight) return;
+      inFlight = true;
       try {
         const data = await api.getCities();
         if (!mounted) return;
@@ -106,8 +130,13 @@ export default function Navbar() {
             new CustomEvent("city-changed", { detail: { cityId: firstId } })
           );
         }
+        retryAttempt = 0;
+        clearRetry();
       } catch {
         // ignore
+        scheduleRetry();
+      } finally {
+        inFlight = false;
       }
     };
     const handleAdminChange = () => loadCities();
@@ -147,6 +176,7 @@ export default function Navbar() {
       channel?.removeEventListener("message", handleChannel);
       channel?.close();
       window.clearInterval(poll);
+      clearRetry();
     };
   }, []);
 
@@ -198,7 +228,30 @@ export default function Navbar() {
 
   useEffect(() => {
     let mounted = true;
+    let inFlight = false;
+    let retryTimer = null;
+    let retryAttempt = 0;
+
+    const clearRetry = () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+        retryTimer = null;
+      }
+    };
+
+    const scheduleRetry = () => {
+      if (!mounted || retryTimer) return;
+      const delayMs = Math.min(15000, 1000 * 2 ** Math.min(retryAttempt, 4));
+      retryAttempt += 1;
+      retryTimer = window.setTimeout(() => {
+        retryTimer = null;
+        load();
+      }, delayMs);
+    };
+
     const load = async () => {
+      if (inFlight) return;
+      inFlight = true;
       try {
         const [categories, services, options] = await Promise.all([
           api.getCategories({ cityId: selectedCity || undefined }),
@@ -279,8 +332,13 @@ export default function Navbar() {
         });
 
         setSearchIndex(rows);
+        retryAttempt = 0;
+        clearRetry();
       } catch (e) {
         setSearchIndex([]);
+        scheduleRetry();
+      } finally {
+        inFlight = false;
       }
     };
     const handleAdminChange = () => load();
@@ -320,6 +378,7 @@ export default function Navbar() {
       channel?.removeEventListener("message", handleChannel);
       channel?.close();
       window.clearInterval(poll);
+      clearRetry();
     };
   }, []);
 
@@ -449,12 +508,38 @@ export default function Navbar() {
     if (!authUser) return;
     setBookingsLoading(true);
     setBookingsError("");
+
+    const normalizeId = (value) => String(value || "").trim().toLowerCase();
+    const userId = normalizeId(authUser.id);
+    let localBookings = [];
+    try {
+      localBookings = JSON.parse(localStorage.getItem("guest_bookings") || "[]");
+    } catch {
+      localBookings = [];
+    }
+    const mineLocal = (localBookings || []).filter((b) => {
+      if (!b?.userId) return true; // back-compat for older local entries
+      return normalizeId(b.userId) === userId;
+    });
+
     try {
       const list = await api.getBookings();
-      const mine = (list || []).filter((b) => b.userId === authUser.id);
-      setBookings(mine);
+      const mineRemote = (list || []).filter(
+        (b) => normalizeId(b.userId) === userId
+      );
+      const merged = [...mineRemote, ...mineLocal];
+      merged.sort((a, b) => {
+        const t1 = new Date(b?.scheduledAt || 0).getTime();
+        const t2 = new Date(a?.scheduledAt || 0).getTime();
+        return t1 - t2;
+      });
+      setBookings(merged);
     } catch (err) {
-      setBookingsError(err?.message || "Unable to load bookings.");
+      if (mineLocal.length > 0) {
+        setBookings(mineLocal);
+      } else {
+        setBookingsError(err?.message || "Unable to load bookings.");
+      }
     } finally {
       setBookingsLoading(false);
     }
@@ -611,7 +696,14 @@ export default function Navbar() {
                   </div>
                 </div>
 
-                <button type="button" className="checkout-btn">
+                <button
+                  type="button"
+                  className="checkout-btn"
+                  onClick={() => {
+                    setShowCart(false);
+                    navigate("/checkout");
+                  }}
+                >
                   Proceed to checkout
                 </button>
               </>

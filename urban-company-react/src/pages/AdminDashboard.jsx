@@ -24,7 +24,8 @@ export default function AdminDashboard() {
   });
   const [serviceInput, setServiceInput] = useState({
     title: "",
-    imageUrl: ""
+    imageUrl: "",
+    bannerImageUrl: ""
   });
   const [serviceCityId, setServiceCityId] = useState("");
   const [serviceSubCategoryId, setServiceSubCategoryId] = useState("");
@@ -48,6 +49,7 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState({
     category: false,
     service: false,
+    serviceBanner: false,
     option: false,
     banner: false,
     popupCategory: false
@@ -55,6 +57,7 @@ export default function AdminDashboard() {
   const [uploadError, setUploadError] = useState({
     category: "",
     service: "",
+    serviceBanner: "",
     option: "",
     banner: "",
     popupCategory: ""
@@ -62,6 +65,7 @@ export default function AdminDashboard() {
   const [fileInputKey, setFileInputKey] = useState({
     category: 0,
     service: 0,
+    serviceBanner: 0,
     option: 0,
     banner: 0,
     popupCategory: 0
@@ -158,13 +162,15 @@ export default function AdminDashboard() {
       title,
       cityId: serviceCityId ? Number(serviceCityId) : null,
       imageUrl: serviceInput.imageUrl || null,
+      bannerImageUrl: serviceInput.bannerImageUrl || null,
       isActive: true
     });
     setServiceInput({
       title: "",
-      imageUrl: ""
+      imageUrl: "",
+      bannerImageUrl: ""
     });
-    setFileInputKey((prev) => ({ ...prev, service: prev.service + 1 }));
+    setFileInputKey((prev) => ({ ...prev, service: prev.service + 1, serviceBanner: prev.serviceBanner + 1 }));
     setServiceSubCategoryId("");
     setServiceCityId("");
     await loadAll();
@@ -255,6 +261,9 @@ export default function AdminDashboard() {
       }
       if (target === "service") {
         setServiceInput((prev) => ({ ...prev, imageUrl: url }));
+      }
+      if (target === "serviceBanner") {
+        setServiceInput((prev) => ({ ...prev, bannerImageUrl: url }));
       }
       if (target === "option") {
         setOptionInput((prev) => ({ ...prev, imageUrl: url }));
@@ -653,7 +662,7 @@ export default function AdminDashboard() {
               </select>
               <input
                 type="text"
-                placeholder="Image URL (optional)"
+                placeholder="Service Image URL (optional)"
                 value={serviceInput.imageUrl}
                 onChange={(e) =>
                   setServiceInput((prev) => ({
@@ -670,6 +679,26 @@ export default function AdminDashboard() {
                   handleImageUpload(e.target.files?.[0], "service")
                 }
               />
+        {/* banner image */}
+              <input
+                type="text"
+                placeholder="Banner Image URL (optional)"
+                value={serviceInput.bannerImageUrl}
+                onChange={(e) =>
+                  setServiceInput((prev) => ({
+                    ...prev,
+                    bannerImageUrl: e.target.value
+                  }))
+                }
+              />
+              <input
+                key={`service-banner-file-${fileInputKey.serviceBanner}`}
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleImageUpload(e.target.files?.[0], "serviceBanner")
+                }
+              />
               <button className="admin-btn admin-btn-add" onClick={handleAddService}>
                 Add
               </button>
@@ -680,6 +709,12 @@ export default function AdminDashboard() {
             )}
             {uploadError.service && (
               <p className="admin-error">{uploadError.service}</p>
+            )}
+            {uploading.serviceBanner && (
+              <p className="admin-muted">Uploading banner image...</p>
+            )}
+            {uploadError.serviceBanner && (
+              <p className="admin-error">{uploadError.serviceBanner}</p>
             )}
             <div className="admin-list admin-list-grid">
               {filteredServices.map((service) => (

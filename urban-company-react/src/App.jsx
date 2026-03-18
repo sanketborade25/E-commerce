@@ -3,6 +3,8 @@ import Home from "./pages/Home";
 import ServicePage from "./pages/ServicePage"; 
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import Checkout from "./pages/Checkout";
+import Bookings from "./pages/Bookings";
 
 function AdminRoute({ children }) {
   const authed = localStorage.getItem("admin_authed") === "true";
@@ -15,6 +17,8 @@ export default function App() {
       <Routes>
        <Route path="/" element={<Home />} />
        <Route path="/services/:serviceKey" element={<ServicePage />} />
+       <Route path="/checkout" element={<Checkout />} />
+       <Route path="/bookings" element={<Bookings />} />
        <Route path="/admin" element={<AdminLogin />} />
        <Route
          path="/admin/dashboard"

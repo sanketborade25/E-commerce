@@ -1,36 +1,91 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5148";
 const TOKEN_KEY = "auth_token";
+const API_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 10000);
+const API_RETRIES = Number(import.meta.env.VITE_API_RETRIES || 2);
+const API_RETRY_DELAY_MS = Number(
+  import.meta.env.VITE_API_RETRY_DELAY_MS || 500
+);
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isRetriableStatus = (status) => status === 429 || status >= 500;
+
+const isRetriableError = (error) => {
+  const msg = String(error?.message || "").toLowerCase();
+  return (
+    error?.name === "AbortError" ||
+    msg.includes("failed to fetch") ||
+    msg.includes("networkerror")
+  );
+};
 
 async function request(path, options = {}) {
   const token = localStorage.getItem(TOKEN_KEY);
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
-    ...options
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `Request failed: ${res.status}`);
+  const method = String(options.method || "GET").toUpperCase();
+  const canRetry = method === "GET" || method === "HEAD" || method === "OPTIONS";
+
+  for (let attempt = 0; attempt <= API_RETRIES; attempt += 1) {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+    try {
+      const res = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(options.headers || {})
+        },
+        signal: controller.signal
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        const error = new Error(text || `Request failed: ${res.status}`);
+        error.status = res.status;
+
+        if (canRetry && attempt < API_RETRIES && isRetriableStatus(res.status)) {
+          await delay(API_RETRY_DELAY_MS * (attempt + 1));
+          continue;
+        }
+        throw error;
+      }
+
+      if (res.status === 204) return null;
+      const contentLength = res.headers.get("content-length");
+      if (contentLength === "0") return null;
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) return null;
+      return res.json();
+    } catch (error) {
+      if (canRetry && attempt < API_RETRIES && isRetriableError(error)) {
+        await delay(API_RETRY_DELAY_MS * (attempt + 1));
+        continue;
+      }
+      if (error?.name === "AbortError") {
+        throw new Error(`Request timed out after ${API_TIMEOUT_MS} ms`);
+      }
+      throw error;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
   }
-  if (res.status === 204) return null;
-  const contentLength = res.headers.get("content-length");
-  if (contentLength === "0") return null;
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) return null;
-  return res.json();
+
+  throw new Error("Request failed after retries");
 }
 
 async function upload(path, formData) {
   const token = localStorage.getItem(TOKEN_KEY);
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     },
-    body: formData
-  });
+    body: formData,
+    signal: controller.signal
+  }).finally(() => window.clearTimeout(timeoutId));
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Request failed: ${res.status}`);
@@ -145,6 +200,14 @@ export const api = {
   updateUser: (id, body) =>
     request(`/api/Users/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   getBookings: () => request("/api/Bookings"),
-  setToken: (token) => localStorage.setItem(TOKEN_KEY, token),
-  clearToken: () => localStorage.removeItem(TOKEN_KEY)
+  createBooking: (body) =>
+    request("/api/Bookings", { method: "POST", body: JSON.stringify(body) }),
+  setToken: (token) => {
+    localStorage.setItem(TOKEN_KEY, token);
+    window.dispatchEvent(new Event("auth-token-changed"));
+  },
+  clearToken: () => {
+    localStorage.removeItem(TOKEN_KEY);
+    window.dispatchEvent(new Event("auth-token-changed"));
+  }
 };

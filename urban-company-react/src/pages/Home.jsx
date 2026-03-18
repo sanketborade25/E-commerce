@@ -55,8 +55,31 @@ export default function Home() {
 
   useEffect(() => {
     let mounted = true;
+    let inFlight = false;
+    let retryTimer = null;
+    let retryAttempt = 0;
+
+    const clearRetry = () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+        retryTimer = null;
+      }
+    };
+
+    const scheduleRetry = () => {
+      if (!mounted || retryTimer) return;
+      const delayMs = Math.min(15000, 1000 * 2 ** Math.min(retryAttempt, 4));
+      retryAttempt += 1;
+      retryTimer = window.setTimeout(() => {
+        retryTimer = null;
+        load();
+      }, delayMs);
+    };
+
     // Load categories + sub-categories from backend API.
     const load = async () => {
+      if (inFlight) return;
+      inFlight = true;
       try {
         const [cats, subcats, banners] = await Promise.all([
           api.getCategories({ cityId: cityId || undefined }),
@@ -84,12 +107,17 @@ export default function Home() {
         setPopupSubCategories(
           subcats && subcats.length > 0 ? subcats : derivedSubcats
         );
+        retryAttempt = 0;
+        clearRetry();
       } catch (e) {
         if (!mounted) return;
         setCategories([]);
         setAllCategories([]);
         setBannerItems([]);
         setPopupSubCategories([]);
+        scheduleRetry();
+      } finally {
+        inFlight = false;
       }
     };
     // Keep data in sync with admin updates.
@@ -130,6 +158,7 @@ export default function Home() {
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibility);
       window.clearInterval(poll);
+      clearRetry();
       channel?.removeEventListener("message", handleChannel);
       channel?.close();
     };

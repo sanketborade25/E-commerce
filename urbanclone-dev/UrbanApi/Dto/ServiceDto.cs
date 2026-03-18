@@ -8,6 +8,7 @@
         public int? CityId { get; set; }
         public string Title { get; set; } = null!;
         public string? ImageUrl { get; set; }
+        public string? BannerImageUrl { get; set; }
         public bool IsActive { get; set; }
     }
 
@@ -18,6 +19,7 @@
         public int? CityId { get; set; }
         public string Title { get; set; } = null!;
         public string? ImageUrl { get; set; }
+        public string? BannerImageUrl { get; set; }
         public bool IsActive { get; set; } = true;
     }
 }

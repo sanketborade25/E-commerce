@@ -12,6 +12,7 @@ namespace UrbanApi.Models
         public string Title { get; set; } = null!;
         public string? LongDescription { get; set; }
         public string? ImageUrl { get; set; }
+        public string? BannerImageUrl { get; set; }
         public bool IsActive { get; set; } = true;
 
         // Navigation
