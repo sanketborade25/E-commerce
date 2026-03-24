@@ -21,5 +21,6 @@ namespace UrbanApi.Models
         public City? City { get; set; }
         public ICollection<ServiceOption> Options { get; set; } = new List<ServiceOption>();
         public ICollection<BookingItem> BookingItems { get; set; } = new List<BookingItem>();
+        public ICollection<ServiceCityStatus> CityStatuses { get; set; } = new List<ServiceCityStatus>();
     }
 }

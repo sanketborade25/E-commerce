@@ -140,6 +140,12 @@ export const api = {
     const qs = search.toString();
     return request(`/api/Services${qs ? `?${qs}` : ""}`);
   },
+  getAdminServices: () => request(`/api/admin/services`),
+  enableService: (id, cityId) => request(`/api/service/${id}/enable?cityId=${cityId}`, { method: "PATCH" }),
+  disableService: (id, cityId) => {
+    const qs = cityId ? `?cityId=${cityId}` : "";
+    return request(`/api/service/${id}/disable${qs}`, { method: "PATCH" });
+  },
   getService: (id) => request(`/api/Services/${id}`),
   createService: (body) =>
     request("/api/Services", { method: "POST", body: JSON.stringify(body) }),
@@ -195,6 +201,27 @@ export const api = {
   clearCart: () => request("/api/Cart/clear", { method: "DELETE" }),
   login: (body) =>
     request("/api/Auth/login", { method: "POST", body: JSON.stringify(body) }),
+  professionalSignup: (body) =>
+    request("/api/professionals", { method: "POST", body: JSON.stringify(body) }),
+  professionalLogin: (body) =>
+    request("/api/Auth/login", { method: "POST", body: JSON.stringify(body) }),
+  getMyProfessionalProfile: () => request("/api/professionals/me"),
+  updateMyProfessionalStatus: (isOnline) =>
+    request("/api/professionals/me/online", {
+      method: "PATCH",
+      body: JSON.stringify({ isOnline })
+    }),
+  getProfessionalProfile: (id) => request(`/api/professionals/${id}`),
+  updateProfessional: (id, body) =>
+    request(`/api/professionals/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+  deleteProfessional: (id) => request(`/api/professionals/${id}`, { method: "DELETE" }),
+  getProfessionalBookings: () => request("/api/booking/my"),
+  getProfessionalAvailability: (professionalId) =>
+    request(`/api/Availabilities/professional/${professionalId}`),
+  acceptBooking: (id) => request(`/api/booking/${id}/accept`, { method: "PATCH" }),
+  rejectBooking: (id) => request(`/api/booking/${id}/reject`, { method: "PATCH" }),
+  updateBookingStatus: (id, body) =>
+    request(`/api/booking/${id}/status`, { method: "PATCH", body: JSON.stringify(body) }),
   createUser: (body) =>
     request("/api/Users", { method: "POST", body: JSON.stringify(body) }),
   updateUser: (id, body) =>

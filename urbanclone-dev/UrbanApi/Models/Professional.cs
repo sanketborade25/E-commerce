@@ -12,6 +12,10 @@ namespace UrbanApi.Models
         public string? Bio { get; set; }
         public decimal Rating { get; set; } = 0m;
         public bool IsVerified { get; set; } = false;
+        public bool IsOnline { get; set; } = false;
+        public decimal Earnings { get; set; } = 0m;
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
         public int? CityId { get; set; }
 
         // Navigation
@@ -21,5 +25,6 @@ namespace UrbanApi.Models
         public ICollection<Availability> Availabilities { get; set; } = new List<Availability>();
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
         public ICollection<Document> Documents { get; set; } = new List<Document>();
+        public ICollection<ProfessionalCategory> ProfessionalCategories { get; set; } = new List<ProfessionalCategory>();
     }
 }

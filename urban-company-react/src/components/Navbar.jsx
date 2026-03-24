@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import leftData from "../data/servicesLeftSidebarData";
 import { useCart } from "../context/CartContext";
 import { api } from "../api/client";
 import { resolveImage } from "../utils/image";
@@ -211,14 +210,7 @@ export default function Navbar() {
 
   const resolveServiceKey = (category) => {
     if (!category) return "";
-    const bySlug = Object.keys(leftData).find(
-      (key) => slugify(key) === slugify(category.slug || category.name)
-    );
-    if (bySlug) return bySlug;
-    const byTitle = Object.entries(leftData).find(
-      ([, v]) => slugify(v.title) === slugify(category.name)
-    );
-    return byTitle?.[0] || slugify(category.name);
+    return slugify(category.slug || category.name);
   };
 
   const pickImageForService = (serviceKey, label, fallbackUrl) => {
@@ -277,8 +269,7 @@ export default function Navbar() {
         services.forEach((svc) => {
           const category = categoryMap.get(svc.categoryId);
           const serviceKey = resolveServiceKey(category);
-          const serviceTitle =
-            leftData[serviceKey]?.title || category?.name || serviceKey;
+          const serviceTitle = category?.name || svc.title || serviceKey;
           const tags = [
             serviceKey,
             serviceKey.replace(/([a-z])([A-Z])/g, "$1 $2"),
@@ -554,7 +545,7 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="logo">
-        <Link to="/">
+        <Link to="/home">
           <img src="/images/1Homepage/logo (1).png" alt="Urban" />
         </Link>
       </div>

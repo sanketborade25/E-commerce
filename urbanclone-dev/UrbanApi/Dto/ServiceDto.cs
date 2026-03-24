@@ -1,5 +1,12 @@
 ﻿namespace UrbanApi.Dto
 {
+    public class ServiceCityStatusDto
+    {
+        public int CityId { get; set; }
+        public string? CityName { get; set; }
+        public bool IsEnabled { get; set; }
+    }
+
     public class ServiceDto
     {
         public int Id { get; set; }
@@ -10,6 +17,13 @@
         public string? ImageUrl { get; set; }
         public string? BannerImageUrl { get; set; }
         public bool IsActive { get; set; }
+
+        public string GlobalStatus => IsActive ? "enabled" : "disabled";
+        public bool IsVisible { get; set; }
+        public bool IsBookable { get; set; }
+        public int PartnerCount { get; set; }
+        public int AvailableSlots { get; set; }
+        public List<ServiceCityStatusDto> CityStatuses { get; set; } = new List<ServiceCityStatusDto>();
     }
 
     public class ServiceCreateDto

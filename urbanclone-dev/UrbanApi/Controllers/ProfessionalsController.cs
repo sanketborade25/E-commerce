@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +41,21 @@ namespace UrbanApi.Controllers
             return Ok(_mapper.Map<ProfessionalDto>(pro));
         }
 
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe(CancellationToken ct)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId)) return Forbid();
+
+            var pro = await _db.Professionals
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
+            if (pro == null) return NotFound();
+            return Ok(_mapper.Map<ProfessionalDto>(pro));
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ProfessionalCreateDto input, CancellationToken ct)
         {
@@ -59,6 +76,23 @@ namespace UrbanApi.Controllers
             return NoContent();
         }
 
+        [Authorize]
+        [HttpPatch("me/online")]
+        public async Task<IActionResult> SetMyOnlineStatus([FromBody] ProfessionalOnlineStatusDto input, CancellationToken ct)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId)) return Forbid();
+
+            var entity = await _db.Professionals.FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
+            if (entity == null) return NotFound();
+
+            entity.IsOnline = input.IsOnline;
+            entity.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+            return NoContent();
+        }
+
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
@@ -71,3 +105,4 @@ namespace UrbanApi.Controllers
         }
     }
 }
+

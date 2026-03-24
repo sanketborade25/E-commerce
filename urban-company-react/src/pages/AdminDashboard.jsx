@@ -29,6 +29,7 @@ export default function AdminDashboard() {
   });
   const [serviceCityId, setServiceCityId] = useState("");
   const [serviceSubCategoryId, setServiceSubCategoryId] = useState("");
+  const [toggleCityId, setToggleCityId] = useState("");
   const [popupCategoryInput, setPopupCategoryInput] = useState({
     categoryId: "",
     title: "",
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
         api.getCities(),
         api.getCategories(),
         api.getServiceOptions(),
-        api.getServices(),
+        api.getAdminServices(),
         api.getSubCategories(),
         api.getBanners({ all: true })
       ]);
@@ -126,16 +127,46 @@ export default function AdminDashboard() {
   }, []);
 
   const handleToggleService = async (svc) => {
-    await api.updateService(svc.id, {
-      categoryId: svc.categoryId,
-      subCategoryId: svc.subCategoryId,
-      cityId: svc.cityId,
-      title: svc.title,
-      imageUrl: svc.imageUrl || null,
-      isActive: !svc.isActive
-    });
-    await loadAll();
-    notifyDataChanged();
+    try {
+      if (svc.isActive) {
+        await api.disableService(svc.id);
+      } else {
+        const cityIdUsed = Number(toggleCityId || svc.cityId || cities[0]?.id);
+        if (!cityIdUsed) {
+          alert("Select a city to enable service.");
+          return;
+        }
+        await api.enableService(svc.id, cityIdUsed);
+      }
+      await loadAll();
+      notifyDataChanged();
+    } catch (error) {
+      console.error(error);
+      alert("Unable to toggle service: " + error?.message);
+    }
+  };
+
+  const handleToggleServiceForCity = async (svc) => {
+    if (!toggleCityId) {
+      alert("Choose a city to apply city-specific enable/disable.");
+      return;
+    }
+
+    const cityIdUsed = Number(toggleCityId);
+    const status = svc.cityStatuses?.find((s) => Number(s.cityId) === cityIdUsed);
+
+    try {
+      if (status && status.isEnabled) {
+        await api.disableService(svc.id, cityIdUsed);
+      } else {
+        await api.enableService(svc.id, cityIdUsed);
+      }
+      await loadAll();
+      notifyDataChanged();
+    } catch (error) {
+      console.error(error);
+      alert("Unable to toggle city status: " + error?.message);
+    }
   };
 
   const handleAddCategory = async () => {
@@ -416,22 +447,22 @@ export default function AdminDashboard() {
     <>
       <div className="admin-page">
         <div className="admin-topbar">
-          <Link to="/" className="admin-logo">
+          <Link to="/home" className="admin-logo">
             <img src="/images/1Homepage/logo (1).png" alt="Urban Company" />
           </Link>
-           <div>
+
+          <nav className="admin-top-nav">
+            <a href="#admin-categories" className="admin-btn outline">Categories</a>
+            <a href="#admin-popup-categories" className="admin-btn outline">Sub Categories</a>
+            <a href="#admin-services" className="admin-btn outline">Services</a>
+            <a href="#admin-options" className="admin-btn outline">Service Options</a>
+            <a href="#admin-cities" className="admin-btn outline">Cities</a>
+            <a href="#admin-banners" className="admin-btn outline">Banner Images</a>
+          </nav>
+          <div>
             <h2>Admin Dashboard</h2>
             </div>
-          <nav className="admin-top-nav">
-            <a href="#admin-categories">Categories</a>
-            <a href="#admin-popup-categories">Sub Categories</a>
-            <a href="#admin-services">Services</a>
-            <a href="#admin-options">Service Options</a>
-            <a href="#admin-cities">Cities</a>
-            <a href="#admin-banners">Banner Images</a>
-          </nav>
           <div className="admin-top-actions">
-            <Link to="/" className="admin-home-link">Home</Link>
             <button className="admin-btn outline" onClick={handleLogout}>
               Logout
             </button>
@@ -567,6 +598,23 @@ export default function AdminDashboard() {
                   <div key={item.id} className="admin-list-item">
                     <div>
                       <strong>{item.name}</strong>
+              <label style={{ marginRight: 8 }}>
+                City for status actions:
+                <select
+                  value={toggleCityId}
+                  onChange={(e) => setToggleCityId(e.target.value)}
+                  style={{ marginLeft: 8 }}
+                >
+                  <option value="">Any city</option>
+                  {cities.map((c) => (
+                    <option key={c.id} value={String(c.id)}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="admin-input-row admin-input-row-small">
                       <div className="admin-muted">
                         {categories.find(
                           (cat) => String(cat.id) === String(item.parentCategoryId)
@@ -717,30 +765,51 @@ export default function AdminDashboard() {
               <p className="admin-error">{uploadError.serviceBanner}</p>
             )}
             <div className="admin-list admin-list-grid">
-              {filteredServices.map((service) => (
-                <div key={service.id} className="admin-list-item">
-                  <div>
-                    <strong>{service.title}</strong>
-                    <span className="admin-pill">
-                      {service.isActive ? "Active" : "Inactive"}
-                    </span>
+              {filteredServices.map((service) => {
+                const cityStatus = toggleCityId
+                  ? service.cityStatuses?.find((cs) => String(cs.cityId) === toggleCityId)
+                  : null;
+                const cityStatusLabel = cityStatus
+                  ? cityStatus.isEnabled
+                    ? "Enabled in city"
+                    : "Disabled in city"
+                  : toggleCityId
+                  ? "Not mapped"
+                  : "No specific city selected";
+                return (
+                  <div key={service.id} className="admin-list-item">
+                    <div>
+                      <strong>{service.title}</strong>
+                      <span className="admin-pill">
+                        {service.isActive ? "Active" : "Inactive"}
+                      </span>
+                      <span className="admin-pill" style={{ marginLeft: 8 }}>
+                        {cityStatusLabel}
+                      </span>
+                    </div>
+                    <div className="admin-actions">
+                      <button
+                        className="admin-btn outline"
+                        onClick={() => handleToggleService(service)}
+                      >
+                        {service.isActive ? "Disable" : "Enable"}
+                      </button>
+                      <button
+                        className="admin-btn outline"
+                        onClick={() => handleToggleServiceForCity(service)}
+                      >
+                        {cityStatus?.isEnabled ? "City Disable" : "City Enable"}
+                      </button>
+                      <button
+                        className="admin-btn outline"
+                        onClick={() => handleDeleteService(service.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="admin-actions">
-                    <button
-                      className="admin-btn outline"
-                      onClick={() => handleToggleService(service)}
-                    >
-                      {service.isActive ? "Disable" : "Enable"}
-                    </button>
-                    <button
-                      className="admin-btn outline"
-                      onClick={() => handleDeleteService(service.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
