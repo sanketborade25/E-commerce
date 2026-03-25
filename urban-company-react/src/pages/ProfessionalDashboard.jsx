@@ -72,9 +72,9 @@ export default function ProfessionalDashboard() {
 
     try {
       const [profileData, dashboardData, bookingData] = await Promise.all([
-        api.getProfessionalPortalProfile(),
-        api.getProfessionalPortalDashboard(),
-        api.getProfessionalPortalBookings(selectedTab)
+        api.getProfessionalProfileSummary(),
+        api.getProfessionalDashboard(),
+        api.getProfessionalBookingsByStatus(selectedTab)
       ]);
 
       setProfile(profileData);
@@ -111,9 +111,9 @@ export default function ProfessionalDashboard() {
     setStatusLoading(true);
     setActionError("");
     try {
-      const updatedProfile = await api.updateProfessionalPortalStatus(isOnline);
+      const updatedProfile = await api.updateProfessionalStatusSummary(isOnline);
       setProfile(updatedProfile);
-      const dashboardData = await api.getProfessionalPortalDashboard();
+      const dashboardData = await api.getProfessionalDashboard();
       setDashboard(dashboardData);
     } catch (updateError) {
       console.error(updateError);

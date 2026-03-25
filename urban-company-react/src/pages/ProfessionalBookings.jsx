@@ -35,9 +35,9 @@ export default function ProfessionalBookings() {
 
     try {
       const [profileData, dashboardData, bookingData] = await Promise.all([
-        api.getProfessionalPortalProfile(),
-        api.getProfessionalPortalDashboard(),
-        api.getProfessionalPortalBookings(selectedTab)
+        api.getProfessionalProfileSummary(),
+        api.getProfessionalDashboard(),
+        api.getProfessionalBookingsByStatus(selectedTab)
       ]);
 
       setProfile(profileData);

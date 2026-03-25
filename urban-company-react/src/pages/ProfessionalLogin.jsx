@@ -24,7 +24,7 @@ export default function ProfessionalLogin() {
       clearPartnerSession();
 
       if (isSignup) {
-        const response = await api.professionalPortalSignup({
+        const response = await api.professionalSignupV2({
           fullName: name,
           email: email || undefined,
           phone,
@@ -43,7 +43,7 @@ export default function ProfessionalLogin() {
         navigate("/professional/dashboard");
         return;
       } else {
-        const response = await api.professionalPortalLogin({ phone, password });
+        const response = await api.professionalLoginV2({ phone, password });
         if (response?.accessToken) {
           api.setToken(response.accessToken);
           if (response?.user) {
