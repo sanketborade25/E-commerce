@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import ProfessionalShell, { MiniIcon } from "../components/ProfessionalShell";
 import { api } from "../api/client";
+import { formatDateTime } from "../utils/professional";
 
 export default function ProfessionalAvailability() {
+  const [profile, setProfile] = useState(null);
   const [availability, setAvailability] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -18,11 +20,12 @@ export default function ProfessionalAvailability() {
     const load = async () => {
       setLoading(true);
       try {
-        const profile = await api.getMyProfessionalProfile();
-        const data = await api.getProfessionalAvailability(profile.id);
+        const profileData = await api.getMyProfessionalProfile();
+        setProfile(profileData);
+        const data = await api.getProfessionalAvailability(profileData.id);
         setAvailability(data || []);
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -31,24 +34,55 @@ export default function ProfessionalAvailability() {
     load();
   }, [navigate]);
 
+  const upcomingSlots = useMemo(
+    () =>
+      availability.filter((item) => {
+        if (!item.startAt) return false;
+        return new Date(item.startAt).getTime() >= Date.now();
+      }),
+    [availability]
+  );
+
   return (
-    <div>
-      <Navbar />
-      <div className="professional-dashboard">
-        <h2>Professional Availability</h2>
-        {loading && <p>Loading availability...
-        </p>}
-        {!loading && availability.length === 0 && <p>Your availability schedule will appear here.</p>}
-        <ul>
-          {availability.map((item, idx) => (
-            <li key={idx}>
-              {item.startAt && item.endAt
-                ? `${new Date(item.startAt).toLocaleString()} - ${new Date(item.endAt).toLocaleString()}`
-                : "Timeslot"}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <ProfessionalShell
+      profile={profile}
+      title="Availability"
+      subtitle="Review the time windows where you can receive assignments and keep your schedule easy to scan."
+      quickStats={[
+        { label: "Total slots", value: availability.length },
+        { label: "Upcoming", value: upcomingSlots.length }
+      ]}
+    >
+      <section className="pro-section">
+        <div className="pro-section-header">
+          <div>
+            <p className="pro-section-kicker">Schedule</p>
+            <h2>Availability timeline</h2>
+          </div>
+        </div>
+
+        {loading ? (
+          <p className="pro-loading-copy">Loading availability...</p>
+        ) : availability.length === 0 ? (
+          <div className="pro-empty-state">
+            <div className="pro-empty-icon">
+              <MiniIcon name="availability" />
+            </div>
+            <h3>No availability slots yet</h3>
+            <p>Your schedule will appear here once slots are configured.</p>
+          </div>
+        ) : (
+          <div className="pro-list-grid">
+            {availability.map((item, index) => (
+              <article key={`${item.startAt || "slot"}-${index}`} className="pro-list-card">
+                <span className="pro-meta-label">Slot {index + 1}</span>
+                <strong>{formatDateTime(item.startAt)}</strong>
+                <p>Ends: {formatDateTime(item.endAt)}</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </ProfessionalShell>
   );
 }

@@ -205,6 +205,19 @@ export const api = {
     request("/api/professionals", { method: "POST", body: JSON.stringify(body) }),
   professionalLogin: (body) =>
     request("/api/Auth/login", { method: "POST", body: JSON.stringify(body) }),
+  professionalPortalLogin: (body) =>
+    request("/api/professionals/login", { method: "POST", body: JSON.stringify(body) }),
+  professionalPortalSignup: (body) =>
+    request("/api/professionals/signup", { method: "POST", body: JSON.stringify(body) }),
+  getProfessionalPortalProfile: () => request("/api/professionals/profile"),
+  updateProfessionalPortalStatus: (isOnline) =>
+    request("/api/professionals/status", {
+      method: "PATCH",
+      body: JSON.stringify({ isOnline })
+    }),
+  getProfessionalPortalBookings: (status) =>
+    request(`/api/professionals/bookings${status ? `?status=${encodeURIComponent(status)}` : ""}`),
+  getProfessionalPortalDashboard: () => request("/api/professionals/dashboard"),
   getMyProfessionalProfile: () => request("/api/professionals/me"),
   updateMyProfessionalStatus: (isOnline) =>
     request("/api/professionals/me/online", {

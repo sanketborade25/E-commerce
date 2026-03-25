@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { api } from "../api/client";
+import { clearPartnerSession } from "../utils/professional";
 
 export default function ProfessionalLogin() {
   const navigate = useNavigate();
@@ -20,15 +21,18 @@ export default function ProfessionalLogin() {
     setLoading(true);
 
     try {
+      clearPartnerSession();
+
       if (isSignup) {
-        await api.createUser({
+        const response = await api.professionalPortalSignup({
           fullName: name,
           email: email || undefined,
           phone,
           password,
+          cityId: city ? Number(city) || undefined : undefined,
+          displayName: name
         });
 
-        const response = await api.professionalLogin({ phone, password });
         if (!response?.accessToken || !response?.user?.id) {
           throw new Error("Unable to authenticate professional.");
         }
@@ -36,17 +40,10 @@ export default function ProfessionalLogin() {
         api.setToken(response.accessToken);
         localStorage.setItem("auth_user", JSON.stringify(response.user));
         localStorage.setItem("professional_authed", "true");
-
-        await api.professionalSignup({
-          userId: response.user.id,
-          displayName: name,
-          cityId: city ? Number(city) || undefined : undefined,
-        });
-
         navigate("/professional/dashboard");
         return;
       } else {
-        const response = await api.professionalLogin({ phone, email, password });
+        const response = await api.professionalPortalLogin({ phone, password });
         if (response?.accessToken) {
           api.setToken(response.accessToken);
           if (response?.user) {

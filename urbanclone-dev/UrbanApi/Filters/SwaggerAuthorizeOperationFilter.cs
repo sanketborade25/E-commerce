@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace UrbanApi.Filters
@@ -20,16 +20,18 @@ namespace UrbanApi.Filters
 
             operation.Security ??= new List<OpenApiSecurityRequirement>();
 
+            var scheme = new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            };
+
             var requirement = new OpenApiSecurityRequirement
             {
-                {
-                    new OpenApiSecuritySchemeReference(
-                        "Bearer",
-                        new OpenApiDocument(),
-                        null
-                    ),
-                    new List<string>()
-                }
+                { scheme, new List<string>() }
             };
 
             operation.Security.Add(requirement);
