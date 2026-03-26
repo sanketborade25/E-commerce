@@ -2,9 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
+import { MiniIcon } from "../components/ProfessionalShell";
+
+function AdminFileInput({ inputKey, label, onChange }) {
+  return (
+    <label className="admin-file-input">
+      <input
+        key={inputKey}
+        type="file"
+        accept="image/*"
+        onChange={(e) => onChange(e.target.files?.[0])}
+      />
+      <span className="admin-file-input-icon">
+        <MiniIcon name="image" />
+      </span>
+      <span className="admin-file-input-text">{label}</span>
+    </label>
+  );
+}
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [activeAdminSection, setActiveAdminSection] = useState("admin-categories");
   const [cities, setCities] = useState([]);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
@@ -415,6 +434,22 @@ export default function AdminDashboard() {
   const filteredBanners = selectedBannerSection
     ? banners.filter((b) => b.section === selectedBannerSection)
     : banners;
+  const adminHighlights = [
+    { label: "Categories", value: categories.length },
+    { label: "Subcategories", value: popupCategories.length },
+    { label: "Services", value: services.length },
+    { label: "Active Services", value: enabledCount },
+    { label: "Cities", value: cities.length },
+    { label: "Banners", value: banners.length }
+  ];
+  const adminNavItems = [
+    { id: "admin-categories", label: "Categories", icon: "folder" },
+    { id: "admin-popup-categories", label: "Subcategories", icon: "list" },
+    { id: "admin-services", label: "Services", icon: "tools" },
+    { id: "admin-options", label: "Service Options", icon: "settings" },
+    { id: "admin-cities", label: "Cities", icon: "location" },
+    { id: "admin-banners", label: "Banners", icon: "image" }
+  ];
 
   const citiesPerPage = 20;
   const totalCityPages = Math.max(1, Math.ceil(cities.length / citiesPerPage));
@@ -443,32 +478,85 @@ export default function AdminDashboard() {
     }
   }, [selectedServiceId, services]);
 
+  useEffect(() => {
+    const sectionIds = adminNavItems.map((item) => item.id);
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+
+    if (sections.length === 0) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (visible[0]?.target?.id) {
+          setActiveAdminSection(visible[0].target.id);
+        }
+      },
+      {
+        rootMargin: "-30% 0px -55% 0px",
+        threshold: [0.2, 0.45, 0.7]
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <div className="admin-page">
         <div className="admin-topbar">
-          <Link to="/home" className="admin-logo">
-            <img src="/images/1Homepage/logo (1).png" alt="Urban Company" />
-          </Link>
+          <div className="admin-brand">
+            <Link to="/home" className="admin-logo">
+              <img src="/images/1Homepage/logo (1).png" alt="Urban Company" />
+            </Link>
+            <div>
+              <p className="admin-console-kicker">Operations workspace</p>
+              <h2>Admin Console</h2>
+            </div>
+          </div>
 
           <nav className="admin-top-nav">
-            <a href="#admin-categories" className="admin-btn outline">Categories</a>
-            <a href="#admin-popup-categories" className="admin-btn outline">Sub Categories</a>
-            <a href="#admin-services" className="admin-btn outline">Services</a>
-            <a href="#admin-options" className="admin-btn outline">Service Options</a>
-            <a href="#admin-cities" className="admin-btn outline">Cities</a>
-            <a href="#admin-banners" className="admin-btn outline">Banner Images</a>
+            {adminNavItems.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className={`admin-top-nav-link${activeAdminSection === item.id ? " active" : ""}`}
+                onClick={() => setActiveAdminSection(item.id)}
+              >
+                <MiniIcon name={item.icon} />
+                <span>{item.label}</span>
+              </a>
+            ))}
           </nav>
-          <div>
-            <h2>Admin Dashboard</h2>
-            </div>
           <div className="admin-top-actions">
-            <button className="admin-btn outline" onClick={handleLogout}>
+            <button className="admin-btn outline admin-logout-btn" onClick={handleLogout}>
               Logout
             </button>
           </div>
         </div>
 
+        <div className="admin-hero">
+          <div>
+            <p className="admin-console-kicker">Platform controls</p>
+            <h3>Admin Dashboard</h3>
+            <p className="admin-hero-subtitle">
+              Manage categories, services, cities, and platform data efficiently.
+            </p>
+          </div>
+          <div className="admin-summary-grid">
+            {adminHighlights.map((item) => (
+              <div key={item.label} className="admin-summary-card">
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="admin-grid">
           <div className="admin-card" id="admin-categories">
@@ -493,13 +581,10 @@ export default function AdminDashboard() {
                   }))
                 }
               />
-              <input
-                key={`category-file-${fileInputKey.category}`}
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  handleImageUpload(e.target.files?.[0], "category")
-                }
+              <AdminFileInput
+                inputKey={`category-file-${fileInputKey.category}`}
+                label="Upload image"
+                onChange={(file) => handleImageUpload(file, "category")}
               />
               <button className="admin-btn admin-btn-add" onClick={handleAddCategory}>
                 Add
@@ -517,7 +602,7 @@ export default function AdminDashboard() {
                 <div key={cat.id} className="admin-list-item">
                   <div>{cat.name}</div>
                   <button
-                    className="admin-btn outline"
+                    className="admin-btn outline admin-btn-danger"
                     onClick={() => handleDeleteCategory(cat.id)}
                   >
                     Delete
@@ -557,13 +642,10 @@ export default function AdminDashboard() {
                   }))
                 }
               />
-              <input
-                key={`popup-category-file-${fileInputKey.popupCategory}`}
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  handleImageUpload(e.target.files?.[0], "popupCategory")
-                }
+              <AdminFileInput
+                inputKey={`popup-category-file-${fileInputKey.popupCategory}`}
+                label="Upload image"
+                onChange={(file) => handleImageUpload(file, "popupCategory")}
               />
               <input
                 type="text"
@@ -598,23 +680,6 @@ export default function AdminDashboard() {
                   <div key={item.id} className="admin-list-item">
                     <div>
                       <strong>{item.name}</strong>
-              <label style={{ marginRight: 8 }}>
-                City for status actions:
-                <select
-                  value={toggleCityId}
-                  onChange={(e) => setToggleCityId(e.target.value)}
-                  style={{ marginLeft: 8 }}
-                >
-                  <option value="">Any city</option>
-                  {cities.map((c) => (
-                    <option key={c.id} value={String(c.id)}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="admin-input-row admin-input-row-small">
                       <div className="admin-muted">
                         {categories.find(
                           (cat) => String(cat.id) === String(item.parentCategoryId)
@@ -623,13 +688,13 @@ export default function AdminDashboard() {
                     </div>
                     <div className="admin-actions">
                       <button
-                        className="admin-btn outline"
+                        className="admin-btn outline admin-btn-secondary"
                         onClick={() => handleEditPopupCategory(item)}
                       >
                         Edit
                       </button>
                       <button
-                        className="admin-btn outline"
+                        className="admin-btn outline admin-btn-danger"
                         onClick={() => handleDeletePopupCategory(item.id)}
                       >
                         Delete
@@ -654,6 +719,17 @@ export default function AdminDashboard() {
               >
                 <option value="">All categories</option>
                 {categories.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={toggleCityId}
+                onChange={(e) => setToggleCityId(e.target.value)}
+              >
+                <option value="">City for status actions</option>
+                {cities.map((c) => (
                   <option key={c.id} value={String(c.id)}>
                     {c.name}
                   </option>
@@ -719,13 +795,10 @@ export default function AdminDashboard() {
                   }))
                 }
               />
-              <input
-                key={`service-file-${fileInputKey.service}`}
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  handleImageUpload(e.target.files?.[0], "service")
-                }
+              <AdminFileInput
+                inputKey={`service-file-${fileInputKey.service}`}
+                label="Upload service image"
+                onChange={(file) => handleImageUpload(file, "service")}
               />
         {/* banner image */}
               <input
@@ -739,13 +812,10 @@ export default function AdminDashboard() {
                   }))
                 }
               />
-              <input
-                key={`service-banner-file-${fileInputKey.serviceBanner}`}
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  handleImageUpload(e.target.files?.[0], "serviceBanner")
-                }
+              <AdminFileInput
+                inputKey={`service-banner-file-${fileInputKey.serviceBanner}`}
+                label="Upload banner image"
+                onChange={(file) => handleImageUpload(file, "serviceBanner")}
               />
               <button className="admin-btn admin-btn-add" onClick={handleAddService}>
                 Add
@@ -789,19 +859,19 @@ export default function AdminDashboard() {
                     </div>
                     <div className="admin-actions">
                       <button
-                        className="admin-btn outline"
+                        className="admin-btn outline admin-btn-secondary"
                         onClick={() => handleToggleService(service)}
                       >
                         {service.isActive ? "Disable" : "Enable"}
                       </button>
                       <button
-                        className="admin-btn outline"
+                        className="admin-btn outline admin-btn-secondary"
                         onClick={() => handleToggleServiceForCity(service)}
                       >
                         {cityStatus?.isEnabled ? "City Disable" : "City Enable"}
                       </button>
                       <button
-                        className="admin-btn outline"
+                        className="admin-btn outline admin-btn-danger"
                         onClick={() => handleDeleteService(service.id)}
                       >
                         Delete
@@ -835,13 +905,10 @@ export default function AdminDashboard() {
                   setOptionInput((prev) => ({ ...prev, name: e.target.value }))
                 }
               />
-              <input
-                key={`option-file-${fileInputKey.option}`}
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  handleImageUpload(e.target.files?.[0], "option")
-                }
+              <AdminFileInput
+                inputKey={`option-file-${fileInputKey.option}`}
+                label="Upload image"
+                onChange={(file) => handleImageUpload(file, "option")}
               />
               <input
                 type="text"
@@ -880,7 +947,7 @@ export default function AdminDashboard() {
                     <strong>{opt.name || "Option"}</strong>
                   </div>
                     <button
-                      className="admin-btn outline"
+                      className="admin-btn outline admin-btn-danger"
                       onClick={() => handleDeleteOption(opt.id)}
                     >
                       Delete
@@ -914,7 +981,7 @@ export default function AdminDashboard() {
                 <div key={city.id} className="admin-list-item">
                   <div>{city.name}</div>
                   <button
-                    className="admin-btn outline"
+                    className="admin-btn outline admin-btn-danger"
                     onClick={() => handleDeleteCity(city.id)}
                   >
                     Delete
@@ -982,13 +1049,10 @@ export default function AdminDashboard() {
                   setBannerInput((prev) => ({ ...prev, linkUrl: e.target.value }))
                 }
               />
-                <input
-                  key={`banner-file-${fileInputKey.banner}`}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    handleImageUpload(e.target.files?.[0], "banner")
-                  }
+                <AdminFileInput
+                  inputKey={`banner-file-${fileInputKey.banner}`}
+                  label="Upload banner"
+                  onChange={(file) => handleImageUpload(file, "banner")}
                 />
               <input
                 type="number"
@@ -1026,7 +1090,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <button
-                      className="admin-btn outline"
+                      className="admin-btn outline admin-btn-danger"
                       onClick={() => handleDeleteBanner(item.id)}
                     >
                       Delete
