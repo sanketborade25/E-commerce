@@ -27,8 +27,11 @@ public class CitiesController : ControllerBase
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
+            var includeInactive = Request.Query.TryGetValue("includeInactive", out var includeInactiveRaw)
+                && bool.TryParse(includeInactiveRaw, out var parsed)
+                && parsed;
             var cities = await _db.Cities
-                                 .Where(c => !c.IsDeleted)
+                                 .Where(c => !c.IsDeleted && (includeInactive || c.IsActive))
                                  .OrderBy(c => c.Id)
                                  .AsNoTracking()
                                  .ToListAsync(cancellationToken);
@@ -43,7 +46,7 @@ public class CitiesController : ControllerBase
         {
             var city = await _db.Cities
                                .AsNoTracking()
-                               .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, cancellationToken);
+                               .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted && c.IsActive, cancellationToken);
 
             if (city == null) return NotFound();
 
@@ -69,6 +72,7 @@ public class CitiesController : ControllerBase
 
             input.Name = normalizedName;
             var entity = _mapper.Map<City>(input);
+            entity.IsActive = true;
             _db.Cities.Add(entity);
             await _db.SaveChangesAsync(cancellationToken);
 
@@ -99,6 +103,19 @@ public class CitiesController : ControllerBase
             entity.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(cancellationToken);
 
+            return NoContent();
+        }
+
+        // PATCH: api/Cities/5/status
+        [HttpPatch("{id:int}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] CityStatusDto input, CancellationToken cancellationToken)
+        {
+            var entity = await _db.Cities.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, cancellationToken);
+            if (entity == null) return NotFound();
+
+            entity.IsActive = input.IsActive;
+            entity.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(cancellationToken);
             return NoContent();
         }
 

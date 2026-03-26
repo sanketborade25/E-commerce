@@ -1,0 +1,977 @@
+{
+  "Files": [
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\003d505f796b468ca7679283263853d7.png",
+      "PackagePath": "staticwebassets\\uploads\\003d505f796b468ca7679283263853d7.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\00b4bd7ee8924aad8dc36dbd87500148.png",
+      "PackagePath": "staticwebassets\\uploads\\00b4bd7ee8924aad8dc36dbd87500148.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\0156cec6a79446f1b1acfd495ab78492.png",
+      "PackagePath": "staticwebassets\\uploads\\0156cec6a79446f1b1acfd495ab78492.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\01a8d786b70e41d98062053e1a0884a3.png",
+      "PackagePath": "staticwebassets\\uploads\\01a8d786b70e41d98062053e1a0884a3.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\0370916fb88c49b486fcc31a3bc80604.png",
+      "PackagePath": "staticwebassets\\uploads\\0370916fb88c49b486fcc31a3bc80604.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\0498a71d8cb4400c9f6f6f828d1df99f.png",
+      "PackagePath": "staticwebassets\\uploads\\0498a71d8cb4400c9f6f6f828d1df99f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\04c3e72d48bc4a90b83d35a3fd1a0cbd.png",
+      "PackagePath": "staticwebassets\\uploads\\04c3e72d48bc4a90b83d35a3fd1a0cbd.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\059f048fe6114e4da77ab13d3d4e039b.png",
+      "PackagePath": "staticwebassets\\uploads\\059f048fe6114e4da77ab13d3d4e039b.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\05dec3655dfd40629b0a0c5eb2574d2d.png",
+      "PackagePath": "staticwebassets\\uploads\\05dec3655dfd40629b0a0c5eb2574d2d.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\06405b5f6f1b41d696f94ce4a000c125.png",
+      "PackagePath": "staticwebassets\\uploads\\06405b5f6f1b41d696f94ce4a000c125.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\0a78b61cc6ec4d69b34977109ac49755.png",
+      "PackagePath": "staticwebassets\\uploads\\0a78b61cc6ec4d69b34977109ac49755.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\0be49b7aea72422392359ce6d6d8a5e1.png",
+      "PackagePath": "staticwebassets\\uploads\\0be49b7aea72422392359ce6d6d8a5e1.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\0d86d88430694848b550feb42a1aeb97.png",
+      "PackagePath": "staticwebassets\\uploads\\0d86d88430694848b550feb42a1aeb97.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\1144bf7c27a2425e91329e113853d27d.png",
+      "PackagePath": "staticwebassets\\uploads\\1144bf7c27a2425e91329e113853d27d.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\115252d985be41aeaa705faf40a7cde5.png",
+      "PackagePath": "staticwebassets\\uploads\\115252d985be41aeaa705faf40a7cde5.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\117764626b934daf9fcc83d24c0fd8fd.png",
+      "PackagePath": "staticwebassets\\uploads\\117764626b934daf9fcc83d24c0fd8fd.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\14f760a05aa9442581378580f5d68e2e.png",
+      "PackagePath": "staticwebassets\\uploads\\14f760a05aa9442581378580f5d68e2e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\168c4285078542aaace6989daf7207ea.png",
+      "PackagePath": "staticwebassets\\uploads\\168c4285078542aaace6989daf7207ea.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\16bb4e7205984daaa61c81dd65064a95.png",
+      "PackagePath": "staticwebassets\\uploads\\16bb4e7205984daaa61c81dd65064a95.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\1895c88bb4f34fcd81716f670ddebf07.png",
+      "PackagePath": "staticwebassets\\uploads\\1895c88bb4f34fcd81716f670ddebf07.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\1a4e221f92a24368af6ddf562b8f1f76.png",
+      "PackagePath": "staticwebassets\\uploads\\1a4e221f92a24368af6ddf562b8f1f76.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\1b6918dd4e31425e945fcfe1b2899d58.png",
+      "PackagePath": "staticwebassets\\uploads\\1b6918dd4e31425e945fcfe1b2899d58.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\1d018851ac564cabbd513a6fd9750868.png",
+      "PackagePath": "staticwebassets\\uploads\\1d018851ac564cabbd513a6fd9750868.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\1d1a0e2bbd504128ac20d1df8cc40b72.png",
+      "PackagePath": "staticwebassets\\uploads\\1d1a0e2bbd504128ac20d1df8cc40b72.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\1e726b3d3bdf482d92cc0f0097a4defb.png",
+      "PackagePath": "staticwebassets\\uploads\\1e726b3d3bdf482d92cc0f0097a4defb.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\2191d8a0b9a94b5b94b7fa177625b802.png",
+      "PackagePath": "staticwebassets\\uploads\\2191d8a0b9a94b5b94b7fa177625b802.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\235ec292ffcf467ba6ab844c455e7c02.png",
+      "PackagePath": "staticwebassets\\uploads\\235ec292ffcf467ba6ab844c455e7c02.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\23ae372eeb6d4a77a62032d7dbfb9c75.png",
+      "PackagePath": "staticwebassets\\uploads\\23ae372eeb6d4a77a62032d7dbfb9c75.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\264db048b98044e6acc5c2a46df9f87e.png",
+      "PackagePath": "staticwebassets\\uploads\\264db048b98044e6acc5c2a46df9f87e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\29dab9815f7542789ac0b286765540c6.png",
+      "PackagePath": "staticwebassets\\uploads\\29dab9815f7542789ac0b286765540c6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\2b4d72deefe24fc5963b3ea945f3393e.png",
+      "PackagePath": "staticwebassets\\uploads\\2b4d72deefe24fc5963b3ea945f3393e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\2b826d1cf357429da9027fb51b3e576f.png",
+      "PackagePath": "staticwebassets\\uploads\\2b826d1cf357429da9027fb51b3e576f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\2dc60fd3189e4daf83234df2edace355.png",
+      "PackagePath": "staticwebassets\\uploads\\2dc60fd3189e4daf83234df2edace355.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\2e23b0c4255a462e948fcab201e7dea3.png",
+      "PackagePath": "staticwebassets\\uploads\\2e23b0c4255a462e948fcab201e7dea3.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\2e449fd0328f478c9bd72faedba5f6ab.png",
+      "PackagePath": "staticwebassets\\uploads\\2e449fd0328f478c9bd72faedba5f6ab.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\2edb8e2d4f1344a5983745f3a0d4d8bb.png",
+      "PackagePath": "staticwebassets\\uploads\\2edb8e2d4f1344a5983745f3a0d4d8bb.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\311186260702479a88ad589431c0c4ef.png",
+      "PackagePath": "staticwebassets\\uploads\\311186260702479a88ad589431c0c4ef.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3115593568f44b9a9b031cd27c867336.png",
+      "PackagePath": "staticwebassets\\uploads\\3115593568f44b9a9b031cd27c867336.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\31987f90102a4362a1864a4f9faa6ce2.png",
+      "PackagePath": "staticwebassets\\uploads\\31987f90102a4362a1864a4f9faa6ce2.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\319a41f7e7f848eba8042d3f087baa81.png",
+      "PackagePath": "staticwebassets\\uploads\\319a41f7e7f848eba8042d3f087baa81.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\360f1a1a72984b61814ec36d3f7cba37.png",
+      "PackagePath": "staticwebassets\\uploads\\360f1a1a72984b61814ec36d3f7cba37.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\36f51d7cae6c4746a4d0ea1cef526d83.png",
+      "PackagePath": "staticwebassets\\uploads\\36f51d7cae6c4746a4d0ea1cef526d83.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3719c48edf4849e0951b8767ec47c0b4.png",
+      "PackagePath": "staticwebassets\\uploads\\3719c48edf4849e0951b8767ec47c0b4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\37331e619a284d5eb91eaab38ac9ce26.png",
+      "PackagePath": "staticwebassets\\uploads\\37331e619a284d5eb91eaab38ac9ce26.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\37cf3b001632483f94707f4e5ac38863.png",
+      "PackagePath": "staticwebassets\\uploads\\37cf3b001632483f94707f4e5ac38863.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\398c4ba0a61841d98f0436a4db55f367.png",
+      "PackagePath": "staticwebassets\\uploads\\398c4ba0a61841d98f0436a4db55f367.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3aca434f7f8548bcb21b0f25e8bc23ad.png",
+      "PackagePath": "staticwebassets\\uploads\\3aca434f7f8548bcb21b0f25e8bc23ad.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3b7e90472fc840cf8e44f4dd9a6dd11a.png",
+      "PackagePath": "staticwebassets\\uploads\\3b7e90472fc840cf8e44f4dd9a6dd11a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3d0550a2fba84a979582dc08379bf35d.png",
+      "PackagePath": "staticwebassets\\uploads\\3d0550a2fba84a979582dc08379bf35d.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3d566902ee9548df8cef6d64b587c4a7.png",
+      "PackagePath": "staticwebassets\\uploads\\3d566902ee9548df8cef6d64b587c4a7.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3e3ac87320844540b0ecdfd9adac18c9.png",
+      "PackagePath": "staticwebassets\\uploads\\3e3ac87320844540b0ecdfd9adac18c9.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3f14fdda25fb453a951ac1b295892a6e.png",
+      "PackagePath": "staticwebassets\\uploads\\3f14fdda25fb453a951ac1b295892a6e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3f322c79acf64ae8a6bef28fc7a1bcbe.png",
+      "PackagePath": "staticwebassets\\uploads\\3f322c79acf64ae8a6bef28fc7a1bcbe.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\3fcf4394c7cb4f23bebe1f86a2f1e271.png",
+      "PackagePath": "staticwebassets\\uploads\\3fcf4394c7cb4f23bebe1f86a2f1e271.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4017eeb6046844c48597c521104c4030.png",
+      "PackagePath": "staticwebassets\\uploads\\4017eeb6046844c48597c521104c4030.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\40bd5dccbc3c48b29f52faf17761014c.png",
+      "PackagePath": "staticwebassets\\uploads\\40bd5dccbc3c48b29f52faf17761014c.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\40e08f7195a3492087fc79f0ec260b46.png",
+      "PackagePath": "staticwebassets\\uploads\\40e08f7195a3492087fc79f0ec260b46.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\41ffb595197c4ed3bed332b4fa919f6a.png",
+      "PackagePath": "staticwebassets\\uploads\\41ffb595197c4ed3bed332b4fa919f6a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\438d7cce6114430bbf172264d6eaf2e4.png",
+      "PackagePath": "staticwebassets\\uploads\\438d7cce6114430bbf172264d6eaf2e4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4739589615cf47d7a4cfc76b29bd5839.png",
+      "PackagePath": "staticwebassets\\uploads\\4739589615cf47d7a4cfc76b29bd5839.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\49a7a81ce41a49c0a443efffb49735bf.png",
+      "PackagePath": "staticwebassets\\uploads\\49a7a81ce41a49c0a443efffb49735bf.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4aa023e2411e47c9b7b5e3dd2ceda247.png",
+      "PackagePath": "staticwebassets\\uploads\\4aa023e2411e47c9b7b5e3dd2ceda247.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4b03974ac539466580e3bab257b49303.png",
+      "PackagePath": "staticwebassets\\uploads\\4b03974ac539466580e3bab257b49303.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4c6c1c33de8347e69bd2373ea489553c.png",
+      "PackagePath": "staticwebassets\\uploads\\4c6c1c33de8347e69bd2373ea489553c.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4cab8f96a7b549af8d55bb6f4b55e779.png",
+      "PackagePath": "staticwebassets\\uploads\\4cab8f96a7b549af8d55bb6f4b55e779.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4caf677e673f4977a313186438ca5c36.png",
+      "PackagePath": "staticwebassets\\uploads\\4caf677e673f4977a313186438ca5c36.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4d4e63036a4a44a7b14c43ae55fe70cb.png",
+      "PackagePath": "staticwebassets\\uploads\\4d4e63036a4a44a7b14c43ae55fe70cb.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4dd413f78c7249e2be93b6702d436eb6.png",
+      "PackagePath": "staticwebassets\\uploads\\4dd413f78c7249e2be93b6702d436eb6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4f1d6729ba7145daa24972bc46d30aa0.png",
+      "PackagePath": "staticwebassets\\uploads\\4f1d6729ba7145daa24972bc46d30aa0.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\4f2b006428814c72aa31ccb09e36179b.png",
+      "PackagePath": "staticwebassets\\uploads\\4f2b006428814c72aa31ccb09e36179b.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\55c85c782f9d4a66ba99de43ea537097.png",
+      "PackagePath": "staticwebassets\\uploads\\55c85c782f9d4a66ba99de43ea537097.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5654ce5c58234602b9e2ff7f3aa7bf37.png",
+      "PackagePath": "staticwebassets\\uploads\\5654ce5c58234602b9e2ff7f3aa7bf37.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\57f03b6171bb4fbaa10276fe96097633.png",
+      "PackagePath": "staticwebassets\\uploads\\57f03b6171bb4fbaa10276fe96097633.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\58ded2bd95e5478798bcfbb48b292bd4.png",
+      "PackagePath": "staticwebassets\\uploads\\58ded2bd95e5478798bcfbb48b292bd4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5b4c88caac7a4696a2068d060a0f29eb.png",
+      "PackagePath": "staticwebassets\\uploads\\5b4c88caac7a4696a2068d060a0f29eb.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5ba70bafbec3439f8ec9a8518d04af42.png",
+      "PackagePath": "staticwebassets\\uploads\\5ba70bafbec3439f8ec9a8518d04af42.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5c97fad5bb354152b4d4082e54e55e4d.png",
+      "PackagePath": "staticwebassets\\uploads\\5c97fad5bb354152b4d4082e54e55e4d.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5d280a405fe34bbfb8a1c7c444dd4cab.png",
+      "PackagePath": "staticwebassets\\uploads\\5d280a405fe34bbfb8a1c7c444dd4cab.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5d94f469237746da9d207231d8c8d2ee.png",
+      "PackagePath": "staticwebassets\\uploads\\5d94f469237746da9d207231d8c8d2ee.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5dd54fd5713a4266ba9616484c090c7d.png",
+      "PackagePath": "staticwebassets\\uploads\\5dd54fd5713a4266ba9616484c090c7d.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5e9795a9e931485597fb62d9bcb1d052.png",
+      "PackagePath": "staticwebassets\\uploads\\5e9795a9e931485597fb62d9bcb1d052.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5f2dc7229fb04e7c9491f0e7a487544f.png",
+      "PackagePath": "staticwebassets\\uploads\\5f2dc7229fb04e7c9491f0e7a487544f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\5f415dcf26164088b98e93b44dc8d9ef.png",
+      "PackagePath": "staticwebassets\\uploads\\5f415dcf26164088b98e93b44dc8d9ef.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6147e0b51a0f4cff9e763fa3095f2d19.png",
+      "PackagePath": "staticwebassets\\uploads\\6147e0b51a0f4cff9e763fa3095f2d19.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\63503a9a91e24f78bee8c2e58a521e5e.png",
+      "PackagePath": "staticwebassets\\uploads\\63503a9a91e24f78bee8c2e58a521e5e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\64f2ecd884c140bdb546c7f9c29caf93.png",
+      "PackagePath": "staticwebassets\\uploads\\64f2ecd884c140bdb546c7f9c29caf93.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\658d7644aecd4b52abf38cf1a8a61473.png",
+      "PackagePath": "staticwebassets\\uploads\\658d7644aecd4b52abf38cf1a8a61473.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6869a63eeeba438a82fb5620322157f0.png",
+      "PackagePath": "staticwebassets\\uploads\\6869a63eeeba438a82fb5620322157f0.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\689869fd0c9b4fc8afac6696f493fcd8.png",
+      "PackagePath": "staticwebassets\\uploads\\689869fd0c9b4fc8afac6696f493fcd8.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\68e9fca049aa4f4ca96d71e2c75bf844.png",
+      "PackagePath": "staticwebassets\\uploads\\68e9fca049aa4f4ca96d71e2c75bf844.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6bbcd433a7704e6ba0ed399f554a60dd.png",
+      "PackagePath": "staticwebassets\\uploads\\6bbcd433a7704e6ba0ed399f554a60dd.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6c04283435a144a5a2574007453d2be4.png",
+      "PackagePath": "staticwebassets\\uploads\\6c04283435a144a5a2574007453d2be4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6c22f7b182e54049a635f9c7258ca8af.png",
+      "PackagePath": "staticwebassets\\uploads\\6c22f7b182e54049a635f9c7258ca8af.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6cf380c0e59d4cf18faab648dc8210bf.png",
+      "PackagePath": "staticwebassets\\uploads\\6cf380c0e59d4cf18faab648dc8210bf.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6d4f618ae14147b9a0de5ab10ffe8892.png",
+      "PackagePath": "staticwebassets\\uploads\\6d4f618ae14147b9a0de5ab10ffe8892.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6f022afaf61a41eb97f48216a297e8a4.png",
+      "PackagePath": "staticwebassets\\uploads\\6f022afaf61a41eb97f48216a297e8a4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6f1b1d6f616247a48991a96c200da351.png",
+      "PackagePath": "staticwebassets\\uploads\\6f1b1d6f616247a48991a96c200da351.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6f495b8edbbc462fa548a9556b9d8604.png",
+      "PackagePath": "staticwebassets\\uploads\\6f495b8edbbc462fa548a9556b9d8604.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6f61f5c639b64e29982ad0239cdc32dd.png",
+      "PackagePath": "staticwebassets\\uploads\\6f61f5c639b64e29982ad0239cdc32dd.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\6fce472005a14e26a29696ce2f52beb3.png",
+      "PackagePath": "staticwebassets\\uploads\\6fce472005a14e26a29696ce2f52beb3.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\700a38e6288b4d1da0ae3605f5f868b5.png",
+      "PackagePath": "staticwebassets\\uploads\\700a38e6288b4d1da0ae3605f5f868b5.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\726d4994051549efb5c17cd9f3c9d3e4.png",
+      "PackagePath": "staticwebassets\\uploads\\726d4994051549efb5c17cd9f3c9d3e4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\7327c9b5de014728b921f0c39c830ef6.png",
+      "PackagePath": "staticwebassets\\uploads\\7327c9b5de014728b921f0c39c830ef6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\735f8d66416044da9de3f9d6281fa906.png",
+      "PackagePath": "staticwebassets\\uploads\\735f8d66416044da9de3f9d6281fa906.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\749b3ef4bf144e6db47296c672dface6.png",
+      "PackagePath": "staticwebassets\\uploads\\749b3ef4bf144e6db47296c672dface6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\75a9bba244fe45ceaac4246cd808ba6a.png",
+      "PackagePath": "staticwebassets\\uploads\\75a9bba244fe45ceaac4246cd808ba6a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\766ae14c233d4d2289dbdd322aadf7ca.png",
+      "PackagePath": "staticwebassets\\uploads\\766ae14c233d4d2289dbdd322aadf7ca.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\76bd5260938c4af8b86a3708641aed79.png",
+      "PackagePath": "staticwebassets\\uploads\\76bd5260938c4af8b86a3708641aed79.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\77d001cf505f4816aa16412a6ea340fe.png",
+      "PackagePath": "staticwebassets\\uploads\\77d001cf505f4816aa16412a6ea340fe.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\7820947b5cca4053b5817a59e9c48589.png",
+      "PackagePath": "staticwebassets\\uploads\\7820947b5cca4053b5817a59e9c48589.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\7882276e81a2412bb50b2e489c166f81.png",
+      "PackagePath": "staticwebassets\\uploads\\7882276e81a2412bb50b2e489c166f81.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\78cbe05e715f475fad73cb288946ffac.png",
+      "PackagePath": "staticwebassets\\uploads\\78cbe05e715f475fad73cb288946ffac.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\7b574977445c480aaf7cda2660a3815b.png",
+      "PackagePath": "staticwebassets\\uploads\\7b574977445c480aaf7cda2660a3815b.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\7bad87d726454c1b80f78894e0d5481a.png",
+      "PackagePath": "staticwebassets\\uploads\\7bad87d726454c1b80f78894e0d5481a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\7bdf52b003ea4c5fb5943e79fd32001c.png",
+      "PackagePath": "staticwebassets\\uploads\\7bdf52b003ea4c5fb5943e79fd32001c.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\7be83609f9af4ae9ba0634c15c8570df.png",
+      "PackagePath": "staticwebassets\\uploads\\7be83609f9af4ae9ba0634c15c8570df.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\80729b01c6334a1d9df04fb1718dc80f.png",
+      "PackagePath": "staticwebassets\\uploads\\80729b01c6334a1d9df04fb1718dc80f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\80d0d9bb803b4f0cb0380a39c51eeab6.png",
+      "PackagePath": "staticwebassets\\uploads\\80d0d9bb803b4f0cb0380a39c51eeab6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\85fb65aa5d88441b9662fda03b7956f4.png",
+      "PackagePath": "staticwebassets\\uploads\\85fb65aa5d88441b9662fda03b7956f4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\874c15d15959494496ee996038fb6e02.png",
+      "PackagePath": "staticwebassets\\uploads\\874c15d15959494496ee996038fb6e02.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\881b9b03a5d840c1a9d9eb3995b3f41c.png",
+      "PackagePath": "staticwebassets\\uploads\\881b9b03a5d840c1a9d9eb3995b3f41c.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\889a7c6a4ef14ce08693405e2d6cf303.png",
+      "PackagePath": "staticwebassets\\uploads\\889a7c6a4ef14ce08693405e2d6cf303.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\89bd7136a88041d08ac9886708d8115f.png",
+      "PackagePath": "staticwebassets\\uploads\\89bd7136a88041d08ac9886708d8115f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\8a608897cd1b402e837113405e4283bf.png",
+      "PackagePath": "staticwebassets\\uploads\\8a608897cd1b402e837113405e4283bf.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\8a8fa262b9c5475bbbae8884cc6f3c1e.png",
+      "PackagePath": "staticwebassets\\uploads\\8a8fa262b9c5475bbbae8884cc6f3c1e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\8e935f971574462fbf4fe551e9898f19.png",
+      "PackagePath": "staticwebassets\\uploads\\8e935f971574462fbf4fe551e9898f19.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\8f82639cc9f64eb4a780e5915302d1c3.png",
+      "PackagePath": "staticwebassets\\uploads\\8f82639cc9f64eb4a780e5915302d1c3.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\8fb4bf6416594ffb9d6afe6f1ab30da5.png",
+      "PackagePath": "staticwebassets\\uploads\\8fb4bf6416594ffb9d6afe6f1ab30da5.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9068f176ca654573b1c422b01f8ded7e.png",
+      "PackagePath": "staticwebassets\\uploads\\9068f176ca654573b1c422b01f8ded7e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\920e8233570c4946b2c00bd3abf814ff.png",
+      "PackagePath": "staticwebassets\\uploads\\920e8233570c4946b2c00bd3abf814ff.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\92359184e03f463aa48c9c3baeb24af0.png",
+      "PackagePath": "staticwebassets\\uploads\\92359184e03f463aa48c9c3baeb24af0.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9335f6ed229a497eb23a167807c3cd04.png",
+      "PackagePath": "staticwebassets\\uploads\\9335f6ed229a497eb23a167807c3cd04.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\94df4d3e96804667be5c43395eb8bd1b.png",
+      "PackagePath": "staticwebassets\\uploads\\94df4d3e96804667be5c43395eb8bd1b.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9534c3c3ff13464880ba58d283db4806.png",
+      "PackagePath": "staticwebassets\\uploads\\9534c3c3ff13464880ba58d283db4806.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9545e8711902408bac520793498565b9.png",
+      "PackagePath": "staticwebassets\\uploads\\9545e8711902408bac520793498565b9.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\971306472c584a2590149446a8caa9be.png",
+      "PackagePath": "staticwebassets\\uploads\\971306472c584a2590149446a8caa9be.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\97bca56e4e1349af975e146d50b7ff53.png",
+      "PackagePath": "staticwebassets\\uploads\\97bca56e4e1349af975e146d50b7ff53.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\99d683e1b5954e6ba0c0510b17093163.png",
+      "PackagePath": "staticwebassets\\uploads\\99d683e1b5954e6ba0c0510b17093163.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9a748d667b9b454a9e2f968b6a466a99.png",
+      "PackagePath": "staticwebassets\\uploads\\9a748d667b9b454a9e2f968b6a466a99.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9ac31763c2a645d0b39ce3ccfa93a60a.png",
+      "PackagePath": "staticwebassets\\uploads\\9ac31763c2a645d0b39ce3ccfa93a60a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9beb180972234135a9759f502312caed.png",
+      "PackagePath": "staticwebassets\\uploads\\9beb180972234135a9759f502312caed.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9bf14fa8b2314e608ec456c7eb7d3614.png",
+      "PackagePath": "staticwebassets\\uploads\\9bf14fa8b2314e608ec456c7eb7d3614.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9c94146b7a924b5a9c631263e97b6f21.png",
+      "PackagePath": "staticwebassets\\uploads\\9c94146b7a924b5a9c631263e97b6f21.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\9ec2ceba71f44a978244a47779e588b8.png",
+      "PackagePath": "staticwebassets\\uploads\\9ec2ceba71f44a978244a47779e588b8.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a07ad518295d43fdbaa3f36ee4b4c5a6.png",
+      "PackagePath": "staticwebassets\\uploads\\a07ad518295d43fdbaa3f36ee4b4c5a6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a0ea415d06da422f9190d9d653d9ca3f.png",
+      "PackagePath": "staticwebassets\\uploads\\a0ea415d06da422f9190d9d653d9ca3f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a33d1a22aee0435fa1081f0768c832fc.png",
+      "PackagePath": "staticwebassets\\uploads\\a33d1a22aee0435fa1081f0768c832fc.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a4418bf3d8b54d94a1e5584914394802.png",
+      "PackagePath": "staticwebassets\\uploads\\a4418bf3d8b54d94a1e5584914394802.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a45bfae9625f46d3a50efd3c42924e33.png",
+      "PackagePath": "staticwebassets\\uploads\\a45bfae9625f46d3a50efd3c42924e33.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a613a97295a745df8ad892dd3140bd65.png",
+      "PackagePath": "staticwebassets\\uploads\\a613a97295a745df8ad892dd3140bd65.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a69b182477f64a2a9a98ba1ce6e207a8.png",
+      "PackagePath": "staticwebassets\\uploads\\a69b182477f64a2a9a98ba1ce6e207a8.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a70f3600b28b4967a83a0107c10c153d.png",
+      "PackagePath": "staticwebassets\\uploads\\a70f3600b28b4967a83a0107c10c153d.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a75b6f18a66a4697b65d370869338956.png",
+      "PackagePath": "staticwebassets\\uploads\\a75b6f18a66a4697b65d370869338956.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a86895c1eb7f43a691329bd1707dfed2.png",
+      "PackagePath": "staticwebassets\\uploads\\a86895c1eb7f43a691329bd1707dfed2.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a89674e0b693456c943708ba532e0dfa.png",
+      "PackagePath": "staticwebassets\\uploads\\a89674e0b693456c943708ba532e0dfa.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a8a431c7b1e74b15bbbfc2a3e784b914.png",
+      "PackagePath": "staticwebassets\\uploads\\a8a431c7b1e74b15bbbfc2a3e784b914.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a8fa0c5c9058419a85ac08d8bcbabd0b.png",
+      "PackagePath": "staticwebassets\\uploads\\a8fa0c5c9058419a85ac08d8bcbabd0b.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a930c919bb4b416692d27aba8572d27a.png",
+      "PackagePath": "staticwebassets\\uploads\\a930c919bb4b416692d27aba8572d27a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\a9d67187d19c43529d9e9d297f257b80.png",
+      "PackagePath": "staticwebassets\\uploads\\a9d67187d19c43529d9e9d297f257b80.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\aba9b193796549d99c1a25b93d4825b9.png",
+      "PackagePath": "staticwebassets\\uploads\\aba9b193796549d99c1a25b93d4825b9.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\ad70987358ba4cf1aaad87bb691cdca3.png",
+      "PackagePath": "staticwebassets\\uploads\\ad70987358ba4cf1aaad87bb691cdca3.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\ade3f493c9494210bd93c6228dac838a.png",
+      "PackagePath": "staticwebassets\\uploads\\ade3f493c9494210bd93c6228dac838a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\adf16051d06e4f03afaaf8a1806535b6.png",
+      "PackagePath": "staticwebassets\\uploads\\adf16051d06e4f03afaaf8a1806535b6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\aef6b12146b745d48e64c0706eafb169.png",
+      "PackagePath": "staticwebassets\\uploads\\aef6b12146b745d48e64c0706eafb169.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\af810682139d44c4b374f35aabaa0ea6.png",
+      "PackagePath": "staticwebassets\\uploads\\af810682139d44c4b374f35aabaa0ea6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b08d9158575b476a914663ae32c265b4.png",
+      "PackagePath": "staticwebassets\\uploads\\b08d9158575b476a914663ae32c265b4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b23b462b3d3a4b6cbcfdc2edc45ebe99.png",
+      "PackagePath": "staticwebassets\\uploads\\b23b462b3d3a4b6cbcfdc2edc45ebe99.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b2b9251417a14e23a94cf83747577960.png",
+      "PackagePath": "staticwebassets\\uploads\\b2b9251417a14e23a94cf83747577960.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b2d1678704724ae98c9008c92263b481.png",
+      "PackagePath": "staticwebassets\\uploads\\b2d1678704724ae98c9008c92263b481.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b38927ddfcd848ac999a92190501be64.png",
+      "PackagePath": "staticwebassets\\uploads\\b38927ddfcd848ac999a92190501be64.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b3c8055ff3ce4443984c92eb32091533.png",
+      "PackagePath": "staticwebassets\\uploads\\b3c8055ff3ce4443984c92eb32091533.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b40890919eb84df9a590402ead6d152e.png",
+      "PackagePath": "staticwebassets\\uploads\\b40890919eb84df9a590402ead6d152e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b44b8fd4c93e4cd8aa162b2f655afc6f.png",
+      "PackagePath": "staticwebassets\\uploads\\b44b8fd4c93e4cd8aa162b2f655afc6f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b54caeb6fc65418d8e9468e5e19447d4.png",
+      "PackagePath": "staticwebassets\\uploads\\b54caeb6fc65418d8e9468e5e19447d4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b6c4798f1ea640ed9abaff228cbf0fe3.png",
+      "PackagePath": "staticwebassets\\uploads\\b6c4798f1ea640ed9abaff228cbf0fe3.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b7258f8c0b8641f89223838155796212.png",
+      "PackagePath": "staticwebassets\\uploads\\b7258f8c0b8641f89223838155796212.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b87e72a17b2b4a7abce7127d258aea2f.png",
+      "PackagePath": "staticwebassets\\uploads\\b87e72a17b2b4a7abce7127d258aea2f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b8afc20360734cd89cc74bcef23bf9e6.png",
+      "PackagePath": "staticwebassets\\uploads\\b8afc20360734cd89cc74bcef23bf9e6.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\b8ba345825ec46088ae1ecac857718ac.png",
+      "PackagePath": "staticwebassets\\uploads\\b8ba345825ec46088ae1ecac857718ac.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\bb2674fc9a044c04a30548b56f97b157.png",
+      "PackagePath": "staticwebassets\\uploads\\bb2674fc9a044c04a30548b56f97b157.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\bb4088e3704c43e1972395a9b9d90a91.png",
+      "PackagePath": "staticwebassets\\uploads\\bb4088e3704c43e1972395a9b9d90a91.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\bba7393ac3e545689c0573d250f9b4b9.png",
+      "PackagePath": "staticwebassets\\uploads\\bba7393ac3e545689c0573d250f9b4b9.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\bbb6c8dc6cb7416a8567d64b61610867.png",
+      "PackagePath": "staticwebassets\\uploads\\bbb6c8dc6cb7416a8567d64b61610867.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\bfbb66fe0d894827abbdb99c38f3600e.png",
+      "PackagePath": "staticwebassets\\uploads\\bfbb66fe0d894827abbdb99c38f3600e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c054d666cf0b4d249667c2aa047fac86.png",
+      "PackagePath": "staticwebassets\\uploads\\c054d666cf0b4d249667c2aa047fac86.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c09eb43529574596943bbe61f7919afe.png",
+      "PackagePath": "staticwebassets\\uploads\\c09eb43529574596943bbe61f7919afe.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c0fb73892c3747a38363bdeb61911f10.png",
+      "PackagePath": "staticwebassets\\uploads\\c0fb73892c3747a38363bdeb61911f10.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c224e47eeb5c4a69b7a3a857d98ca801.png",
+      "PackagePath": "staticwebassets\\uploads\\c224e47eeb5c4a69b7a3a857d98ca801.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c2b11f468d3d4bf2b8d42ac72e57b4d8.png",
+      "PackagePath": "staticwebassets\\uploads\\c2b11f468d3d4bf2b8d42ac72e57b4d8.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c342b70a98bd44eab71a6bfbbaf99ee3.png",
+      "PackagePath": "staticwebassets\\uploads\\c342b70a98bd44eab71a6bfbbaf99ee3.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c4164930e5ab4aa2a3ac99b4b3b99aff.png",
+      "PackagePath": "staticwebassets\\uploads\\c4164930e5ab4aa2a3ac99b4b3b99aff.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c4c4448707484ef1be728b4da7fcea1a.png",
+      "PackagePath": "staticwebassets\\uploads\\c4c4448707484ef1be728b4da7fcea1a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c5b818cb5fd1468ca3b2ae704ee95670.png",
+      "PackagePath": "staticwebassets\\uploads\\c5b818cb5fd1468ca3b2ae704ee95670.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c70d1fd44fb84d37a1c8fa9d6b4dce7e.png",
+      "PackagePath": "staticwebassets\\uploads\\c70d1fd44fb84d37a1c8fa9d6b4dce7e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c8a408d14e974f33b1ec6173d2d0c9c7.png",
+      "PackagePath": "staticwebassets\\uploads\\c8a408d14e974f33b1ec6173d2d0c9c7.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\c9e5ef0b280e41d2a2f4e68b371ba291.png",
+      "PackagePath": "staticwebassets\\uploads\\c9e5ef0b280e41d2a2f4e68b371ba291.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\cacceb65e9084937b82cc29c3e3388dd.png",
+      "PackagePath": "staticwebassets\\uploads\\cacceb65e9084937b82cc29c3e3388dd.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\cb1f738e26004a0ebc27ef1645bd854f.png",
+      "PackagePath": "staticwebassets\\uploads\\cb1f738e26004a0ebc27ef1645bd854f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\cb615039522e40b2a2978fdae92d895e.png",
+      "PackagePath": "staticwebassets\\uploads\\cb615039522e40b2a2978fdae92d895e.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\ccf1fa1fd80b482cafe995938f26f151.png",
+      "PackagePath": "staticwebassets\\uploads\\ccf1fa1fd80b482cafe995938f26f151.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\cd572475fd0645dfaa70528715cbc0dc.png",
+      "PackagePath": "staticwebassets\\uploads\\cd572475fd0645dfaa70528715cbc0dc.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\ced69e9b394d48e687594eb4dbf2d50a.png",
+      "PackagePath": "staticwebassets\\uploads\\ced69e9b394d48e687594eb4dbf2d50a.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d1373044f8874cee9215ecc523b9c826.png",
+      "PackagePath": "staticwebassets\\uploads\\d1373044f8874cee9215ecc523b9c826.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d4778f21ca144f0fbd648379a788793f.png",
+      "PackagePath": "staticwebassets\\uploads\\d4778f21ca144f0fbd648379a788793f.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d7798f0e082a4436bc8c7e5f0e540088.png",
+      "PackagePath": "staticwebassets\\uploads\\d7798f0e082a4436bc8c7e5f0e540088.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d7bb7412fab049e19be930743be2f6c4.png",
+      "PackagePath": "staticwebassets\\uploads\\d7bb7412fab049e19be930743be2f6c4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d7e450667b194b56b558b08582600cf8.png",
+      "PackagePath": "staticwebassets\\uploads\\d7e450667b194b56b558b08582600cf8.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d83df3e724a8481783c66525e0ca6fb5.png",
+      "PackagePath": "staticwebassets\\uploads\\d83df3e724a8481783c66525e0ca6fb5.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d89eeffd4edb4e48ae5b2e256c8f2cfe.png",
+      "PackagePath": "staticwebassets\\uploads\\d89eeffd4edb4e48ae5b2e256c8f2cfe.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d9b26ef4be334f58b0cd09678dc8aee2.png",
+      "PackagePath": "staticwebassets\\uploads\\d9b26ef4be334f58b0cd09678dc8aee2.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\d9c4bf8eaff54cb597c2fbe5804589e5.png",
+      "PackagePath": "staticwebassets\\uploads\\d9c4bf8eaff54cb597c2fbe5804589e5.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\da5f90d85a66486bafd2b93b8d8d2011.png",
+      "PackagePath": "staticwebassets\\uploads\\da5f90d85a66486bafd2b93b8d8d2011.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\db7385ae2f084ede95bfeb0b89703c9d.png",
+      "PackagePath": "staticwebassets\\uploads\\db7385ae2f084ede95bfeb0b89703c9d.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\dbeb327b801d44d4938d673621879225.png",
+      "PackagePath": "staticwebassets\\uploads\\dbeb327b801d44d4938d673621879225.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\dd5e5751f4c94180a6be84687fcab1e7.png",
+      "PackagePath": "staticwebassets\\uploads\\dd5e5751f4c94180a6be84687fcab1e7.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\df3a03efd7374f6fab431317ac6e81dd.png",
+      "PackagePath": "staticwebassets\\uploads\\df3a03efd7374f6fab431317ac6e81dd.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e2193c88ee4f479993168d073f673acc.png",
+      "PackagePath": "staticwebassets\\uploads\\e2193c88ee4f479993168d073f673acc.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e2e90089f60e493c82a5e6a632fb0a61.png",
+      "PackagePath": "staticwebassets\\uploads\\e2e90089f60e493c82a5e6a632fb0a61.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e2f21a58019843a1b31eb405c45a9239.png",
+      "PackagePath": "staticwebassets\\uploads\\e2f21a58019843a1b31eb405c45a9239.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e477aa9ca83741f2b24a7aaeb3a76af5.png",
+      "PackagePath": "staticwebassets\\uploads\\e477aa9ca83741f2b24a7aaeb3a76af5.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e4e43e7ee55142c1b9ce4a023a1a818b.png",
+      "PackagePath": "staticwebassets\\uploads\\e4e43e7ee55142c1b9ce4a023a1a818b.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e64c3c72a6b24ce589fb4ae631a067b4.png",
+      "PackagePath": "staticwebassets\\uploads\\e64c3c72a6b24ce589fb4ae631a067b4.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e6f5108a3a1e4562be64d93f8b65f2c3.png",
+      "PackagePath": "staticwebassets\\uploads\\e6f5108a3a1e4562be64d93f8b65f2c3.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e88dfa9f925d49cca02be233e4925850.png",
+      "PackagePath": "staticwebassets\\uploads\\e88dfa9f925d49cca02be233e4925850.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\e8fa7d5d692840a381a725ee80f27fbf.png",
+      "PackagePath": "staticwebassets\\uploads\\e8fa7d5d692840a381a725ee80f27fbf.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\ea3317640d38487ebaf47cd3162222ca.png",
+      "PackagePath": "staticwebassets\\uploads\\ea3317640d38487ebaf47cd3162222ca.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\ec07162b288140a48717bcb08a278ad5.png",
+      "PackagePath": "staticwebassets\\uploads\\ec07162b288140a48717bcb08a278ad5.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\eea495568056414aa396055270013eb8.png",
+      "PackagePath": "staticwebassets\\uploads\\eea495568056414aa396055270013eb8.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\f3c1c0d9a8c042e486b8760df053c994.png",
+      "PackagePath": "staticwebassets\\uploads\\f3c1c0d9a8c042e486b8760df053c994.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\f56c600bc76a426d97f9b3a574d53170.png",
+      "PackagePath": "staticwebassets\\uploads\\f56c600bc76a426d97f9b3a574d53170.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\f64d9a7e449b46328a3fd6f9cf2d89cf.png",
+      "PackagePath": "staticwebassets\\uploads\\f64d9a7e449b46328a3fd6f9cf2d89cf.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\f7477df24ea2423a9fa70e377f685380.png",
+      "PackagePath": "staticwebassets\\uploads\\f7477df24ea2423a9fa70e377f685380.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\f7a1c019399e42ce88af6f1efceeafe7.png",
+      "PackagePath": "staticwebassets\\uploads\\f7a1c019399e42ce88af6f1efceeafe7.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\f91077608b794cda851228d8465056fc.png",
+      "PackagePath": "staticwebassets\\uploads\\f91077608b794cda851228d8465056fc.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\fa038440f8c14e33bddbab7ae79761b8.png",
+      "PackagePath": "staticwebassets\\uploads\\fa038440f8c14e33bddbab7ae79761b8.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\fdf4ab0fdfa04476b38c711e8f405ca7.png",
+      "PackagePath": "staticwebassets\\uploads\\fdf4ab0fdfa04476b38c711e8f405ca7.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\fed7b141f70f4f83a9d537274d7a519c.png",
+      "PackagePath": "staticwebassets\\uploads\\fed7b141f70f4f83a9d537274d7a519c.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\ff9cda1496114d058477bf3cd538ebec.png",
+      "PackagePath": "staticwebassets\\uploads\\ff9cda1496114d058477bf3cd538ebec.png"
+    },
+    {
+      "Id": "c:\\Users\\sanke\\OneDrive\\Desktop\\urbanApp\\urbanclone-dev\\UrbanApi\\wwwroot\\uploads\\ffc05ccda9c242258dfb65d95d0fd3d2.png",
+      "PackagePath": "staticwebassets\\uploads\\ffc05ccda9c242258dfb65d95d0fd3d2.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.UrbanApi.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.UrbanApi.props",
+      "PackagePath": "build\\UrbanApi.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.UrbanApi.props",
+      "PackagePath": "buildMultiTargeting\\UrbanApi.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.UrbanApi.props",
+      "PackagePath": "buildTransitive\\UrbanApi.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

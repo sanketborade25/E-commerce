@@ -2249,8 +2249,16 @@ margin-top : 12px;
 
 .admin-hero h3 {
   max-width: 760px;
-  font-size: clamp(24px, 3vw, 34px);
-  line-height: 1.15;
+  font-size: clamp(22px, 2.6vw, 30px);
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.admin-hero-subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #6a817b;
+  line-height: 1.4;
 }
 
 .admin-summary-grid {
@@ -2290,6 +2298,7 @@ margin-top : 12px;
   padding: 22px;
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 20px 45px rgba(15, 23, 42, 0.05);
+  scroll-margin-top: 110px;
 }
 
 .admin-card h3 {
@@ -2309,6 +2318,29 @@ margin-top : 12px;
   align-items: stretch;
   margin-bottom: 0;
 }
+
+.admin-row-action {
+  align-items: end;
+}
+
+.admin-form-spacer {
+  width: 100%;
+}
+
+.admin-row-action .admin-btn {
+  justify-self: end;
+}
+
+.admin-row-filters {
+  margin-top: 6px;
+}
+
+.admin-service-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 
 .admin-input-row input,
 .admin-input-row select,
@@ -2453,6 +2485,30 @@ margin-top : 12px;
   flex-shrink: 0;
 }
 
+.admin-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.admin-inline-input {
+  min-height: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid #d8e3e8;
+  font-size: 13px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.admin-inline-input:focus {
+  outline: none;
+  border-color: #16856d;
+  box-shadow: 0 0 0 3px rgba(22, 133, 109, 0.12);
+}
+
 .admin-list-item .admin-btn {
   min-height: 40px;
   height: 40px;
@@ -2529,6 +2585,10 @@ margin-top : 12px;
   .admin-summary-grid,
   .admin-input-row {
     grid-template-columns: 1fr;
+  }
+
+  .admin-row-action .admin-btn {
+    justify-self: stretch;
   }
 
   .admin-top-nav {

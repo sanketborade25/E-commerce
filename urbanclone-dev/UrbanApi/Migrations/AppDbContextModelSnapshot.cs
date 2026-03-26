@@ -17,7 +17,7 @@ namespace UrbanApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -434,6 +434,9 @@ namespace UrbanApi.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -461,6 +464,7 @@ namespace UrbanApi.Migrations
                         {
                             Id = 1,
                             CreatedAt = new DateTime(2025, 11, 16, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
                             IsDeleted = false,
                             Name = "Delhi NCR",
                             Slug = "delhi-ncr"
@@ -719,6 +723,44 @@ namespace UrbanApi.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Professionals");
+                });
+
+            modelBuilder.Entity("UrbanApi.Models.ProfessionalCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ProfessionalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ProfessionalId");
+
+                    b.ToTable("ProfessionalCategories");
                 });
 
             modelBuilder.Entity("UrbanApi.Models.Review", b =>
@@ -1170,6 +1212,25 @@ namespace UrbanApi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("UrbanApi.Models.ProfessionalCategory", b =>
+                {
+                    b.HasOne("UrbanApi.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UrbanApi.Models.Professional", "Professional")
+                        .WithMany("ProfessionalCategories")
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Professional");
+                });
+
             modelBuilder.Entity("UrbanApi.Models.Review", b =>
                 {
                     b.HasOne("UrbanApi.Models.Booking", "Booking")
@@ -1289,6 +1350,8 @@ namespace UrbanApi.Migrations
                     b.Navigation("Bookings");
 
                     b.Navigation("Documents");
+
+                    b.Navigation("ProfessionalCategories");
 
                     b.Navigation("Reviews");
                 });

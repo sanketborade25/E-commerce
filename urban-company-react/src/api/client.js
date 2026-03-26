@@ -94,12 +94,22 @@ async function upload(path, formData) {
 }
 
 export const api = {
-  getCities: () => request("/api/Cities"),
+  getCities: (params = {}) => {
+    const search = new URLSearchParams();
+    if (params.includeInactive) search.set("includeInactive", "true");
+    const qs = search.toString();
+    return request(`/api/Cities${qs ? `?${qs}` : ""}`);
+  },
   createCity: (body) =>
     request("/api/Cities", { method: "POST", body: JSON.stringify(body) }),
   updateCity: (id, body) =>
     request(`/api/Cities/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   deleteCity: (id) => request(`/api/Cities/${id}`, { method: "DELETE" }),
+  updateCityStatus: (id, isActive) =>
+    request(`/api/Cities/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isActive })
+    }),
   getCategories: (params = {}) => {
     const search = new URLSearchParams();
     if (params.cityId) search.set("cityId", params.cityId);

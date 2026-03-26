@@ -37,6 +37,9 @@ export default function AdminDashboard() {
 
   const [cityInput, setCityInput] = useState("");
   const [cityError, setCityError] = useState("");
+  const [citySearch, setCitySearch] = useState("");
+  const [editingCityId, setEditingCityId] = useState("");
+  const [editingCityName, setEditingCityName] = useState("");
   const [categoryInput, setCategoryInput] = useState({
     name: "",
     imageUrl: ""
@@ -98,7 +101,7 @@ export default function AdminDashboard() {
   const loadAll = async () => {
     const [citiesRes, categoriesRes, optionsRes, servicesRes, subCatsRes, bannersRes] =
       await Promise.allSettled([
-        api.getCities(),
+        api.getCities({ includeInactive: true }),
         api.getCategories(),
         api.getServiceOptions(),
         api.getAdminServices(),
@@ -374,6 +377,12 @@ export default function AdminDashboard() {
   const handleAddCity = async () => {
     const name = cityInput.trim();
     if (!name) return;
+    const normalized = name.toLowerCase();
+    const exists = cities.some((city) => String(city.name || "").toLowerCase() === normalized);
+    if (exists) {
+      setCityError("City already exists.");
+      return;
+    }
     setCityError("");
     try {
       await api.createCity({ name });
@@ -386,7 +395,49 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteCity = async (id) => {
+    const city = cities.find((item) => String(item.id) === String(id));
+    const ok = window.confirm(
+      `Delete ${city?.name || "this city"}? This will soft-delete related services and categories.`
+    );
+    if (!ok) return;
     await api.deleteCity(id);
+    await loadAll();
+    notifyDataChanged();
+  };
+
+  const handleToggleCityStatus = async (city) => {
+    await api.updateCityStatus(city.id, !city.isActive);
+    await loadAll();
+    notifyDataChanged();
+  };
+
+  const handleEditCity = (city) => {
+    setEditingCityId(String(city.id));
+    setEditingCityName(city.name || "");
+  };
+
+  const handleCancelCityEdit = () => {
+    setEditingCityId("");
+    setEditingCityName("");
+  };
+
+  const handleSaveCityEdit = async (city) => {
+    const name = editingCityName.trim();
+    if (!name) {
+      setCityError("City name is required.");
+      return;
+    }
+    const normalized = name.toLowerCase();
+    const exists = cities.some(
+      (item) => String(item.id) !== String(city.id) && String(item.name || "").toLowerCase() === normalized
+    );
+    if (exists) {
+      setCityError("City already exists.");
+      return;
+    }
+    await api.updateCity(city.id, { name });
+    setEditingCityId("");
+    setEditingCityName("");
     await loadAll();
     notifyDataChanged();
   };
@@ -452,8 +503,11 @@ export default function AdminDashboard() {
   ];
 
   const citiesPerPage = 20;
-  const totalCityPages = Math.max(1, Math.ceil(cities.length / citiesPerPage));
-  const pagedCities = cities.slice(
+  const filteredCities = cities.filter((city) =>
+    String(city.name || "").toLowerCase().includes(citySearch.trim().toLowerCase())
+  );
+  const totalCityPages = Math.max(1, Math.ceil(filteredCities.length / citiesPerPage));
+  const pagedCities = filteredCities.slice(
     (cityPage - 1) * citiesPerPage,
     cityPage * citiesPerPage
   );
@@ -467,6 +521,10 @@ export default function AdminDashboard() {
       setCityPage(totalCityPages);
     }
   }, [cityPage, totalCityPages]);
+
+  useEffect(() => {
+    setCityPage(1);
+  }, [citySearch]);
 
   useEffect(() => {
     if (!selectedServiceId) return;
@@ -543,7 +601,7 @@ export default function AdminDashboard() {
         <div className="admin-hero">
           <div>
             <p className="admin-console-kicker">Platform controls</p>
-            <h3>Admin Dashboard</h3>
+            <h3>Dashboard</h3>
             <p className="admin-hero-subtitle">
               Manage categories, services, cities, and platform data efficiently.
             </p>
@@ -708,8 +766,9 @@ export default function AdminDashboard() {
 
           <div className="admin-card" id="admin-services">
             <h3>Services ({enabledCount} active)</h3>
-            <p className="admin-muted">Choose service option</p>
-            <div className="admin-input-row admin-input-row-small">
+            <p className="admin-muted">Create services with flexible, well-grouped fields.</p>
+            <div className="admin-service-form">
+              <div className="admin-input-row">
               <select
                 value={selectedCategoryId}
                 onChange={(e) => {
@@ -725,30 +784,6 @@ export default function AdminDashboard() {
                 ))}
               </select>
               <select
-                value={toggleCityId}
-                onChange={(e) => setToggleCityId(e.target.value)}
-              >
-                <option value="">City for status actions</option>
-                {cities.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={selectedServiceId}
-                onChange={(e) => setSelectedServiceId(e.target.value)}
-              >
-                <option value="">Filter by service (optional)</option>
-                {services.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {s.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="admin-input-row admin-input-row-small">
-              <select
                 value={serviceSubCategoryId}
                 onChange={(e) => setServiceSubCategoryId(e.target.value)}
               >
@@ -761,10 +796,12 @@ export default function AdminDashboard() {
                   )
                   .map((sc) => (
                     <option key={sc.id} value={String(sc.id)}>
-                      {sc.name}
-                    </option>
-                  ))}
+                    {sc.name}
+                  </option>
+                ))}
               </select>
+            </div>
+            <div className="admin-input-row">
               <input
                 type="text"
                 placeholder="Service title"
@@ -784,6 +821,32 @@ export default function AdminDashboard() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="admin-input-row">
+              <select
+                value={selectedServiceId}
+                onChange={(e) => setSelectedServiceId(e.target.value)}
+              >
+                <option value="">Filter by service</option>
+                {services.map((s) => (
+                  <option key={s.id} value={String(s.id)}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={toggleCityId}
+                onChange={(e) => setToggleCityId(e.target.value)}
+              >
+                <option value="">City for status actions</option>
+                {cities.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="admin-input-row">
               <input
                 type="text"
                 placeholder="Service Image URL (optional)"
@@ -795,12 +858,6 @@ export default function AdminDashboard() {
                   }))
                 }
               />
-              <AdminFileInput
-                inputKey={`service-file-${fileInputKey.service}`}
-                label="Upload service image"
-                onChange={(file) => handleImageUpload(file, "service")}
-              />
-        {/* banner image */}
               <input
                 type="text"
                 placeholder="Banner Image URL (optional)"
@@ -812,14 +869,24 @@ export default function AdminDashboard() {
                   }))
                 }
               />
+            </div>
+            <div className="admin-input-row">
+              <AdminFileInput
+                inputKey={`service-file-${fileInputKey.service}`}
+                label="Upload service image"
+                onChange={(file) => handleImageUpload(file, "service")}
+              />
               <AdminFileInput
                 inputKey={`service-banner-file-${fileInputKey.serviceBanner}`}
                 label="Upload banner image"
                 onChange={(file) => handleImageUpload(file, "serviceBanner")}
               />
+            </div>
+            <div className="admin-input-row admin-input-row-actions">
               <button className="admin-btn admin-btn-add" onClick={handleAddService}>
                 Add
               </button>
+            </div>
             </div>
              <hr/>
             {uploading.service && (
@@ -974,20 +1041,70 @@ export default function AdminDashboard() {
                 Add
               </button>
             </div>
+            <div className="admin-input-row admin-input-row-small">
+              <input
+                type="text"
+                placeholder="Search cities"
+                value={citySearch}
+                onChange={(e) => setCitySearch(e.target.value)}
+              />
+              <div className="admin-form-spacer" />
+            </div>
             {cityError && <p className="admin-error">{cityError}</p>}
              <hr/>
             <div className="admin-list admin-list-grid">
-              {pagedCities.map((city) => (
-                <div key={city.id} className="admin-list-item">
-                  <div>{city.name}</div>
-                  <button
-                    className="admin-btn outline admin-btn-danger"
-                    onClick={() => handleDeleteCity(city.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
+              {pagedCities.length === 0 ? (
+                <p className="admin-muted">No cities found.</p>
+              ) : (
+                pagedCities.map((city) => (
+                  <div key={city.id} className="admin-list-item">
+                    <div>
+                      {String(editingCityId) === String(city.id) ? (
+                        <input
+                          type="text"
+                          className="admin-inline-input"
+                          value={editingCityName}
+                          onChange={(e) => setEditingCityName(e.target.value)}
+                        />
+                      ) : (
+                        <strong>{city.name}</strong>
+                      )}
+                      <div className="admin-pill-row">
+                        <span className={`admin-pill ${city.isActive ? "is-active" : "is-inactive"}`}>
+                          {city.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="admin-actions">
+                      {String(editingCityId) === String(city.id) ? (
+                        <>
+                          <button className="admin-btn outline admin-btn-secondary" onClick={() => handleSaveCityEdit(city)}>
+                            Save
+                          </button>
+                          <button className="admin-btn outline" onClick={handleCancelCityEdit}>
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button className="admin-btn outline admin-btn-secondary" onClick={() => handleEditCity(city)}>
+                            Edit
+                          </button>
+                          <button className="admin-btn outline" onClick={() => handleToggleCityStatus(city)}>
+                            {city.isActive ? "Disable" : "Enable"}
+                          </button>
+                          <button
+                            className="admin-btn outline admin-btn-danger"
+                            onClick={() => handleDeleteCity(city.id)}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
             <div className="admin-pagination">
               <button
