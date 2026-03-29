@@ -84,11 +84,6 @@ export default function RightSidebar() {
         </div>
       )}
 
-      <div className="offer-box">
-        <p>Amazon cashback upto Rs 100</p>
-        <a href="#">View More Offers</a>
-      </div>
-
       <div className="promise-box">
         <img src="/images/1Homepage/logo (4).png" alt="UC Promise" />
         <div className="promise-content">

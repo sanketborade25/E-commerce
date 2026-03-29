@@ -8,7 +8,6 @@ import { api } from "../api/client";
 export default function Home() {
   const [categories, setCategories] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
-  const [bannerItems, setBannerItems] = useState([]);
   // Sub-categories are loaded from the API, not local storage.
   const [popupSubCategories, setPopupSubCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -81,10 +80,9 @@ export default function Home() {
       if (inFlight) return;
       inFlight = true;
       try {
-        const [cats, subcats, banners] = await Promise.all([
+        const [cats, subcats] = await Promise.all([
           api.getCategories({ cityId: cityId || undefined }),
           api.getSubCategories({ cityId: cityId || undefined }),
-          api.getBanners()
         ]);
         if (!mounted) return;
         const allCats = cats || [];
@@ -100,7 +98,6 @@ export default function Home() {
           .sort((a, b) => b.id - a.id);
         setCategories(mappedCats);
         setAllCategories(allCats);
-        setBannerItems(banners || []);
         const derivedSubcats = (allCats || []).filter(
           (c) => c.parentCategoryId != null
         );
@@ -113,7 +110,6 @@ export default function Home() {
         if (!mounted) return;
         setCategories([]);
         setAllCategories([]);
-        setBannerItems([]);
         setPopupSubCategories([]);
         scheduleRetry();
       } finally {
@@ -203,26 +199,6 @@ export default function Home() {
     };
   }, [activeCategory, popupSubCategories, allCategories]);
 
-  const mapSection = (sectionKey) => {
-    const rows = (bannerItems || [])
-      .filter((b) => b.section === sectionKey)
-      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
-    return rows.map((item) => ({
-      id: item.id,
-      title: item.title || "Banner",
-      imageUrl: item.imageUrl,
-      linkUrl: item.linkUrl || ""
-    }));
-  };
-
-  const offers = mapSection("offers");
-  const newNoteworthy = mapSection("new_noteworthy");
-  const mostBooked = mapSection("most_booked");
-  const handleBannerClick = (item) => {
-    if (!item?.linkUrl) return;
-    window.location.href = item.linkUrl;
-  };
-
   return (
     <>
       <Navbar />
@@ -249,63 +225,6 @@ export default function Home() {
 
         <div className="hero-right">
           <img src="/images/1Homepage/hommepageSideBanner.png" />
-        </div>
-      </section>
-
-      <section className="offers">
-        <h2>Offers & discounts</h2>
-        <div className="offer-row">
-          {offers.map((item, idx) => (
-            <div key={item.id || `${item.title}-${idx}`} className="offer-card">
-              <button
-                type="button"
-                className="banner-link"
-                aria-label={item.title || "Offer"}
-                onClick={() => handleBannerClick(item)}
-              >
-                <img src={item.imageUrl} />
-              </button>
-              <p>{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="products">
-        <h2>New and noteworthy</h2>
-        <div className="product-row">
-          {newNoteworthy.map((item, idx) => (
-            <div key={item.id || `${item.title}-${idx}`} className="product-card">
-              <button
-                type="button"
-                className="banner-link"
-                aria-label={item.title || "New and noteworthy"}
-                onClick={() => handleBannerClick(item)}
-              >
-                <img src={item.imageUrl} />
-              </button>
-              <p>{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="most-booked">
-        <h2>Most booked services</h2>
-        <div className="booked-row">
-          {mostBooked.map((item, idx) => (
-            <div key={item.id || `${item.title}-${idx}`} className="booked-card">
-              <button
-                type="button"
-                className="banner-link"
-                aria-label={item.title || "Most booked service"}
-                onClick={() => handleBannerClick(item)}
-              >
-                <img src={item.imageUrl} />
-              </button>
-              <p>{item.title}</p>
-            </div>
-          ))}
         </div>
       </section>
 

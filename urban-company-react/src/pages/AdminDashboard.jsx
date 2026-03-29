@@ -29,11 +29,9 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
   const [serviceOptions, setServiceOptions] = useState([]);
-  const [banners, setBanners] = useState([]);
   const [cityPage, setCityPage] = useState(1);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState("");
-  const [selectedBannerSection, setSelectedBannerSection] = useState("");
   const [popupCategories, setPopupCategories] = useState([]);
 
   const [cityInput, setCityInput] = useState("");
@@ -64,18 +62,11 @@ export default function AdminDashboard() {
     imageUrl: "",
     price: ""
   });
-  const [bannerInput, setBannerInput] = useState({
-    title: "",
-    imageUrl: "",
-    linkUrl: "",
-    displayOrder: ""
-  });
   const [uploading, setUploading] = useState({
     category: false,
     service: false,
     serviceBanner: false,
     option: false,
-    banner: false,
     popupCategory: false
   });
   const [uploadError, setUploadError] = useState({
@@ -83,7 +74,6 @@ export default function AdminDashboard() {
     service: "",
     serviceBanner: "",
     option: "",
-    banner: "",
     popupCategory: ""
   });
   const [fileInputKey, setFileInputKey] = useState({
@@ -91,7 +81,6 @@ export default function AdminDashboard() {
     service: 0,
     serviceBanner: 0,
     option: 0,
-    banner: 0,
     popupCategory: 0
   });
   const adminChannel = useMemo(() => {
@@ -100,14 +89,13 @@ export default function AdminDashboard() {
   }, []);
 
   const loadAll = async () => {
-    const [citiesRes, categoriesRes, optionsRes, servicesRes, subCatsRes, bannersRes] =
+    const [citiesRes, categoriesRes, optionsRes, servicesRes, subCatsRes] =
       await Promise.allSettled([
         api.getCities({ includeInactive: true }),
         api.getCategories(),
         api.getServiceOptions(),
         api.getAdminServices(),
-        api.getSubCategories(),
-        api.getBanners({ all: true })
+        api.getSubCategories()
       ]);
 
     if (citiesRes.status === "fulfilled") {
@@ -130,9 +118,6 @@ export default function AdminDashboard() {
     }
     if (subCatsRes.status === "fulfilled") {
       setPopupCategories(subCatsRes.value || []);
-    }
-    if (bannersRes.status === "fulfilled") {
-      setBanners(bannersRes.value || []);
     }
   };
 
@@ -325,9 +310,6 @@ export default function AdminDashboard() {
       if (target === "popupCategory") {
         setPopupCategoryInput((prev) => ({ ...prev, imageUrl: url }));
       }
-      if (target === "banner") {
-        setBannerInput((prev) => ({ ...prev, imageUrl: url }));
-      }
     } catch (e) {
       setUploadError((prev) => ({
         ...prev,
@@ -336,31 +318,6 @@ export default function AdminDashboard() {
     } finally {
       setUploading((prev) => ({ ...prev, [target]: false }));
     }
-  };
-
-  const handleAddBanner = async () => {
-    if (!selectedBannerSection) {
-      alert("Please select a section.");
-      return;
-    }
-    if (!bannerInput.imageUrl) {
-      alert("Please upload a banner image.");
-      return;
-    }
-
-    await api.createBanner({
-      section: selectedBannerSection,
-      title: bannerInput.title.trim() || null,
-      imageUrl: bannerInput.imageUrl,
-      linkUrl: bannerInput.linkUrl.trim() || null,
-      displayOrder: Number(bannerInput.displayOrder) || 0,
-      isActive: true
-    });
-
-    setBannerInput({ title: "", imageUrl: "", linkUrl: "", displayOrder: "" });
-    setFileInputKey((prev) => ({ ...prev, banner: prev.banner + 1 }));
-    await loadAll();
-    notifyDataChanged();
   };
 
   const handleDeleteService = async (id) => {
@@ -453,12 +410,6 @@ export default function AdminDashboard() {
     notifyDataChanged();
   };
 
-  const handleDeleteBanner = async (id) => {
-    await api.deleteBanner(id);
-    await loadAll();
-    notifyDataChanged();
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("admin_authed");
     api.clearToken();
@@ -483,24 +434,19 @@ export default function AdminDashboard() {
         (o) => String(o.serviceId) === String(selectedServiceId)
       )
     : serviceOptions;
-  const filteredBanners = selectedBannerSection
-    ? banners.filter((b) => b.section === selectedBannerSection)
-    : banners;
   const adminHighlights = [
     { label: "Categories", value: categories.length },
     { label: "Subcategories", value: popupCategories.length },
     { label: "Services", value: services.length },
     { label: "Active Services", value: enabledCount },
-    { label: "Cities", value: cities.length },
-    { label: "Banners", value: banners.length }
+    { label: "Cities", value: cities.length }
   ];
   const adminNavItems = [
     { id: "admin-categories", label: "Categories", icon: "folder" },
     { id: "admin-popup-categories", label: "Subcategories", icon: "list" },
     { id: "admin-services", label: "Services", icon: "tools" },
     { id: "admin-options", label: "Service Options", icon: "settings" },
-    { id: "admin-cities", label: "Cities", icon: "location" },
-    { id: "admin-banners", label: "Banners", icon: "image" }
+    { id: "admin-cities", label: "Cities", icon: "location" }
   ];
 
   const citiesPerPage = 20;
@@ -1139,85 +1085,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="admin-card admin-wide" id="admin-banners">
-            <h3>Banner Images</h3>
-            <div className="admin-input-row admin-input-row-small">
-              <select
-                value={selectedBannerSection}
-                onChange={(e) => setSelectedBannerSection(e.target.value)}
-              >
-                <option value="">Select section</option>
-                <option value="offers">Offers & discounts</option>
-                <option value="new_noteworthy">New and noteworthy</option>
-                <option value="most_booked">Most booked services</option>
-              </select>
-              <input
-                type="text"
-                placeholder="Banner title"
-                value={bannerInput.title}
-                onChange={(e) =>
-                  setBannerInput((prev) => ({ ...prev, title: e.target.value }))
-                }
-              />
-              <input
-                type="text"
-                placeholder="Banner link URL (optional)"
-                value={bannerInput.linkUrl}
-                onChange={(e) =>
-                  setBannerInput((prev) => ({ ...prev, linkUrl: e.target.value }))
-                }
-              />
-                <AdminFileInput
-                  inputKey={`banner-file-${fileInputKey.banner}`}
-                  label="Upload banner"
-                  onChange={(file) => handleImageUpload(file, "banner")}
-                />
-              <input
-                type="number"
-                placeholder="Order (0,1,2..)"
-                value={bannerInput.displayOrder}
-                onChange={(e) =>
-                  setBannerInput((prev) => ({
-                    ...prev,
-                    displayOrder: e.target.value
-                  }))
-                }
-              />
-              <button className="admin-btn admin-btn-add" onClick={handleAddBanner}>
-                Add
-              </button>
-            </div>
-             <hr/>
-            {uploading.banner && (
-              <p className="admin-muted">Uploading banner image...</p>
-            )}
-            {uploadError.banner && (
-              <p className="admin-error">{uploadError.banner}</p>
-            )}
-            <div className="admin-list admin-list-grid">
-              {filteredBanners.length === 0 ? (
-                <p className="admin-muted">No banners added yet.</p>
-              ) : (
-                filteredBanners.map((item) => (
-                  <div key={item.id} className="admin-list-item">
-                    <div>
-                      <strong>{item.title || "Untitled banner"}</strong>
-                      <div className="admin-muted">{item.section}</div>
-                      <div className="admin-muted">
-                        {item.imageUrl}
-                      </div>
-                    </div>
-                    <button
-                      className="admin-btn outline admin-btn-danger"
-                      onClick={() => handleDeleteBanner(item.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
         </div>
       </div>
     </>

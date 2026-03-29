@@ -13,7 +13,6 @@ namespace UrbanApi.Data
         public DbSet<Category> Categories { get; set; } = null!;
         public DbSet<Service> Services { get; set; } = null!;
         public DbSet<ServiceOption> ServiceOptions { get; set; } = null!;
-        public DbSet<BannerItem> BannerItems { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Professional> Professionals { get; set; } = null!;
         public DbSet<ProfessionalCategory> ProfessionalCategories { get; set; } = null!;
@@ -37,7 +36,6 @@ namespace UrbanApi.Data
             modelBuilder.ApplyConfiguration(new CategoryConfiguration());
             modelBuilder.ApplyConfiguration(new ServiceConfiguration());
             modelBuilder.ApplyConfiguration(new ServiceOptionConfiguration());
-            modelBuilder.ApplyConfiguration(new BannerItemConfiguration());
             modelBuilder.ApplyConfiguration(new ServiceCityStatusConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new ProfessionalConfiguration());

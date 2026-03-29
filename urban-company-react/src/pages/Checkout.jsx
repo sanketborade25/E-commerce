@@ -387,15 +387,6 @@ export default function Checkout() {
             </label>
           </div>
 
-          <div className="checkout-card checkout-coupons-card">
-            <div className="checkout-offer">
-              <strong>Coupons and offers</strong>
-              <button type="button" className="checkout-offer-link">
-                8 offers
-              </button>
-            </div>
-          </div>
-
           <div className="checkout-card">
             <h3>Payment summary</h3>
             <div className="checkout-summary">
