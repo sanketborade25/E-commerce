@@ -43,6 +43,18 @@ export default function Navbar() {
   const [selectedCity, setSelectedCity] = useState(
     () => localStorage.getItem("selected_city_id") || ""
   );
+  const [locationQuery, setLocationQuery] = useState("");
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [activeLocationIndex, setActiveLocationIndex] = useState(-1);
+  const [recentCityIds, setRecentCityIds] = useState(() => {
+    try {
+      const raw = localStorage.getItem("recent_city_ids");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const locationRef = useRef(null);
   const adminVersionRef = useRef(
     localStorage.getItem("admin_data_version") || ""
   );
@@ -56,6 +68,43 @@ export default function Navbar() {
 
   const [searchIndex, setSearchIndex] = useState([]);
   const isAuthed = Boolean(authUser);
+  const selectedCityName = useMemo(() => {
+    const match = (cities || []).find(
+      (c) => String(c.id) === String(selectedCity)
+    );
+    return match?.name || "";
+  }, [cities, selectedCity]);
+
+  const filteredRecentCities = useMemo(() => {
+    const recent = recentCityIds
+      .map((id) => cities.find((c) => String(c.id) === String(id)))
+      .filter(Boolean);
+    const q = locationQuery.trim().toLowerCase();
+    if (!q) return recent;
+    return recent.filter((c) => String(c.name || "").toLowerCase().includes(q));
+  }, [recentCityIds, cities, locationQuery]);
+
+  const filteredCities = useMemo(() => {
+    const q = locationQuery.trim().toLowerCase();
+    const all = (cities || []).slice();
+    if (!q) return all;
+    return all.filter((c) => String(c.name || "").toLowerCase().includes(q));
+  }, [cities, locationQuery]);
+
+  const recentIdSet = useMemo(
+    () => new Set(filteredRecentCities.map((c) => String(c.id))),
+    [filteredRecentCities]
+  );
+
+  const remainingCities = useMemo(
+    () => filteredCities.filter((c) => !recentIdSet.has(String(c.id))),
+    [filteredCities, recentIdSet]
+  );
+
+  const locationOptions = useMemo(
+    () => [...filteredRecentCities, ...remainingCities],
+    [filteredRecentCities, remainingCities]
+  );
 
   const normalizeText = (text) =>
     text
@@ -374,14 +423,73 @@ export default function Navbar() {
     };
   }, []);
 
-  const handleCityChange = (e) => {
-    const value = e.target.value;
+  const saveRecentCity = (cityId) => {
+    setRecentCityIds((prev) => {
+      const next = [String(cityId), ...prev.filter((id) => String(id) !== String(cityId))];
+      const trimmed = next.slice(0, 4);
+      localStorage.setItem("recent_city_ids", JSON.stringify(trimmed));
+      return trimmed;
+    });
+  };
+
+  const handleCitySelect = (cityId) => {
+    const value = String(cityId);
     setSelectedCity(value);
     localStorage.setItem("selected_city_id", value);
+    saveRecentCity(value);
+    setLocationQuery("");
+    setShowLocationDropdown(false);
+    setActiveLocationIndex(-1);
     window.dispatchEvent(
       new CustomEvent("city-changed", { detail: { cityId: value } })
     );
   };
+
+  const handleLocationInputKeyDown = (e) => {
+    if (!showLocationDropdown && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+      setShowLocationDropdown(true);
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (locationOptions.length === 0) return;
+      setActiveLocationIndex((prev) => {
+        const next = prev + 1;
+        return next >= locationOptions.length ? 0 : next;
+      });
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (locationOptions.length === 0) return;
+      setActiveLocationIndex((prev) => {
+        const next = prev - 1;
+        return next < 0 ? locationOptions.length - 1 : next;
+      });
+    }
+    if (e.key === "Enter") {
+      if (activeLocationIndex >= 0 && locationOptions[activeLocationIndex]) {
+        e.preventDefault();
+        handleCitySelect(locationOptions[activeLocationIndex].id);
+      }
+    }
+    if (e.key === "Escape") {
+      setShowLocationDropdown(false);
+      setLocationQuery("");
+      setActiveLocationIndex(-1);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!locationRef.current) return;
+      if (!locationRef.current.contains(event.target)) {
+        setShowLocationDropdown(false);
+        setLocationQuery("");
+        setActiveLocationIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const persistAuth = (res) => {
     if (!res?.accessToken || !res?.user) {
@@ -554,26 +662,82 @@ export default function Navbar() {
       </div>
 
       <div className="nav-center">
-        <label className="nav-location">
-          <span className="nav-location-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M8 16s6-5.5 6-10A6 6 0 1 0 2 6c0 4.5 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+        <div className="nav-location" ref={locationRef}>
+          <span className="nav-location-icon" aria-hidden>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path d="M8 16s6-5.5 6-10A6 6 0 1 0 2 6c0 4.5 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
             </svg>
           </span>
-          <select value={selectedCity} onChange={handleCityChange} className="nav-location-select">
-            {cities.length === 0 && <option>Loading...</option>}
-            {cities.map((c) => (
-              <option key={c.id} value={String(c.id)}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <span className="nav-location-chevron">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M1.5 5.5l6.5 6 6.5-6" />
-            </svg>
-          </span>
-        </label>
+          <input
+            type="text"
+            className="nav-location-input"
+            placeholder="Search for your city"
+            value={showLocationDropdown ? locationQuery : locationQuery || selectedCityName}
+            onChange={(e) => {
+              setLocationQuery(e.target.value);
+              setShowLocationDropdown(true);
+              setActiveLocationIndex(-1);
+            }}
+            onFocus={() => setShowLocationDropdown(true)}
+            onKeyDown={handleLocationInputKeyDown}
+          />
+          {showLocationDropdown && (
+            <div className="nav-location-dropdown">
+              {filteredRecentCities.length > 0 && (
+                <div className="nav-location-section">
+                  <div className="nav-location-heading">Recent Locations</div>
+                  {filteredRecentCities.map((city, idx) => {
+                    const isSelected = String(city.id) === String(selectedCity);
+                    const optionIndex = idx;
+                    return (
+                      <button
+                        key={`recent-${city.id}`}
+                        type="button"
+                        className={`nav-location-item${
+                          activeLocationIndex === optionIndex ? " active" : ""
+                        }${isSelected ? " selected" : ""}`}
+                        onClick={() => handleCitySelect(city.id)}
+                      >
+                        {city.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="nav-location-section">
+                <div className="nav-location-heading">All Locations</div>
+                {remainingCities.length === 0 ? (
+                  <div className="nav-location-empty">No locations found.</div>
+                ) : (
+                  remainingCities.map((city, idx) => {
+                    const offset = filteredRecentCities.length;
+                    const optionIndex = offset + idx;
+                    const isSelected = String(city.id) === String(selectedCity);
+                    return (
+                      <button
+                        key={`all-${city.id}`}
+                        type="button"
+                        className={`nav-location-item${
+                          activeLocationIndex === optionIndex ? " active" : ""
+                        }${isSelected ? " selected" : ""}`}
+                        onClick={() => handleCitySelect(city.id)}
+                      >
+                        {city.name}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="search-box">
           <span className="search-icon">
