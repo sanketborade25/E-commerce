@@ -6,6 +6,7 @@ import {
   formatCurrency,
   getNotificationCount
 } from "../utils/professional";
+import AppLogo from "./AppLogo";
 
 export function MiniIcon({ name }) {
   const icons = {
@@ -99,7 +100,7 @@ export default function ProfessionalShell({
               <span />
               <span />
             </button>
-            <div className="pro-brand-mark">UC</div>
+            <AppLogo className="pro-brand-mark" />
             <div>
               <div className="pro-brand-eyebrow">Professional Console</div>
               <div className="pro-brand-title">{displayName}</div>

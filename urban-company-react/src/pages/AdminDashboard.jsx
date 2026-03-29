@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { MiniIcon } from "../components/ProfessionalShell";
+import AppLogo from "../components/AppLogo";
 
 function AdminFileInput({ inputKey, label, onChange }) {
   return (
@@ -570,7 +571,7 @@ export default function AdminDashboard() {
         <div className="admin-topbar">
           <div className="admin-brand">
             <Link to="/home" className="admin-logo">
-              <img src="/images/1Homepage/logo (1).png" alt="Urban Company" />
+              <AppLogo />
             </Link>
             <div>
               <p className="admin-console-kicker">Operations workspace</p>

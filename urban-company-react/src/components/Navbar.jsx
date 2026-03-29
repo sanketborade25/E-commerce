@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { api } from "../api/client";
 import { resolveImage } from "../utils/image";
+import AppLogo from "./AppLogo";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -544,26 +545,45 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <div className="logo">
-        <Link to="/home">
-          <img src="/images/1Homepage/logo (1).png" alt="Urban" />
+      <div className="navbar-main">
+      <div className="nav-left">
+        <Link to="/home" className="app-brand">
+          <AppLogo />
+          <span className="app-brand-title">Urban Services</span>
         </Link>
       </div>
 
-      <div className="nav-right">
-        <select value={selectedCity} onChange={handleCityChange}>
-          {cities.length === 0 && <option>Loading...</option>}
-          {cities.map((c) => (
-            <option key={c.id} value={String(c.id)}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+      <div className="nav-center">
+        <label className="nav-location">
+          <span className="nav-location-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 16s6-5.5 6-10A6 6 0 1 0 2 6c0 4.5 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+            </svg>
+          </span>
+          <select value={selectedCity} onChange={handleCityChange} className="nav-location-select">
+            {cities.length === 0 && <option>Loading...</option>}
+            {cities.map((c) => (
+              <option key={c.id} value={String(c.id)}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <span className="nav-location-chevron">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M1.5 5.5l6.5 6 6.5-6" />
+            </svg>
+          </span>
+        </label>
 
         <div className="search-box">
+          <span className="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11 6a5 5 0 1 1-1.001-3.001A5 5 0 0 1 11 6zm-1.5 5.5 3.5 3.5" />
+            </svg>
+          </span>
           <input
             type="text"
-            placeholder="Search for services"
+            placeholder="Search for services, packages, or categories"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -591,9 +611,12 @@ export default function Navbar() {
           )}
         </div>
 
+      </div>
+
+      <div className="nav-right">
         <button
           type="button"
-          className="icon cart-icon"
+          className="nav-icon-button"
           onClick={() => setShowCart(true)}
           aria-label="Open cart"
         >
@@ -604,7 +627,7 @@ export default function Navbar() {
         </button>
         <button
           type="button"
-          className="icon profile-trigger"
+          className="nav-icon-button"
           onClick={() => setShowProfile(true)}
           aria-label="Open profile drawer"
         >
@@ -612,6 +635,8 @@ export default function Navbar() {
   <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
 </svg>
         </button>
+      </div>
+
       </div>
 
       {showCart && (

@@ -11,6 +11,40 @@ body {
   background-color: #fff;
   margin: 0%;
 }
+
+.app-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-logo-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #123d34;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow: 0 10px 24px rgba(18, 61, 52, 0.22);
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #17322c;
+  font-weight: 800;
+}
+
+.app-brand-title {
+  font-size: 16px;
+  font-weight: 800;
+}
 /* ================= HEADER ================= */
 header {
   padding: 10px 20px;
@@ -22,13 +56,17 @@ header {
 /* ================= NAVBAR ================= */
 
 .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
-  justify-content: space-evenly;
-  background: white;
-  box-shadow: 0 2px 5px #ddd;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 20px;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e6eceb;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  align-items: stretch;
+  padding: 12px 20px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -40,20 +78,126 @@ header {
 
 .logo {
   width: 100%;
+  display: flex;
+  align-items: center;
 }
 
+.navbar-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.nav-left,
+.nav-center,
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 15px;
-  width: 100%;
-  box-sizing: border-box;
+  gap: 12px;
+}
+.nav-center {
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+.nav-right {
   justify-content: flex-end;
 }
-.nav-right select,
+.nav-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4f6;
+  border: 1px solid #e4e9ea;
+  border-radius: 999px;
+  padding: 0px 12px;
+  min-height: 46px;
+  color: #1f3f37;
+  font-weight: 600;
+  position: relative;
+}
+.nav-location:focus-within {
+  border-color: #2f7a62;
+  box-shadow: 0 0 0 3px rgba(47, 122, 98, 0.15);
+}
+.nav-location-icon,
+.nav-location-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #56706a;
+}
+.nav-location-select {
+  border: none;
+  background: transparent;
+  font: inherit;
+  min-width: 150px;
+  padding-right: 15px;
+  color: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}
+.nav-location-select:focus {
+  outline: none;
+}
+.nav-location-select option {
+  padding:12px;
+  font-size: 14px;
+  color: #1f3f37;
+    min-width: 450px;
+  padding-right: 24px;
+}
+.search-box {
+  position: relative;
+  flex: 0 1 420px;
+  min-width: 220px;
+}
 .search-box input {
-  min-width: 200px;
-  padding: 10px;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px 10px 40px;
+  border-radius: 999px;
+  border: 1px solid #e4e9ea;
+  background: #f3f4f6;
+  font-size: 14px;
+  color: #1f3f37;
+  box-sizing: border-box;
+}
+.search-box input:focus {
+  outline: none;
+  border-color: #2f7a62;
+  box-shadow: 0 0 0 3px rgba(47, 122, 98, 0.15);
+}
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7b77;
+  display: inline-flex;
+}
+.nav-icon-button {
+  border: 1px solid #e4e9ea;
+  background: #f3f4f6;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #17322c;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.nav-icon-button:hover {
+  background: #e9f4f0;
+  border-color: #cfe1da;
 }
 
 .location-button {
@@ -100,17 +244,17 @@ header {
 }
 
 .search-results {
-position: absolute;
-    top: calc(70% + 7px);
-    left: 1026px;
-    right: 100px;
-    background: #fff;
-    border: 1px solid #e5e5e5;
-    border-radius: 6px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    max-height: 350px;
-    overflow-y: scroll;
-    z-index: 14;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  max-height: 350px;
+  overflow-y: auto;
+  z-index: 14;
 }
 .search-result-item {
   display: grid;
@@ -153,12 +297,12 @@ position: absolute;
 
 .cart-badge {
   position: absolute;
-  top: 6px;
-  right: 54px;
+  top: -4px;
+  right: -4px;
   background: #c62828;
   color: #fff;
   font-size: 10px;
-  padding: 3px 6px;
+  padding: 2px 5px;
   border-radius: 10px;
 }
 .profile-menu {
@@ -794,18 +938,23 @@ position: absolute;
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 1024px) {
-  .navbar {
-    flex-wrap: wrap;
+  .navbar-main {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
-  .nav-right {
-    flex: 1 1 100%;
+  .nav-center {
+    flex-wrap: wrap;
     justify-content: flex-start;
   }
-  .nav-right input,
-  .nav-right select,
-  .search-box input {
+  .search-box {
+    flex: 1 1 100%;
+  }
+  .nav-location,
+  .search-box {
     width: 100%;
-    max-width: 100%;
+  }
+  .nav-right {
+    justify-content: flex-start;
   }
   .hero {
     gap: 10px;
@@ -829,22 +978,18 @@ position: absolute;
 
 @media (max-width: 768px) {
   .navbar {
-    padding: 8px 12px;
+    padding: 10px 12px 8px;
   }
   .logo img {
     width: 120px;
     height: auto;
   }
+  .nav-center {
+    flex-direction: column;
+    align-items: stretch;
+  }
   .nav-right {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .location-button {
-    min-width: 0;
-    width: 100%;
-  }
-  .search-box {
-    width: 100%;
+    gap: 8px;
   }
   .search-results {
     left: 0;
@@ -3786,17 +3931,11 @@ margin-top : 12px;
 }
 
 .pro-brand-mark {
-  width: 50px;
-  height: 50px;
-  border-radius: 16px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #123d34, #157f68);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  box-shadow: 0 12px 28px rgba(18, 61, 52, 0.22);
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #123d34;
+  box-shadow: 0 10px 24px rgba(18, 61, 52, 0.22);
 }
 
 .pro-brand-eyebrow,
