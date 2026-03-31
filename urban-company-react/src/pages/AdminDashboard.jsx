@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { MiniIcon } from "../components/ProfessionalShell";
 import AppLogo from "../components/AppLogo";
+import "../styles/pages/admin.css";
 
 function AdminFileInput({ inputKey, label, onChange }) {
   return (

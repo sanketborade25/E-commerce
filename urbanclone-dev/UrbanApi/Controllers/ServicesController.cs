@@ -14,11 +14,13 @@ public class ServicesController : ControllerBase
     {
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
+        private readonly ILogger<ServicesController> _logger;
 
-        public ServicesController(AppDbContext db, IMapper mapper)
+        public ServicesController(AppDbContext db, IMapper mapper, ILogger<ServicesController> logger)
         {
             _db = db;
             _mapper = mapper;
+            _logger = logger;
         }
 
         private async Task<Dictionary<int, int>> GetPartnerCountByCity(CancellationToken ct)
@@ -40,47 +42,59 @@ public class ServicesController : ControllerBase
 
         private ServiceDto BuildServiceDto(Service service, int? cityId, Dictionary<int, int> partnersByCity, Dictionary<int, int> slotsByCity)
         {
-            var dto = _mapper.Map<ServiceDto>(service);
-
-            var mappedCityIds = new HashSet<int>();
-            if (cityId.HasValue)
+            try
             {
-                mappedCityIds.Add(cityId.Value);
+                service.CityStatuses ??= new List<ServiceCityStatus>();
+                service.Options ??= new List<ServiceOption>();
+
+                var dto = _mapper.Map<ServiceDto>(service);
+                var statuses = service.CityStatuses ?? new List<ServiceCityStatus>();
+
+                var mappedCityIds = new HashSet<int>();
+                if (cityId.HasValue)
+                {
+                    mappedCityIds.Add(cityId.Value);
+                }
+                else if (statuses.Any())
+                {
+                    foreach (var status in statuses) mappedCityIds.Add(status.CityId);
+                }
+                else if (service.CityId.HasValue)
+                {
+                    mappedCityIds.Add(service.CityId.Value);
+                }
+
+                dto.PartnerCount = mappedCityIds.Sum(cid => partnersByCity.ContainsKey(cid) ? partnersByCity[cid] : 0);
+                dto.AvailableSlots = mappedCityIds.Sum(cid => slotsByCity.ContainsKey(cid) ? slotsByCity[cid] : 0);
+
+                dto.CityStatuses = statuses.Select(v => new ServiceCityStatusDto
+                {
+                    CityId = v.CityId,
+                    CityName = v.City?.Name,
+                    IsEnabled = v.IsEnabled
+                }).ToList();
+
+                var cityEnabled = false;
+                if (cityId.HasValue)
+                {
+                    var status = statuses.FirstOrDefault(x => x.CityId == cityId.Value);
+                    cityEnabled = status != null ? status.IsEnabled : service.CityId == cityId.Value;
+                }
+                else
+                {
+                    cityEnabled = statuses.Any(x => x.IsEnabled) || service.CityId.HasValue;
+                }
+
+                dto.IsVisible = service.IsActive && cityEnabled;
+                dto.IsBookable = dto.IsVisible && dto.AvailableSlots > 0;
+
+                return dto;
             }
-            else if (service.CityStatuses.Any())
+            catch (Exception ex)
             {
-                foreach (var status in service.CityStatuses) mappedCityIds.Add(status.CityId);
+                _logger.LogError(ex, "BuildServiceDto failed for ServiceId {ServiceId} CityId {CityId}", service?.Id, cityId);
+                throw;
             }
-            else if (service.CityId.HasValue)
-            {
-                mappedCityIds.Add(service.CityId.Value);
-            }
-
-            dto.PartnerCount = mappedCityIds.Sum(cid => partnersByCity.ContainsKey(cid) ? partnersByCity[cid] : 0);
-            dto.AvailableSlots = mappedCityIds.Sum(cid => slotsByCity.ContainsKey(cid) ? slotsByCity[cid] : 0);
-
-            dto.CityStatuses = service.CityStatuses.Select(v => new ServiceCityStatusDto
-            {
-                CityId = v.CityId,
-                CityName = v.City?.Name,
-                IsEnabled = v.IsEnabled
-            }).ToList();
-
-            var cityEnabled = false;
-            if (cityId.HasValue)
-            {
-                var status = service.CityStatuses.FirstOrDefault(x => x.CityId == cityId.Value);
-                cityEnabled = status != null ? status.IsEnabled : service.CityId == cityId.Value;
-            }
-            else
-            {
-                cityEnabled = service.CityStatuses.Any(x => x.IsEnabled) || service.CityId.HasValue;
-            }
-
-            dto.IsVisible = service.IsActive && cityEnabled;
-            dto.IsBookable = dto.IsVisible && dto.AvailableSlots > 0;
-
-            return dto;
         }
 
         [AllowAnonymous]

@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useState } from "react";
 import { api } from "../api/client";
+import "../styles/pages/checkout.css";
 
 export default function Checkout() {
   const navigate = useNavigate();

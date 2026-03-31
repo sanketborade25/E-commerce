@@ -2,7 +2,8 @@ namespace UrbanApi.Dto
 {
     public class LoginRequest
     {
-        public string Phone { get; set; } = null!;
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
         public string Password { get; set; } = null!;
     }
 

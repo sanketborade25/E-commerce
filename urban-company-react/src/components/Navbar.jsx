@@ -4,6 +4,7 @@ import { useCart } from "../context/CartContext";
 import { api } from "../api/client";
 import { resolveImage } from "../utils/image";
 import AppLogo from "./AppLogo";
+import "../styles/components/navbar.css";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -86,9 +87,10 @@ export default function Navbar() {
 
   const filteredCities = useMemo(() => {
     const q = locationQuery.trim().toLowerCase();
-    const all = (cities || []).slice();
-    if (!q) return all;
-    return all.filter((c) => String(c.name || "").toLowerCase().includes(q));
+    if (!q) return [];
+    return (cities || []).filter((c) =>
+      String(c.name || "").toLowerCase().includes(q)
+    );
   }, [cities, locationQuery]);
 
   const recentIdSet = useMemo(
@@ -96,15 +98,10 @@ export default function Navbar() {
     [filteredRecentCities]
   );
 
-  const remainingCities = useMemo(
-    () => filteredCities.filter((c) => !recentIdSet.has(String(c.id))),
-    [filteredCities, recentIdSet]
-  );
-
-  const locationOptions = useMemo(
-    () => [...filteredRecentCities, ...remainingCities],
-    [filteredRecentCities, remainingCities]
-  );
+  const locationOptions = useMemo(() => {
+    if (locationQuery.trim()) return filteredCities;
+    return filteredRecentCities;
+  }, [filteredCities, filteredRecentCities, locationQuery]);
 
   const normalizeText = (text) =>
     text
@@ -689,7 +686,7 @@ export default function Navbar() {
           />
           {showLocationDropdown && (
             <div className="nav-location-dropdown">
-              {filteredRecentCities.length > 0 && (
+              {!locationQuery.trim() && filteredRecentCities.length > 0 && (
                 <div className="nav-location-section">
                   <div className="nav-location-heading">Recent Locations</div>
                   {filteredRecentCities.map((city, idx) => {
@@ -711,30 +708,35 @@ export default function Navbar() {
                 </div>
               )}
 
-              <div className="nav-location-section">
-                <div className="nav-location-heading">All Locations</div>
-                {remainingCities.length === 0 ? (
-                  <div className="nav-location-empty">No locations found.</div>
-                ) : (
-                  remainingCities.map((city, idx) => {
-                    const offset = filteredRecentCities.length;
-                    const optionIndex = offset + idx;
-                    const isSelected = String(city.id) === String(selectedCity);
-                    return (
-                      <button
-                        key={`all-${city.id}`}
-                        type="button"
-                        className={`nav-location-item${
-                          activeLocationIndex === optionIndex ? " active" : ""
-                        }${isSelected ? " selected" : ""}`}
-                        onClick={() => handleCitySelect(city.id)}
-                      >
-                        {city.name}
-                      </button>
-                    );
-                  })
-                )}
-              </div>
+              {locationQuery.trim() ? (
+                <div className="nav-location-section">
+                  <div className="nav-location-heading">Search Results</div>
+                  {filteredCities.length === 0 ? (
+                    <div className="nav-location-empty">No locations found.</div>
+                  ) : (
+                    filteredCities.map((city, idx) => {
+                      const optionIndex = idx;
+                      const isSelected = String(city.id) === String(selectedCity);
+                      return (
+                        <button
+                          key={`search-${city.id}`}
+                          type="button"
+                          className={`nav-location-item${
+                            activeLocationIndex === optionIndex ? " active" : ""
+                          }${isSelected ? " selected" : ""}`}
+                          onClick={() => handleCitySelect(city.id)}
+                        >
+                          {city.name}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              ) : !locationQuery.trim() && filteredRecentCities.length === 0 ? (
+                <div className="nav-location-section">
+                  <div className="nav-location-empty">No recent locations</div>
+                </div>
+              ) : null}
             </div>
           )}
         </div>

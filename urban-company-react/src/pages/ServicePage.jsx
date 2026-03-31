@@ -3,6 +3,7 @@ import { useLocation, useParams } from "react-router-dom";
 import ServiceLayout from "../components/ServiceLayout";
 import Navbar from "../components/Navbar";
 import { api } from "../api/client";
+import "../styles/pages/service.css";
 
 export default function ServicePage() {
   const { serviceKey } = useParams();

@@ -1,0 +1,92 @@
+/* ================= POPUP MODAL (DYNAMIC) ================= */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 800px;
+  max-width: 90%;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 50%;
+  color: #444;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.close-btn:hover {
+  background: #f2f2f2;
+}
+
+/* Popup Layout */
+.popup-services {
+  display: grid;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.two-cols {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.four-cols {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.popup-card {
+  background: #f7f7f7;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.popup-card img {
+  width: 45px;
+  height: 45px;
+  margin-bottom: 8px;
+}
+
+.popup-card p {
+  font-size: 13px;
+}
+
+.popup-card small {
+  color: green;
+  font-size: 12px;
+}
+
+.tag {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: #e91e63;
+  color: white;
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+
+.modal-content h3 {
+  margin: 20px 0 10px;
+}
+

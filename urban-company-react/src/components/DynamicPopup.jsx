@@ -1,4 +1,5 @@
 import { resolveImage } from "../utils/image";
+import "../styles/components/modal.css";
 
 export default function DynamicPopup({ data, onClose }) {
   // NOTE: This component does not call any API.

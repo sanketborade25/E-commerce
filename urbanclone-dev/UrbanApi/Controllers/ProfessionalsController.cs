@@ -192,17 +192,25 @@ namespace UrbanApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest req, CancellationToken ct)
         {
-            if (req == null || string.IsNullOrWhiteSpace(req.Phone) || string.IsNullOrWhiteSpace(req.Password))
-                return BadRequest("Phone and password are required.");
+            if (req == null || string.IsNullOrWhiteSpace(req.Password))
+                return BadRequest("Email or phone and password are required.");
+
+            var email = string.IsNullOrWhiteSpace(req.Email) ? null : req.Email.Trim().ToLowerInvariant();
+            var phone = string.IsNullOrWhiteSpace(req.Phone) ? null : req.Phone.Trim();
+            if (email == null && phone == null)
+                return BadRequest("Email or phone and password are required.");
 
             var user = await _db.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Phone == req.Phone && !u.IsDeleted, ct);
-            if (user == null) return Unauthorized("Invalid phone or password.");
+                .FirstOrDefaultAsync(u =>
+                    !u.IsDeleted &&
+                    ((email != null && u.Email != null && u.Email.ToLower() == email) ||
+                     (phone != null && u.Phone == phone)), ct);
+            if (user == null) return Unauthorized("Invalid email or password.");
 
             var hashed = HashPassword(req.Password);
             if (!string.Equals(hashed, user.PasswordHash ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-                return Unauthorized("Invalid phone or password.");
+                return Unauthorized("Invalid email or password.");
 
             var hasProfessionalProfile = await _db.Professionals.AnyAsync(p => p.UserId == user.Id && !p.IsDeleted, ct);
             if (!hasProfessionalProfile) return NotFound("Professional profile not found.");

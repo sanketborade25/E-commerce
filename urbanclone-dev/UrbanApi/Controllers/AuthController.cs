@@ -43,10 +43,18 @@ namespace UrbanApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest req, CancellationToken ct)
         {
-            if (req == null || string.IsNullOrWhiteSpace(req.Phone) || string.IsNullOrWhiteSpace(req.Password))
-                return BadRequest("Phone and password are required.");
+            if (req == null || string.IsNullOrWhiteSpace(req.Password))
+                return BadRequest("Email or phone and password are required.");
 
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Phone == req.Phone && !u.IsDeleted, ct);
+            var email = string.IsNullOrWhiteSpace(req.Email) ? null : req.Email.Trim().ToLowerInvariant();
+            var phone = string.IsNullOrWhiteSpace(req.Phone) ? null : req.Phone.Trim();
+            if (email == null && phone == null)
+                return BadRequest("Email or phone and password are required.");
+
+            var user = await _db.Users.FirstOrDefaultAsync(u =>
+                !u.IsDeleted &&
+                ((email != null && u.Email != null && u.Email.ToLower() == email) ||
+                 (phone != null && u.Phone == phone)), ct);
             if (user == null) return Unauthorized("Invalid phone or password.");
 
             var hashed = HashPassword(req.Password);

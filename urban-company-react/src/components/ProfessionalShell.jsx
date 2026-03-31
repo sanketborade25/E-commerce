@@ -7,6 +7,7 @@ import {
   getNotificationCount
 } from "../utils/professional";
 import AppLogo from "./AppLogo";
+import "../styles/pages/professional.css";
 
 export function MiniIcon({ name }) {
   const icons = {

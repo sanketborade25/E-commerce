@@ -20,6 +20,8 @@ namespace UrbanApi.Mapping
             // Service
             CreateMap<Service, ServiceDto>().ReverseMap();
             CreateMap<ServiceCreateDto, Service>();
+            CreateMap<ServiceCityStatus, ServiceCityStatusDto>()
+                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City != null ? src.City.Name : null));
 
             // ServiceOption
             CreateMap<ServiceOption, ServiceOptionDto>().ReverseMap();

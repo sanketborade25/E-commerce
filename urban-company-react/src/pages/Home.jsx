@@ -4,6 +4,7 @@ import DynamicPopup from "../components/DynamicPopup";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { api } from "../api/client";
+import "../styles/pages/home.css";
 
 export default function Home() {
   const [categories, setCategories] = useState([]);

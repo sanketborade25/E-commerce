@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { api } from "../api/client";
+import "../styles/pages/bookings.css";
 
 export default function Bookings() {
   const location = useLocation();

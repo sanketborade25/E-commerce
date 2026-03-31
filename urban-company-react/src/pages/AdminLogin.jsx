@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { api } from "../api/client";
+import "../styles/pages/admin.css";
 
 export default function AdminLogin() {
   const navigate = useNavigate();

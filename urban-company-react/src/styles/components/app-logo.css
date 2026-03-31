@@ -1,0 +1,33 @@
+.app-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-logo-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #123d34;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow: 0 10px 24px rgba(18, 61, 52, 0.22);
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #17322c;
+  font-weight: 800;
+}
+
+.app-brand-title {
+  font-size: 16px;
+  font-weight: 800;
+}

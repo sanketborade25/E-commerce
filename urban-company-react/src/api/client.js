@@ -40,6 +40,10 @@ async function request(path, options = {}) {
       });
 
       if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          window.dispatchEvent(new Event("auth-token-changed"));
+        }
         const text = await res.text();
         const error = new Error(text || `Request failed: ${res.status}`);
         error.status = res.status;
