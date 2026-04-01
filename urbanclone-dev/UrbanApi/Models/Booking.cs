@@ -8,6 +8,7 @@ namespace UrbanApi.Models
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid UserId { get; set; }
         public Guid? ProfessionalId { get; set; }
+        public int? AvailabilityId { get; set; }
         public string BookingReference { get; set; } = null!;
         public string Status { get; set; } = "Pending";
         public DateTime ScheduledAt { get; set; }

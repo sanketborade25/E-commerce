@@ -1,4 +1,3 @@
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using UrbanApi.Data;
 using UrbanApi.Dto;
@@ -10,12 +9,9 @@ namespace UrbanApi.Services
         private static readonly string[] NonBookableStatuses = { "REJECTED", "CANCELLED" };
 
         private readonly AppDbContext _db;
-        private readonly ILogger<SlotService> _logger;
-
-        public SlotService(AppDbContext db, ILogger<SlotService> logger)
+        public SlotService(AppDbContext db)
         {
             _db = db;
-            _logger = logger;
         }
 
         public async Task<List<SlotDto>> GetAvailableSlotsAsync(Guid professionalId, DateTime date, CancellationToken ct)
@@ -28,6 +24,7 @@ namespace UrbanApi.Services
                 .Where(a =>
                     a.ProfessionalId == professionalId &&
                     !a.IsDeleted &&
+                    a.Status == "available" &&
                     a.StartAt < dayEnd &&
                     a.EndAt > dayStart)
                 .OrderBy(a => a.StartAt)
@@ -38,6 +35,7 @@ namespace UrbanApi.Services
                     Date = a.StartAt.Date,
                     StartAt = a.StartAt,
                     EndAt = a.EndAt,
+                    IsRecurring = a.IsRecurring,
                     Status = "available"
                 })
                 .ToListAsync(ct);
@@ -67,10 +65,11 @@ namespace UrbanApi.Services
                     .Where(a =>
                         a.ProfessionalId == professionalId &&
                         !a.IsDeleted &&
+                        a.Status == "available" &&
                         a.StartAt <= scheduledAt &&
                         a.EndAt > scheduledAt)
                     .OrderBy(a => a.StartAt)
-                    .Select(a => new { a.Id })
+                    .Select(a => new { a.Id, a.StartAt, a.EndAt })
                     .FirstOrDefaultAsync(ct);
 
                 if (candidate == null)
@@ -83,36 +82,16 @@ namespace UrbanApi.Services
                 }
 
                 var affected = 0;
-                try
-                {
-                    affected = await _db.Database.ExecuteSqlInterpolatedAsync(
-                        $@"UPDATE Availabilities
-                           SET IsDeleted = 1,
-                               UpdatedAt = SYSUTCDATETIME(),
-                               Status = 'booked'
-                           WHERE Id = {candidate.Id}
-                             AND ProfessionalId = {professionalId}
-                             AND IsDeleted = 0",
-                        ct
-                    );
-                }
-                catch (SqlException ex) when (ex.Number == 207)
-                {
-                    _logger.LogWarning(
-                        ex,
-                        "Status column is missing in Availabilities table. Falling back to IsDeleted slot reservation."
-                    );
-
-                    affected = await _db.Database.ExecuteSqlInterpolatedAsync(
-                        $@"UPDATE Availabilities
-                           SET IsDeleted = 1,
-                               UpdatedAt = SYSUTCDATETIME()
-                           WHERE Id = {candidate.Id}
-                             AND ProfessionalId = {professionalId}
-                             AND IsDeleted = 0",
-                        ct
-                    );
-                }
+                affected = await _db.Database.ExecuteSqlInterpolatedAsync(
+                    $@"UPDATE Availabilities
+                       SET Status = 'booked',
+                           UpdatedAt = SYSUTCDATETIME()
+                       WHERE Id = {candidate.Id}
+                         AND ProfessionalId = {professionalId}
+                         AND IsDeleted = 0
+                         AND Status = 'available'",
+                    ct
+                );
 
                 if (affected == 1)
                 {
@@ -120,6 +99,8 @@ namespace UrbanApi.Services
                     {
                         Success = true,
                         AvailabilityId = candidate.Id,
+                        StartAt = candidate.StartAt,
+                        EndAt = candidate.EndAt,
                         Message = "Slot reserved."
                     };
                 }

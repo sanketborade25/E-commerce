@@ -9,6 +9,7 @@ namespace UrbanApi.Dto
         public DateTime Date { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime EndAt { get; set; }
+        public bool IsRecurring { get; set; }
         public string Status { get; set; } = "available";
     }
 
@@ -16,6 +17,8 @@ namespace UrbanApi.Dto
     {
         public bool Success { get; set; }
         public int? AvailabilityId { get; set; }
+        public DateTime? StartAt { get; set; }
+        public DateTime? EndAt { get; set; }
         public string Message { get; set; } = "";
     }
 }

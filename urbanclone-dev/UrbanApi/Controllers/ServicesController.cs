@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using UrbanApi.Data;
 using UrbanApi.Dto;
@@ -35,21 +34,11 @@ public class ServicesController : ControllerBase
         private async Task<Dictionary<int, int>> GetAvailableSlotsByCity(CancellationToken ct)
         {
             var now = DateTime.UtcNow;
-            try
-            {
-                return await _db.Availabilities
-                    .Where(a => a.EndAt >= now && a.Professional.CityId.HasValue)
-                    .GroupBy(a => a.Professional.CityId!.Value)
-                    .ToDictionaryAsync(g => g.Key, g => g.Count(), ct);
-            }
-            catch (SqlException ex) when (ex.Number == 207)
-            {
-                _logger.LogWarning(
-                    ex,
-                    "Availabilities schema is missing expected columns. Returning fallback slot counts."
-                );
-                return new Dictionary<int, int>();
-            }
+            return await _db.Availabilities
+                .Where(a => !a.IsDeleted && a.EndAt >= now && a.Professional.CityId.HasValue)
+                .Select(a => new { CityId = a.Professional.CityId!.Value })
+                .GroupBy(a => a.CityId)
+                .ToDictionaryAsync(g => g.Key, g => g.Count(), ct);
         }
 
         private ServiceDto BuildServiceDto(Service service, int? cityId, Dictionary<int, int> partnersByCity, Dictionary<int, int> slotsByCity)

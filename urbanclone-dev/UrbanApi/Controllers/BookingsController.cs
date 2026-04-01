@@ -55,7 +55,11 @@ namespace UrbanApi.Controllers
             foreach (var p in matching)
             {
                 var hasSlot = await _db.Availabilities.AnyAsync(
-                    a => !a.IsDeleted && a.ProfessionalId == p.Id && a.StartAt <= scheduledAt && a.EndAt >= scheduledAt,
+                    a => !a.IsDeleted
+                         && a.Status == "available"
+                         && a.ProfessionalId == p.Id
+                         && a.StartAt <= scheduledAt
+                         && a.EndAt >= scheduledAt,
                     ct
                 );
                 if (hasSlot) available.Add(p);
@@ -213,10 +217,13 @@ namespace UrbanApi.Controllers
             if (!slotReservation.Success)
                 return Conflict(slotReservation.Message);
 
+            var overlapStart = slotReservation.StartAt ?? input.ScheduledAt;
+            var overlapEnd = slotReservation.EndAt ?? input.ScheduledAt.AddMinutes(1);
             var alreadyBooked = await _db.Bookings.AnyAsync(
                 b => !b.IsDeleted
                      && b.ProfessionalId == selectedProfessionalId.Value
-                     && b.ScheduledAt == input.ScheduledAt
+                     && b.ScheduledAt >= overlapStart
+                     && b.ScheduledAt < overlapEnd
                      && b.Status != "REJECTED"
                      && b.Status != "CANCELLED",
                 ct
@@ -226,6 +233,7 @@ namespace UrbanApi.Controllers
                 return Conflict("Selected slot is already booked.");
 
             booking.ProfessionalId = selectedProfessionalId.Value;
+            booking.AvailabilityId = slotReservation.AvailabilityId;
             booking.Status = "ASSIGNED";
 
             _db.Bookings.Add(booking);

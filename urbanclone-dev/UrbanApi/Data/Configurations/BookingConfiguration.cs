@@ -10,6 +10,9 @@ namespace UrbanApi.Data.Configurations
         {
             builder.HasKey(b => b.Id);
             builder.Property(b => b.TotalAmount).HasPrecision(18, 2);
+            builder.HasIndex(b => b.AvailabilityId)
+                .IsUnique()
+                .HasFilter("[AvailabilityId] IS NOT NULL AND [IsDeleted] = 0");
 
             builder.HasOne(b => b.User)
                 .WithMany(u => u.Bookings)
