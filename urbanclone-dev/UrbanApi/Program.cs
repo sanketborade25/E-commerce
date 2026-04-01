@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using System.IO;
 using System.Text;
 using UrbanApi.Data;
+using UrbanApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // ------------ AUTOMAPPER ------------
 builder.Services.AddAutoMapper(typeof(UrbanApi.Mapping.MappingProfile));
+builder.Services.AddScoped<ISlotService, SlotService>();
 
 // ------------ CONTROLLERS ------------
 builder.Services.AddControllers();

@@ -23,13 +23,14 @@ async function request(path, options = {}) {
   const token = localStorage.getItem(TOKEN_KEY);
   const method = String(options.method || "GET").toUpperCase();
   const canRetry = method === "GET" || method === "HEAD" || method === "OPTIONS";
+  const url = `${API_BASE}${path}`;
 
   for (let attempt = 0; attempt <= API_RETRIES; attempt += 1) {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
     try {
-      const res = await fetch(`${API_BASE}${path}`, {
+      const res = await fetch(url, {
         ...options,
         headers: {
           "Content-Type": "application/json",
@@ -68,6 +69,11 @@ async function request(path, options = {}) {
       }
       if (error?.name === "AbortError") {
         throw new Error(`Request timed out after ${API_TIMEOUT_MS} ms`);
+      }
+      if (isRetriableError(error)) {
+        throw new Error(
+          `Cannot connect to API (${url}). Check if backend is running and API base URL/protocol is correct.`
+        );
       }
       throw error;
     } finally {

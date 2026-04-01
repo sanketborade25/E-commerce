@@ -14,7 +14,12 @@ export function CartProvider({ children }) {
   }, []);
 
   const notifyCartChanged = () => {
-    cartChannel?.postMessage({ type: "refresh", ts: Date.now() });
+    if (!cartChannel) return;
+    try {
+      cartChannel.postMessage({ type: "refresh", ts: Date.now() });
+    } catch (error) {
+      console.warn("cart-sync channel unavailable", error);
+    }
   };
 
   const hydrateCartItems = async (items = []) => {
@@ -126,9 +131,14 @@ export function CartProvider({ children }) {
       window.removeEventListener("auth-token-changed", syncToken);
       window.removeEventListener("storage", onStorage);
       cartChannel?.removeEventListener("message", onChannelMessage);
-      cartChannel?.close();
     };
   }, [cartChannel, loading]); // Added loading to dependencies
+
+  useEffect(() => {
+    return () => {
+      cartChannel?.close();
+    };
+  }, [cartChannel]);
 
   useEffect(() => {
     if (!token) {

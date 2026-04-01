@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using UrbanApi.Data;
 using UrbanApi.Dto;
 using UrbanApi.Models;
+using UrbanApi.Services;
 
 namespace UrbanApi.Controllers
 {
@@ -17,11 +18,13 @@ namespace UrbanApi.Controllers
     {
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
+        private readonly ISlotService _slotService;
 
-        public BookingsController(AppDbContext db, IMapper mapper)
+        public BookingsController(AppDbContext db, IMapper mapper, ISlotService slotService)
         {
             _db = db;
             _mapper = mapper;
+            _slotService = slotService;
         }
 
         private static readonly HashSet<string> _validPartnerStatuses = new(StringComparer.OrdinalIgnoreCase)
@@ -51,7 +54,10 @@ namespace UrbanApi.Controllers
             var available = new List<Professional>();
             foreach (var p in matching)
             {
-                var hasSlot = await _db.Availabilities.AnyAsync(a => a.ProfessionalId == p.Id && a.StartAt <= scheduledAt && a.EndAt >= scheduledAt, ct);
+                var hasSlot = await _db.Availabilities.AnyAsync(
+                    a => !a.IsDeleted && a.ProfessionalId == p.Id && a.StartAt <= scheduledAt && a.EndAt >= scheduledAt,
+                    ct
+                );
                 if (hasSlot) available.Add(p);
             }
 
@@ -154,14 +160,6 @@ namespace UrbanApi.Controllers
 
                 if (!isCityEnabled)
                     return Forbid($"Service {service.Title} is disabled in selected city.");
-
-                // simple slot availability guard
-                var slots = await _db.Availabilities
-                    .Include(a => a.Professional)
-                    .CountAsync(a => a.Professional.CityId == targetCityId && a.EndAt >= DateTime.UtcNow, ct);
-
-                if (slots <= 0)
-                    return BadRequest("No available slot for the selected city and service.");
             }
 
             var booking = new Booking
@@ -190,19 +188,49 @@ namespace UrbanApi.Controllers
                 .Distinct()
                 .ToListAsync(ct);
 
-            var assignedPro = await PickBestPartnerForBooking(targetCityId, input.ScheduledAt, serviceCategoryIds, ct);
-            if (assignedPro != null)
+            Guid? selectedProfessionalId = input.ProfessionalId;
+            if (selectedProfessionalId.HasValue)
             {
-                booking.ProfessionalId = assignedPro.Id;
-                booking.Status = "ASSIGNED";
+                var requestedProfessionalExists = await _db.Professionals
+                    .AsNoTracking()
+                    .AnyAsync(p => p.Id == selectedProfessionalId.Value && !p.IsDeleted && p.CityId == targetCityId, ct);
+
+                if (!requestedProfessionalExists)
+                    return BadRequest("Selected professional is not available in the selected city.");
             }
             else
             {
-                booking.Status = "PENDING";
+                var assignedPro = await PickBestPartnerForBooking(targetCityId, input.ScheduledAt, serviceCategoryIds, ct);
+                selectedProfessionalId = assignedPro?.Id;
             }
+
+            if (!selectedProfessionalId.HasValue)
+                return Conflict("No professional slot is available for the selected time.");
+
+            await using var tx = await _db.Database.BeginTransactionAsync(ct);
+
+            var slotReservation = await _slotService.TryReserveSlotAsync(selectedProfessionalId.Value, input.ScheduledAt, ct);
+            if (!slotReservation.Success)
+                return Conflict(slotReservation.Message);
+
+            var alreadyBooked = await _db.Bookings.AnyAsync(
+                b => !b.IsDeleted
+                     && b.ProfessionalId == selectedProfessionalId.Value
+                     && b.ScheduledAt == input.ScheduledAt
+                     && b.Status != "REJECTED"
+                     && b.Status != "CANCELLED",
+                ct
+            );
+
+            if (alreadyBooked)
+                return Conflict("Selected slot is already booked.");
+
+            booking.ProfessionalId = selectedProfessionalId.Value;
+            booking.Status = "ASSIGNED";
 
             _db.Bookings.Add(booking);
             await _db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
 
             var dto = _mapper.Map<BookingDto>(booking);
             return CreatedAtAction(nameof(Get), new { id = booking.Id }, dto);
