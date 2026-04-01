@@ -624,6 +624,12 @@
   border-color: #6d4bd8;
   color: #6d4bd8;
 }
+.slot-times button.active {
+  border-color: #6d4bd8;
+  color: #6d4bd8;
+  background: #f8f5ff;
+  font-weight: 700;
+}
 .slot-title {
   margin: 4px 0 8px;
   font-size: 20px;

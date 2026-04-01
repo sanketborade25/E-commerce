@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import "../styles/pages/checkout.css";
 
@@ -40,29 +40,61 @@ export default function Checkout() {
   const tipAmount = selectedTip === "custom" ? 0 : Number(selectedTip || 0);
   const total = subtotal + taxesAndFee + tipAmount;
   const displayedTitle = cartItems[0]?.name || "Salon Prime";
-  const slotSelected = Boolean(selectedDay && selectedTime);
-  const days = [
-    { key: "thu", label: "Thu", date: "05" },
-    { key: "fri", label: "Fri", date: "06" },
-    { key: "sat", label: "Sat", date: "07" },
-    { key: "sun", label: "Sun", date: "08" }
-  ];
   const times = ["05:00 PM", "06:00 PM", "07:00 PM", "08:00 PM"];
-  const selectedDayMeta = days.find((d) => d.key === selectedDay);
+  const getSlotValue = (slot) => {
+    if (typeof slot === "string") return slot;
+    if (!slot || typeof slot !== "object") return "";
+    return slot.startTime || slot.start || slot.time || slot.value || slot.label || "";
+  };
+  const getSlotLabel = (slot) => {
+    if (typeof slot === "string") return slot;
+    if (!slot || typeof slot !== "object") return "";
+    return slot.label || slot.startTime || slot.start || slot.time || slot.value || "";
+  };
+  const selectedTimeValue = getSlotValue(selectedTime);
+  const slotSelected = Boolean(selectedDay && selectedTimeValue);
+  const parseTime12h = (value) => {
+    const [timePart, modifier] = String(value || "").trim().split(" ");
+    if (!timePart || !modifier) return { hour: 0, minute: 0 };
+    const [rawHour, rawMinute] = timePart.split(":").map(Number);
+    let hour = rawHour % 12;
+    if (modifier.toUpperCase() === "PM") hour += 12;
+    return { hour, minute: Number(rawMinute || 0) };
+  };
+
+  const generateAvailableDays = () => {
+    const today = new Date();
+    const weekdayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+    const dayFormatter = new Intl.DateTimeFormat("en-US", { day: "2-digit" });
+
+    return Array.from({ length: 3 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dayKey = date.toISOString().split("T")[0];
+      return {
+        key: dayKey,
+        value: dayKey,
+        label: i === 0 ? "Today" : weekdayFormatter.format(date),
+        date: dayFormatter.format(date),
+        fullDate: date
+      };
+    });
+  };
+
+  const availableDays = useMemo(() => generateAvailableDays(), []);
+  const selectedDayMeta = availableDays.find((day) => day.key === selectedDay);
   const selectedSlotText = selectedDayMeta
-    ? `${selectedDayMeta.label}, Mar ${selectedDayMeta.date} - ${selectedTime}`
+    ? `${selectedDayMeta.label}, ${selectedDayMeta.date} - ${getSlotLabel(selectedTime)}`
     : "";
 
   const buildScheduledAt = () => {
-    const date = new Date();
-    const dayToDate = { thu: 5, fri: 6, sat: 7, sun: 8 };
-    const day = dayToDate[selectedDay] || date.getDate();
-    const [hm, period] = selectedTime.split(" ");
-    const [hhRaw, mmRaw] = hm.split(":").map((v) => Number(v));
-    let hh = hhRaw % 12;
-    if (period === "PM") hh += 12;
-    const out = new Date(date.getFullYear(), date.getMonth(), day, hh, mmRaw || 0, 0);
-    return out.toISOString();
+    if (!selectedDayMeta || !selectedTimeValue) return null;
+
+    const { hour, minute } = parseTime12h(selectedTimeValue);
+    const selectedDate = new Date(selectedDayMeta.fullDate);
+    selectedDate.setHours(hour, minute, 0, 0);
+
+    return selectedDate.toISOString();
   };
 
   const slotIsReserved = (dayKey, timeValue) =>
@@ -71,10 +103,10 @@ export default function Checkout() {
     );
 
   const reserveSelectedSlot = () => {
-    if (!selectedAddress || !selectedDay || !selectedTime) return;
+    if (!selectedAddress || !selectedDay || !selectedTimeValue) return;
     const next = [
       ...reservedSlots,
-      { address: selectedAddress, day: selectedDay, time: selectedTime }
+      { address: selectedAddress, day: selectedDay, time: selectedTimeValue }
     ];
     setReservedSlots(next);
     localStorage.setItem("reserved_slots", JSON.stringify(next));
@@ -181,7 +213,7 @@ export default function Checkout() {
 
   const handleAddressProceed = () => {
     if (!selectedAddress) return;
-    const noSlotAvailable = days.every((day) =>
+    const noSlotAvailable = availableDays.every((day) =>
       times.every((time) =>
         reservedSlots.some(
           (s) => s.address === selectedAddress && s.day === day.key && s.time === time
@@ -208,7 +240,7 @@ export default function Checkout() {
 
   const openSlotPicker = () => {
     if (!selectedAddress) return;
-    const noSlotAvailable = days.every((day) =>
+    const noSlotAvailable = availableDays.every((day) =>
       times.every((time) =>
         reservedSlots.some(
           (s) => s.address === selectedAddress && s.day === day.key && s.time === time
@@ -217,7 +249,25 @@ export default function Checkout() {
     );
     const unavailable = /busy|unavailable|no slot/i.test(selectedAddress) || noSlotAvailable;
     setProfessionalsUnavailable(unavailable);
+    if (!selectedDay && availableDays[0]?.key) {
+      setSelectedDay(availableDays[0].key);
+    }
     setShowSlotModal(true);
+  };
+
+  const isPastTime = (time) => {
+    if (!selectedDayMeta || selectedDayMeta.key !== availableDays[0]?.key) return false;
+
+    const { hour, minute } = parseTime12h(time);
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    return hour < currentHour || (hour === currentHour && minute < currentMinute);
+  };
+
+  const handleTimeSelect = (timeSlot) => {
+    setSelectedTime(getSlotValue(timeSlot));
   };
 
   return (
@@ -634,7 +684,7 @@ export default function Checkout() {
               <>
                 <p className="checkout-meta slot-note">Service will take approx. 45 mins</p>
                 <div className="slot-days">
-                  {days.map((day) => (
+                  {availableDays.map((day) => (
                     <button
                       key={day.key}
                       type="button"
@@ -650,15 +700,28 @@ export default function Checkout() {
                 <h4 className="slot-title">Select start time of service</h4>
                 <div className="slot-times">
                   {times.map((time) => (
+                    (() => {
+                      const slotValue = getSlotValue(time);
+                      const slotLabel = getSlotLabel(time);
+                      const isSelected = selectedTimeValue === slotValue;
+                      const isReserved = slotIsReserved(
+                        selectedDay || availableDays[0].value,
+                        slotValue
+                      );
+                      const disabled = isReserved || isPastTime(slotValue);
+
+                      return (
                     <button
-                      key={time}
+                      key={slotValue || slotLabel}
                       type="button"
-                      className={selectedTime === time ? "on" : ""}
-                      disabled={slotIsReserved(selectedDay || "thu", time)}
-                      onClick={() => setSelectedTime(time)}
+                      className={isSelected ? "on active" : ""}
+                      disabled={disabled}
+                      onClick={() => handleTimeSelect(time)}
                     >
-                      {slotIsReserved(selectedDay || "thu", time) ? `${time} (Booked)` : time}
+                      {isReserved ? `${slotLabel} (Booked)` : slotLabel}
                     </button>
+                      );
+                    })()
                   ))}
                 </div>
                 <hr />

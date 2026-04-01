@@ -74,12 +74,18 @@
   --admin-control-padding-y: 12px;
   --admin-control-padding-x: 14px;
   --admin-control-font-size: 14px;
+  --admin-text-primary: #112923;
+  --admin-text-secondary: #5a736d;
+  --admin-surface: rgba(255, 255, 255, 0.9);
+  --admin-stroke: rgba(215, 226, 233, 0.9);
   min-height: 100vh;
+  font-family: "Manrope", "Segoe UI", "Trebuchet MS", sans-serif;
+  color: var(--admin-text-primary);
   padding: 18px 24px 40px;
   background:
-    radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 26%),
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent 22%),
-    linear-gradient(180deg, #f4fbf8 0%, #f6f8fb 46%, #eef3f8 100%);
+    radial-gradient(circle at 4% 0%, rgba(16, 185, 129, 0.18), transparent 25%),
+    radial-gradient(circle at 96% 6%, rgba(59, 130, 246, 0.16), transparent 25%),
+    linear-gradient(180deg, #edf7f3 0%, #f4f8fd 48%, #edf3fb 100%);
 }
 
 .admin-console-kicker {
@@ -101,11 +107,11 @@
   align-items: center;
   padding: 18px 22px;
   margin-bottom: 18px;
-  border: 1px solid rgba(216, 224, 233, 0.9);
+  border: 1px solid var(--admin-stroke);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.84);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(16px);
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
 .admin-brand {
@@ -202,6 +208,7 @@
 }
 
 .admin-top-actions {
+  display: flex;
   justify-content: flex-end;
 }
 
@@ -216,10 +223,10 @@
   gap: 18px;
   margin-bottom: 18px;
   padding: 24px;
-  border: 1px solid rgba(216, 224, 233, 0.92);
+  border: 1px solid var(--admin-stroke);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 20px 46px rgba(15, 23, 42, 0.06);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(247, 251, 255, 0.82));
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
 }
 
 .admin-hero h3 {
@@ -238,15 +245,28 @@
 
 .admin-summary-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(110px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
 }
 
 .admin-summary-card {
+  position: relative;
+  overflow: hidden;
   padding: 16px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff, #f8fbfc);
-  border: 1px solid #e2eaef;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff, #f3fafc);
+  border: 1px solid #d9e8ec;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-summary-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0f766e, #0284c7);
 }
 
 .admin-summary-card span {
@@ -258,27 +278,36 @@
 .admin-summary-card strong {
   display: block;
   margin-top: 8px;
-  font-size: 24px;
+  font-size: 26px;
   color: #17322c;
 }
 
+.admin-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
 .admin-grid {
+  display: grid;
   gap: 18px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
 }
 
 .admin-card {
+  position: relative;
   border: 1px solid rgba(216, 224, 233, 0.92);
   border-radius: 24px;
   padding: 22px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.05);
+  background: var(--admin-surface);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.07);
   scroll-margin-top: 110px;
 }
 
 .admin-card h3 {
   font-size: 24px;
   margin-bottom: 8px;
+  letter-spacing: -0.01em;
 }
 
 .admin-card hr {
@@ -288,6 +317,7 @@
 }
 
 .admin-input-row {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   align-items: stretch;
@@ -327,7 +357,8 @@
   border: 1px solid #d8e3e8;
   padding: var(--admin-control-padding-y) var(--admin-control-padding-x);
   font-size: var(--admin-control-font-size);
-  background: #fbfdfe;
+  color: #17322c;
+  background: #fbfdff;
   transition: 0.2s ease;
 }
 
@@ -351,6 +382,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  letter-spacing: 0.01em;
+  transition: transform 0.18s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .admin-btn.admin-btn-add,
@@ -364,6 +397,7 @@
 .admin-btn:not(.outline):hover {
   background: #0f312b;
   border-color: #0f312b;
+  transform: translateY(-1px);
 }
 
 .admin-btn-secondary {
@@ -414,11 +448,15 @@
 }
 
 .admin-list {
+  display: grid;
   gap: 10px;
   grid-template-columns: 1fr;
 }
 
 .admin-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 12px 14px;
   border-radius: 16px;
   border: 1px solid #e4ebef;
@@ -514,14 +552,25 @@
 
 .admin-muted {
   margin: 6px 0 0;
-  color: #6a817b;
+  color: var(--admin-text-secondary);
   line-height: 1.45;
 }
 
 .admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 18px;
   padding-top: 16px;
   border-top: 1px solid #e7eef2;
+}
+
+.admin-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .admin-page-btn {

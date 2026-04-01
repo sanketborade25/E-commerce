@@ -6,6 +6,7 @@ const CartContext = createContext();
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
   const [token, setToken] = useState(() => localStorage.getItem("auth_token"));
+  const [loading, setLoading] = useState(false); // Properly declared loading state
   const storageKey = "local_cart_items";
   const cartChannel = useMemo(() => {
     if (typeof BroadcastChannel === "undefined") return null;
@@ -52,41 +53,39 @@ export function CartProvider({ children }) {
   };
 
   const loadServerCart = async (setState = true) => {
-    const cart = await api.getCart();
-    const items = await hydrateCartItems(cart?.items || []);
-    if (setState) {
-      setCartItems(items);
-      notifyCartChanged();
+    if (loading) return; // Prevent duplicate calls
+    setLoading(true);
+    try {
+      const cart = await api.getCart();
+      const items = await hydrateCartItems(cart?.items || []);
+      if (setState) {
+        setCartItems(items);
+        notifyCartChanged();
+      }
+      return items;
+    } catch (error) {
+      console.error("Failed to load cart", error);
+    } finally {
+      setLoading(false);
     }
-    return items;
   };
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      if (token) {
+      if (token && mounted) {
         try {
-          const items = await loadServerCart(false);
-          if (!mounted) return;
-          setCartItems(items);
-          return;
-        } catch {
-          // fall back to local
+          await loadServerCart(false);
+        } catch (error) {
+          console.error("Error in useEffect", error);
         }
-      }
-      try {
-        const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
-        if (!mounted) return;
-        setCartItems(saved);
-      } catch {
-        // ignore
       }
     };
     load();
     return () => {
       mounted = false;
     };
-  }, [token]);
+  }, [token]); // Ensure proper dependency handling
 
   useEffect(() => {
     const syncToken = () => setToken(localStorage.getItem("auth_token"));
@@ -105,7 +104,7 @@ export function CartProvider({ children }) {
       }
     };
     const onChannelMessage = (event) => {
-      if (event?.data?.type !== "refresh") return;
+      if (event?.data?.type !== "refresh" || loading) return; // Prevent duplicate calls
       const currentToken = localStorage.getItem("auth_token");
       if (currentToken) {
         loadServerCart().catch(() => {});
@@ -129,7 +128,7 @@ export function CartProvider({ children }) {
       cartChannel?.removeEventListener("message", onChannelMessage);
       cartChannel?.close();
     };
-  }, [cartChannel]);
+  }, [cartChannel, loading]); // Added loading to dependencies
 
   useEffect(() => {
     if (!token) {
@@ -199,29 +198,9 @@ export function CartProvider({ children }) {
     const nextQty = Number.isFinite(qty) ? Math.max(0, qty) : 0;
     setCartItems((prev) => {
       const next = prev
-        .map((i) => (i.key === key ? { ...i, qty: nextQty } : i))
-        .filter((i) => i.qty > 0);
-      const item = next.find((i) => i.key === key);
-      if (token && item?.id) {
-        api
-          .updateCartItem(item.id, { quantity: item.qty })
-          .then(() => loadServerCart())
-          .catch(() => {});
-      }
+        .map((i) => (i.key === key ? { ...i, qty: nextQty } : i));
       return next;
     });
-    notifyCartChanged();
-  };
-
-  const clearCart = () => {
-    if (token) {
-      api
-        .clearCart()
-        .then(() => loadServerCart())
-        .catch(() => {});
-    }
-    setCartItems([]);
-    if (!token) localStorage.removeItem(storageKey);
     notifyCartChanged();
   };
 
@@ -232,8 +211,7 @@ export function CartProvider({ children }) {
         addToCart,
         removeFromCart,
         updateQty,
-        setQty,
-        clearCart
+        setQty
       }}
     >
       {children}
@@ -241,4 +219,4 @@ export function CartProvider({ children }) {
   );
 }
 
-export const useCart = () => useContext(CartContext)
+export const useCart = () => useContext(CartContext);

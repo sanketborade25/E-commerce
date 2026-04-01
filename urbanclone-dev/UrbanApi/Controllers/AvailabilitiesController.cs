@@ -23,9 +23,16 @@ namespace UrbanApi.Controllers
         }
 
         [HttpGet("professional/{proId:guid}")]
-        public async Task<IActionResult> GetByProfessional(Guid proId, CancellationToken ct)
+        public async Task<IActionResult> GetByProfessional(Guid proId, DateTime? date, CancellationToken ct)
         {
-            var list = await _db.Availabilities.Where(a => a.ProfessionalId == proId && !a.IsDeleted).AsNoTracking().ToListAsync(ct);
+            var query = _db.Availabilities.Where(a => a.ProfessionalId == proId && !a.IsDeleted);
+
+            if (date.HasValue)
+            {
+                query = query.Where(a => a.Date == date.Value.Date);
+            }
+
+            var list = await query.AsNoTracking().ToListAsync(ct);
             return Ok(_mapper.Map<List<AvailabilityDto>>(list));
         }
 

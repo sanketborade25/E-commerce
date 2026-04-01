@@ -31,6 +31,9 @@ export default function AdminDashboard() {
   const [services, setServices] = useState([]);
   const [serviceOptions, setServiceOptions] = useState([]);
   const [cityPage, setCityPage] = useState(1);
+  const [popupCategoryPage, setPopupCategoryPage] = useState(1);
+  const [servicePage, setServicePage] = useState(1);
+  const [optionPage, setOptionPage] = useState(1);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [popupCategories, setPopupCategories] = useState([]);
@@ -90,12 +93,13 @@ export default function AdminDashboard() {
   }, []);
 
   const loadAll = async () => {
-    const [citiesRes, categoriesRes, optionsRes, servicesRes, subCatsRes] =
+    const [citiesRes, categoriesRes, optionsRes, servicesRes, publicServicesRes, subCatsRes] =
       await Promise.allSettled([
         api.getCities({ includeInactive: true }),
         api.getCategories(),
         api.getServiceOptions(),
         api.getAdminServices(),
+        api.getServices(),
         api.getSubCategories()
       ]);
 
@@ -111,8 +115,15 @@ export default function AdminDashboard() {
       );
       setCategories(onlyParents);
     }
-    if (servicesRes.status === "fulfilled") {
-      setServices(servicesRes.value || []);
+    if (servicesRes.status === "fulfilled" && Array.isArray(servicesRes.value)) {
+      setServices(servicesRes.value);
+    } else if (
+      publicServicesRes.status === "fulfilled" &&
+      Array.isArray(publicServicesRes.value)
+    ) {
+      setServices(publicServicesRes.value);
+    } else {
+      setServices([]);
     }
     if (optionsRes.status === "fulfilled") {
       setServiceOptions(optionsRes.value || []);
@@ -450,14 +461,54 @@ export default function AdminDashboard() {
     { id: "admin-cities", label: "Cities", icon: "location" }
   ];
 
-  const citiesPerPage = 20;
+  const pageSize = 10;
+
+  const popupTotalPages = Math.max(
+    1,
+    Math.ceil(popupCategories.length / pageSize)
+  );
+  const pagedPopupCategories = popupCategories.slice(
+    (popupCategoryPage - 1) * pageSize,
+    popupCategoryPage * pageSize
+  );
+  const popupPageNumbers = Array.from(
+    { length: popupTotalPages },
+    (_, i) => i + 1
+  );
+
+  const serviceTotalPages = Math.max(
+    1,
+    Math.ceil(filteredServices.length / pageSize)
+  );
+  const pagedServices = filteredServices.slice(
+    (servicePage - 1) * pageSize,
+    servicePage * pageSize
+  );
+  const servicePageNumbers = Array.from(
+    { length: serviceTotalPages },
+    (_, i) => i + 1
+  );
+
+  const optionTotalPages = Math.max(
+    1,
+    Math.ceil(filteredOptions.length / pageSize)
+  );
+  const pagedOptions = filteredOptions.slice(
+    (optionPage - 1) * pageSize,
+    optionPage * pageSize
+  );
+  const optionPageNumbers = Array.from(
+    { length: optionTotalPages },
+    (_, i) => i + 1
+  );
+
   const filteredCities = cities.filter((city) =>
     String(city.name || "").toLowerCase().includes(citySearch.trim().toLowerCase())
   );
-  const totalCityPages = Math.max(1, Math.ceil(filteredCities.length / citiesPerPage));
+  const totalCityPages = Math.max(1, Math.ceil(filteredCities.length / pageSize));
   const pagedCities = filteredCities.slice(
-    (cityPage - 1) * citiesPerPage,
-    cityPage * citiesPerPage
+    (cityPage - 1) * pageSize,
+    cityPage * pageSize
   );
   const cityPageNumbers = Array.from(
     { length: totalCityPages },
@@ -471,8 +522,38 @@ export default function AdminDashboard() {
   }, [cityPage, totalCityPages]);
 
   useEffect(() => {
+    if (popupCategoryPage > popupTotalPages) {
+      setPopupCategoryPage(popupTotalPages);
+    }
+  }, [popupCategoryPage, popupTotalPages]);
+
+  useEffect(() => {
+    if (servicePage > serviceTotalPages) {
+      setServicePage(serviceTotalPages);
+    }
+  }, [servicePage, serviceTotalPages]);
+
+  useEffect(() => {
+    if (optionPage > optionTotalPages) {
+      setOptionPage(optionTotalPages);
+    }
+  }, [optionPage, optionTotalPages]);
+
+  useEffect(() => {
     setCityPage(1);
   }, [citySearch]);
+
+  useEffect(() => {
+    setPopupCategoryPage(1);
+  }, [popupCategories.length]);
+
+  useEffect(() => {
+    setServicePage(1);
+  }, [selectedCategoryId, selectedServiceId, services.length]);
+
+  useEffect(() => {
+    setOptionPage(1);
+  }, [selectedServiceId, serviceOptions.length]);
 
   useEffect(() => {
     if (!selectedServiceId) return;
@@ -682,7 +763,7 @@ export default function AdminDashboard() {
               {popupCategories.length === 0 ? (
                 <p className="admin-muted">No sub-categories yet.</p>
               ) : (
-                popupCategories.map((item) => (
+                pagedPopupCategories.map((item) => (
                   <div key={item.id} className="admin-list-item">
                     <div>
                       <strong>{item.name}</strong>
@@ -709,6 +790,40 @@ export default function AdminDashboard() {
                   </div>
                 ))
               )}
+            </div>
+            <div className="admin-pagination">
+              <button
+                className="admin-btn outline"
+                onClick={() =>
+                  setPopupCategoryPage((p) => Math.max(1, p - 1))
+                }
+                disabled={popupCategoryPage === 1}
+              >
+                Prev
+              </button>
+              <div className="admin-page-numbers">
+                {popupPageNumbers.map((p) => (
+                  <button
+                    key={p}
+                    className={`admin-page-btn ${popupCategoryPage === p ? "active" : ""}`}
+                    onClick={() => setPopupCategoryPage(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <span className="admin-muted">
+                Page {popupCategoryPage} of {popupTotalPages}
+              </span>
+              <button
+                className="admin-btn outline"
+                onClick={() =>
+                  setPopupCategoryPage((p) => Math.min(popupTotalPages, p + 1))
+                }
+                disabled={popupCategoryPage === popupTotalPages}
+              >
+                Next
+              </button>
             </div>
           </div>
 
@@ -850,7 +965,7 @@ export default function AdminDashboard() {
               <p className="admin-error">{uploadError.serviceBanner}</p>
             )}
             <div className="admin-list admin-list-grid">
-              {filteredServices.map((service) => {
+              {pagedServices.map((service) => {
                 const cityStatus = toggleCityId
                   ? service.cityStatuses?.find((cs) => String(cs.cityId) === toggleCityId)
                   : null;
@@ -895,6 +1010,38 @@ export default function AdminDashboard() {
                   </div>
                 );
               })}
+            </div>
+            <div className="admin-pagination">
+              <button
+                className="admin-btn outline"
+                onClick={() => setServicePage((p) => Math.max(1, p - 1))}
+                disabled={servicePage === 1}
+              >
+                Prev
+              </button>
+              <div className="admin-page-numbers">
+                {servicePageNumbers.map((p) => (
+                  <button
+                    key={p}
+                    className={`admin-page-btn ${servicePage === p ? "active" : ""}`}
+                    onClick={() => setServicePage(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <span className="admin-muted">
+                Page {servicePage} of {serviceTotalPages}
+              </span>
+              <button
+                className="admin-btn outline"
+                onClick={() =>
+                  setServicePage((p) => Math.min(serviceTotalPages, p + 1))
+                }
+                disabled={servicePage === serviceTotalPages}
+              >
+                Next
+              </button>
             </div>
           </div>
 
@@ -956,7 +1103,7 @@ export default function AdminDashboard() {
               {filteredOptions.length === 0 ? (
               <p className="admin-muted">No options for this service.</p>
             ) : (
-              filteredOptions.map((opt) => (
+              pagedOptions.map((opt) => (
                 <div key={opt.id} className="admin-list-item">
                   <div>
                     <strong>{opt.name || "Option"}</strong>
@@ -970,6 +1117,38 @@ export default function AdminDashboard() {
                   </div>
                 ))
               )}
+            </div>
+            <div className="admin-pagination">
+              <button
+                className="admin-btn outline"
+                onClick={() => setOptionPage((p) => Math.max(1, p - 1))}
+                disabled={optionPage === 1}
+              >
+                Prev
+              </button>
+              <div className="admin-page-numbers">
+                {optionPageNumbers.map((p) => (
+                  <button
+                    key={p}
+                    className={`admin-page-btn ${optionPage === p ? "active" : ""}`}
+                    onClick={() => setOptionPage(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <span className="admin-muted">
+                Page {optionPage} of {optionTotalPages}
+              </span>
+              <button
+                className="admin-btn outline"
+                onClick={() =>
+                  setOptionPage((p) => Math.min(optionTotalPages, p + 1))
+                }
+                disabled={optionPage === optionTotalPages}
+              >
+                Next
+              </button>
             </div>
           </div>
 

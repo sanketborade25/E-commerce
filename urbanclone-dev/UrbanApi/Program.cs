@@ -1,12 +1,27 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.IO;
 using System.Text;
 using UrbanApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Keep local/dev logging on providers that don't require Windows Event Log permissions.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "DataProtection-Keys");
+Directory.CreateDirectory(dataProtectionKeysPath);
+
+builder.Services
+    .AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
+    .SetApplicationName("UrbanApi");
 
 // ------------ JWT CONFIG ------------
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -36,7 +51,9 @@ builder.Services.AddAuthorization();
 
 // ------------ DB CONTEXT ------------
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
 // ------------ AUTOMAPPER ------------
 builder.Services.AddAutoMapper(typeof(UrbanApi.Mapping.MappingProfile));
@@ -110,7 +127,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors(AllowLocalDev);
 
