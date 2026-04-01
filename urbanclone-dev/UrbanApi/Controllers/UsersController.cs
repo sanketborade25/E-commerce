@@ -13,6 +13,7 @@ namespace UrbanApi.Controllers
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _db;

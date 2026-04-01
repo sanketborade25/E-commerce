@@ -41,7 +41,7 @@ async function request(path, options = {}) {
       });
 
       if (!res.ok) {
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           localStorage.removeItem(TOKEN_KEY);
           window.dispatchEvent(new Event("auth-token-changed"));
         }

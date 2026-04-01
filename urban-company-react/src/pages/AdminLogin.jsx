@@ -21,12 +21,11 @@ export default function AdminLogin() {
       if (!res?.user?.role || res.user.role.toLowerCase() !== "admin") {
         setError("You are not authorized to access admin.");
         api.clearToken();
-        localStorage.removeItem("admin_authed");
+        localStorage.removeItem("auth_user");
         return;
       }
       api.setToken(res.accessToken);
-      localStorage.setItem("admin_authed", "true");
-      localStorage.setItem("admin_user", JSON.stringify(res.user));
+      localStorage.setItem("auth_user", JSON.stringify(res.user));
       navigate("/admin/dashboard");
     } catch (e) {
       setError("Invalid credentials.");

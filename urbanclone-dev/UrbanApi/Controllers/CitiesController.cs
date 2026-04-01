@@ -11,6 +11,7 @@ namespace UrbanApi.Controllers
 [ApiController]
 [Route("api/[controller]")]
 // Read-only for public, admin for write
+[Authorize(Roles = "Admin")]
 public class CitiesController : ControllerBase
     {
         private readonly AppDbContext _db;

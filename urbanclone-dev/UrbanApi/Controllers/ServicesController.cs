@@ -10,6 +10,7 @@ namespace UrbanApi.Controllers
 {
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin")]
 public class ServicesController : ControllerBase
     {
         private readonly AppDbContext _db;
@@ -151,6 +152,7 @@ public class ServicesController : ControllerBase
             return Ok(BuildServiceDto(service, cityId, partnersByCity, slotsByCity));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("/api/admin/services")]
         public async Task<IActionResult> GetAdminServices(CancellationToken ct)
         {

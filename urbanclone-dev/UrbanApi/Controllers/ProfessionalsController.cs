@@ -233,6 +233,7 @@ namespace UrbanApi.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int? cityId, CancellationToken ct)
         {
@@ -242,6 +243,7 @@ namespace UrbanApi.Controllers
             return Ok(_mapper.Map<List<ProfessionalDto>>(list));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id, CancellationToken ct)
         {
@@ -270,6 +272,7 @@ namespace UrbanApi.Controllers
             return Ok(_mapper.Map<ProfessionalDto>(professional.Value.professional));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ProfessionalCreateDto input, CancellationToken ct)
         {
@@ -279,6 +282,7 @@ namespace UrbanApi.Controllers
             return CreatedAtAction(nameof(Get), new { id = entity.Id }, _mapper.Map<ProfessionalDto>(entity));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ProfessionalCreateDto input, CancellationToken ct)
         {
@@ -395,6 +399,7 @@ namespace UrbanApi.Controllers
             return Ok(dto);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {

@@ -423,7 +423,7 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("admin_authed");
+    localStorage.removeItem("auth_user");
     api.clearToken();
     navigate("/admin");
   };
