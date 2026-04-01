@@ -35,7 +35,7 @@ public class ServicesController : ControllerBase
         {
             var now = DateTime.UtcNow;
             return await _db.Availabilities
-                .Where(a => !a.IsDeleted && a.EndAt >= now && a.Professional.CityId.HasValue)
+                .Where(a => a.Status == "available" && a.EndAt >= now && a.Professional.CityId.HasValue)
                 .Select(a => new { CityId = a.Professional.CityId!.Value })
                 .GroupBy(a => a.CityId)
                 .ToDictionaryAsync(g => g.Key, g => g.Count(), ct);

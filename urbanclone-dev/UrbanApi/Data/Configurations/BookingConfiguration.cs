@@ -12,7 +12,7 @@ namespace UrbanApi.Data.Configurations
             builder.Property(b => b.TotalAmount).HasPrecision(18, 2);
             builder.HasIndex(b => b.AvailabilityId)
                 .IsUnique()
-                .HasFilter("[AvailabilityId] IS NOT NULL AND [IsDeleted] = 0");
+                .HasFilter("[AvailabilityId] IS NOT NULL AND [Status] <> 'REJECTED' AND [Status] <> 'CANCELLED'");
 
             builder.HasOne(b => b.User)
                 .WithMany(u => u.Bookings)

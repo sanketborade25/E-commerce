@@ -92,6 +92,9 @@ namespace UrbanApi.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
                     b.Property<DateTime>("EndAt")
                         .HasColumnType("datetime2");
 
@@ -107,6 +110,12 @@ namespace UrbanApi.Migrations
                     b.Property<DateTime>("StartAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)")
+                        .HasDefaultValue("available");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -116,6 +125,8 @@ namespace UrbanApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProfessionalId");
+
+                    b.HasIndex("ProfessionalId", "Date", "Status");
 
                     b.ToTable("Availabilities");
                 });
@@ -127,6 +138,9 @@ namespace UrbanApi.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("AddressId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AvailabilityId")
                         .HasColumnType("int");
 
                     b.Property<string>("BookingReference")
@@ -172,6 +186,10 @@ namespace UrbanApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId");
+
+                    b.HasIndex("AvailabilityId")
+                        .IsUnique()
+                        .HasFilter("[AvailabilityId] IS NOT NULL AND [Status] <> 'REJECTED' AND [Status] <> 'CANCELLED'");
 
                     b.HasIndex("ProfessionalId");
 

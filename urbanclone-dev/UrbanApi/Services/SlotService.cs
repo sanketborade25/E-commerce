@@ -23,7 +23,6 @@ namespace UrbanApi.Services
                 .AsNoTracking()
                 .Where(a =>
                     a.ProfessionalId == professionalId &&
-                    !a.IsDeleted &&
                     a.Status == "available" &&
                     a.StartAt < dayEnd &&
                     a.EndAt > dayStart)
@@ -40,19 +39,25 @@ namespace UrbanApi.Services
                 })
                 .ToListAsync(ct);
 
-            var bookedTimes = await _db.Bookings
+            var bookings = await _db.Bookings
+                .Include(b => b.Items)
                 .AsNoTracking()
                 .Where(b =>
                     b.ProfessionalId == professionalId &&
-                    !b.IsDeleted &&
                     !NonBookableStatuses.Contains(b.Status.ToUpper()) &&
-                    b.ScheduledAt >= dayStart &&
-                    b.ScheduledAt < dayEnd)
-                .Select(b => b.ScheduledAt)
+                    b.ScheduledAt < dayEnd &&
+                    b.ScheduledAt >= dayStart.AddDays(-1))
                 .ToListAsync(ct);
 
             return rawSlots
-                .Where(slot => !bookedTimes.Any(bookedAt => bookedAt >= slot.StartAt && bookedAt < slot.EndAt))
+                .Where(slot => !bookings.Any(b =>
+                {
+                    var durationMinutes = b.Items.Sum(i => i.DurationMinutes ?? 0);
+                    var bookingEnd = durationMinutes > 0
+                        ? b.ScheduledAt.AddMinutes(durationMinutes)
+                        : b.ScheduledAt.AddMinutes(1);
+                    return b.ScheduledAt < slot.EndAt && bookingEnd > slot.StartAt;
+                }))
                 .ToList();
         }
 
@@ -64,7 +69,6 @@ namespace UrbanApi.Services
                     .AsNoTracking()
                     .Where(a =>
                         a.ProfessionalId == professionalId &&
-                        !a.IsDeleted &&
                         a.Status == "available" &&
                         a.StartAt <= scheduledAt &&
                         a.EndAt > scheduledAt)
@@ -88,7 +92,6 @@ namespace UrbanApi.Services
                            UpdatedAt = SYSUTCDATETIME()
                        WHERE Id = {candidate.Id}
                          AND ProfessionalId = {professionalId}
-                         AND IsDeleted = 0
                          AND Status = 'available'",
                     ct
                 );

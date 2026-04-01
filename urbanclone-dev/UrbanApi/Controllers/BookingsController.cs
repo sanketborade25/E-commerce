@@ -55,8 +55,7 @@ namespace UrbanApi.Controllers
             foreach (var p in matching)
             {
                 var hasSlot = await _db.Availabilities.AnyAsync(
-                    a => !a.IsDeleted
-                         && a.Status == "available"
+                    a => a.Status == "available"
                          && a.ProfessionalId == p.Id
                          && a.StartAt <= scheduledAt
                          && a.EndAt >= scheduledAt,
@@ -213,24 +212,37 @@ namespace UrbanApi.Controllers
 
             await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
+            var requestedDurationMinutes = input.Items.Sum(i => i.DurationMinutes ?? 0);
+            var requestedEnd = requestedDurationMinutes > 0
+                ? input.ScheduledAt.AddMinutes(requestedDurationMinutes)
+                : input.ScheduledAt.AddMinutes(1);
+
+            var overlappingBookings = await _db.Bookings
+                .Include(b => b.Items)
+                .AsNoTracking()
+                .Where(b =>
+                    b.ProfessionalId == selectedProfessionalId.Value &&
+                    !b.IsDeleted &&
+                    b.Status != "REJECTED" &&
+                    b.Status != "CANCELLED" &&
+                    b.ScheduledAt < requestedEnd)
+                .ToListAsync(ct);
+
+            var hasOverlap = overlappingBookings.Any(b =>
+            {
+                var durationMinutes = b.Items.Sum(i => i.DurationMinutes ?? 0);
+                var bookingEnd = durationMinutes > 0
+                    ? b.ScheduledAt.AddMinutes(durationMinutes)
+                    : b.ScheduledAt.AddMinutes(1);
+                return b.ScheduledAt < requestedEnd && bookingEnd > input.ScheduledAt;
+            });
+
+            if (hasOverlap)
+                return Conflict("Selected slot overlaps with an existing booking.");
+
             var slotReservation = await _slotService.TryReserveSlotAsync(selectedProfessionalId.Value, input.ScheduledAt, ct);
             if (!slotReservation.Success)
                 return Conflict(slotReservation.Message);
-
-            var overlapStart = slotReservation.StartAt ?? input.ScheduledAt;
-            var overlapEnd = slotReservation.EndAt ?? input.ScheduledAt.AddMinutes(1);
-            var alreadyBooked = await _db.Bookings.AnyAsync(
-                b => !b.IsDeleted
-                     && b.ProfessionalId == selectedProfessionalId.Value
-                     && b.ScheduledAt >= overlapStart
-                     && b.ScheduledAt < overlapEnd
-                     && b.Status != "REJECTED"
-                     && b.Status != "CANCELLED",
-                ct
-            );
-
-            if (alreadyBooked)
-                return Conflict("Selected slot is already booked.");
 
             booking.ProfessionalId = selectedProfessionalId.Value;
             booking.AvailabilityId = slotReservation.AvailabilityId;
@@ -364,6 +376,7 @@ namespace UrbanApi.Controllers
         {
             var booking = await _db.Bookings.FirstOrDefaultAsync(b => b.Id == id && !b.IsDeleted, ct);
             if (booking == null) return NotFound();
+            booking.Status = "CANCELLED";
             booking.IsDeleted = true;
             booking.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);

@@ -54,6 +54,8 @@ namespace UrbanApi.Controllers
         public async Task<IActionResult> Create([FromBody] AvailabilityCreateDto input, CancellationToken ct)
         {
             var entity = _mapper.Map<Availability>(input);
+            entity.Status = string.IsNullOrWhiteSpace(entity.Status) ? "available" : entity.Status.Trim().ToLowerInvariant();
+            entity.Date = entity.StartAt.Date;
             _db.Availabilities.Add(entity);
             await _db.SaveChangesAsync(ct);
             return CreatedAtAction(nameof(GetByProfessional), new { proId = entity.ProfessionalId }, _mapper.Map<AvailabilityDto>(entity));

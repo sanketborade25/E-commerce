@@ -33,7 +33,17 @@ namespace UrbanApi.Migrations
             migrationBuilder.Sql(
                 @"UPDATE Availabilities
                   SET [Date] = CAST(StartAt AS date),
-                      [Status] = CASE WHEN IsDeleted = 1 THEN 'booked' ELSE 'available' END");
+                      [Status] = CASE
+                          WHEN EXISTS (
+                              SELECT 1
+                              FROM Bookings b
+                              WHERE b.AvailabilityId = Availabilities.Id
+                                AND b.Status <> 'REJECTED'
+                                AND b.Status <> 'CANCELLED'
+                          )
+                          THEN 'booked'
+                          ELSE 'available'
+                      END");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Availabilities_ProfessionalId_Date_Status",
@@ -45,7 +55,7 @@ namespace UrbanApi.Migrations
                 table: "Bookings",
                 column: "AvailabilityId",
                 unique: true,
-                filter: "[AvailabilityId] IS NOT NULL AND [IsDeleted] = 0");
+                filter: "[AvailabilityId] IS NOT NULL AND [Status] <> 'REJECTED' AND [Status] <> 'CANCELLED'");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
