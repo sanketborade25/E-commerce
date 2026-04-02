@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import ServicePage from "./pages/ServicePage"; 
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminBookings from "./pages/AdminBookings";
 import Checkout from "./pages/Checkout";
 import Bookings from "./pages/Bookings";
 import ProfessionalLogin from "./pages/ProfessionalLogin";
@@ -67,6 +68,14 @@ export default function App() {
          element={
            <AdminRoute>
              <AdminDashboard />
+           </AdminRoute>
+         }
+       />
+       <Route
+         path="/admin/bookings"
+         element={
+           <AdminRoute>
+             <AdminBookings />
            </AdminRoute>
          }
        />

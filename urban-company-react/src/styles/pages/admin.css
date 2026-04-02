@@ -645,3 +645,115 @@
     padding: 22px;
   }
 }
+
+.admin-table {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-table-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.2fr 0.7fr 0.9fr 0.6fr 0.9fr 1.3fr;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-stroke);
+  background: #fff;
+  align-items: center;
+  font-size: 14px;
+}
+
+.admin-table-head {
+  background: #f7fbfa;
+  font-weight: 600;
+}
+
+.admin-table-row span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.admin-status-badge.is-success {
+  background: rgba(46, 160, 67, 0.15);
+  color: #1d6b2e;
+}
+
+.admin-status-badge.is-info {
+  background: rgba(0, 120, 212, 0.15);
+  color: #0b4f8a;
+}
+
+.admin-status-badge.is-danger {
+  background: rgba(214, 76, 76, 0.15);
+  color: #8f1f1f;
+}
+
+.admin-status-badge.is-warn {
+  background: rgba(232, 166, 0, 0.2);
+  color: #7a4f00;
+}
+
+.admin-status-badge.is-muted {
+  background: rgba(17, 41, 35, 0.1);
+  color: #112923;
+}
+
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 41, 35, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 20;
+}
+
+.admin-modal-card {
+  width: min(840px, 100%);
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--admin-stroke);
+  padding: 24px;
+  display: grid;
+  gap: 20px;
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-modal-body {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.admin-modal-items {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-modal-item {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--admin-stroke);
+  padding-bottom: 6px;
+  font-size: 14px;
+}

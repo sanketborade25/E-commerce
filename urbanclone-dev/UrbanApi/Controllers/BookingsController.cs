@@ -32,6 +32,27 @@ namespace UrbanApi.Controllers
             "ASSIGNED", "ACCEPTED", "ON_THE_WAY", "STARTED", "COMPLETED", "REJECTED", "PENDING"
         };
 
+        private static readonly Dictionary<string, HashSet<string>> _adminStatusTransitions =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                ["PENDING"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "ACCEPTED", "CANCELLED" },
+                ["ASSIGNED"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "ACCEPTED", "CANCELLED" },
+                ["ACCEPTED"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "COMPLETED" },
+                ["COMPLETED"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                ["CANCELLED"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            };
+
+        private static bool IsValidAdminTransition(string current, string next)
+        {
+            if (string.Equals(current, next, StringComparison.OrdinalIgnoreCase)) return true;
+            return _adminStatusTransitions.TryGetValue(current, out var allowed) && allowed.Contains(next);
+        }
+
+        private static string NormalizeStatus(string? status)
+        {
+            return string.IsNullOrWhiteSpace(status) ? "PENDING" : status.Trim().ToUpperInvariant();
+        }
+
         private async Task<Guid?> GetProfessionalIdFromClaims(CancellationToken ct)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
@@ -97,6 +118,7 @@ namespace UrbanApi.Controllers
         }
 
         // GET: api/Bookings
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {
@@ -113,6 +135,7 @@ namespace UrbanApi.Controllers
         }
 
         // GET: api/Bookings/{id}
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id, CancellationToken ct)
         {
@@ -126,6 +149,201 @@ namespace UrbanApi.Controllers
 
             if (booking == null) return NotFound();
             return Ok(_mapper.Map<BookingDto>(booking));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("/api/admin/bookings")]
+        public async Task<IActionResult> GetAdminBookings(
+            [FromQuery] string? search,
+            [FromQuery] string? status,
+            [FromQuery] int? cityId,
+            [FromQuery] DateTime? dateFrom,
+            [FromQuery] DateTime? dateTo,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var normalizedStatus = string.IsNullOrWhiteSpace(status)
+                ? null
+                : status.Trim().ToUpperInvariant();
+
+            var query = _db.Bookings
+                .Include(b => b.User)
+                .Include(b => b.Professional).ThenInclude(p => p!.User)
+                .Include(b => b.Address).ThenInclude(a => a!.City)
+                .Include(b => b.Items).ThenInclude(i => i.Service)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(normalizedStatus))
+            {
+                query = query.Where(b => b.Status.ToUpper() == normalizedStatus);
+            }
+
+            if (cityId.HasValue && cityId.Value > 0)
+            {
+                query = query.Where(b => b.Address != null && b.Address.CityId == cityId.Value);
+            }
+
+            if (dateFrom.HasValue)
+            {
+                query = query.Where(b => b.ScheduledAt >= dateFrom.Value);
+            }
+
+            if (dateTo.HasValue)
+            {
+                var endExclusive = dateTo.Value.Date.AddDays(1);
+                query = query.Where(b => b.ScheduledAt < endExclusive);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var q = search.Trim().ToLowerInvariant();
+                query = query.Where(b =>
+                    (b.BookingReference != null && b.BookingReference.ToLower().Contains(q)) ||
+                    (b.User != null && b.User.FullName != null && b.User.FullName.ToLower().Contains(q)) ||
+                    (b.User != null && b.User.Phone != null && b.User.Phone.ToLower().Contains(q)) ||
+                    b.Items.Any(i => i.Service != null && i.Service.Title != null && i.Service.Title.ToLower().Contains(q))
+                );
+            }
+
+            var total = await query.CountAsync(ct);
+
+            var list = await query
+                .OrderByDescending(b => b.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            var mapped = list.Select(MapAdminBooking).ToList();
+
+            return Ok(new AdminBookingListResponse
+            {
+                Items = mapped,
+                Total = total,
+                Page = page,
+                PageSize = pageSize
+            });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("/api/admin/bookings/{id:guid}")]
+        public async Task<IActionResult> GetAdminBooking(Guid id, CancellationToken ct)
+        {
+            var booking = await _db.Bookings
+                .Include(b => b.User)
+                .Include(b => b.Professional).ThenInclude(p => p!.User)
+                .Include(b => b.Address).ThenInclude(a => a!.City)
+                .Include(b => b.Items).ThenInclude(i => i.Service)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == id, ct);
+
+            if (booking == null) return NotFound();
+            return Ok(MapAdminBooking(booking));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("/api/admin/bookings/{id:guid}/status")]
+        public async Task<IActionResult> UpdateAdminStatus(Guid id, [FromBody] AdminBookingStatusUpdateDto input, CancellationToken ct)
+        {
+            if (input == null || string.IsNullOrWhiteSpace(input.Status))
+                return BadRequest("Status is required.");
+
+            var booking = await _db.Bookings
+                .Include(b => b.Professional)
+                .FirstOrDefaultAsync(b => b.Id == id, ct);
+            if (booking == null) return NotFound();
+
+            var current = NormalizeStatus(booking.Status);
+            var next = NormalizeStatus(input.Status);
+            if (!IsValidAdminTransition(current, next))
+                return BadRequest($"Invalid status transition from {current} to {next}.");
+
+            booking.Status = next;
+            booking.UpdatedAt = DateTime.UtcNow;
+
+            if (string.Equals(next, "COMPLETED", StringComparison.OrdinalIgnoreCase) && booking.ProfessionalId.HasValue)
+            {
+                var professional = await _db.Professionals.FirstOrDefaultAsync(p => p.Id == booking.ProfessionalId && !p.IsDeleted, ct);
+                if (professional != null)
+                {
+                    professional.Earnings += booking.TotalAmount;
+                    professional.UpdatedAt = DateTime.UtcNow;
+                }
+            }
+
+            if (string.Equals(next, "CANCELLED", StringComparison.OrdinalIgnoreCase))
+            {
+                booking.IsDeleted = true;
+            }
+
+            await _db.SaveChangesAsync(ct);
+            return Ok(new { booking.Id, booking.Status });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("/api/admin/bookings/{id:guid}/assign-professional")]
+        public async Task<IActionResult> AssignProfessional(Guid id, [FromBody] AdminBookingAssignDto input, CancellationToken ct)
+        {
+            if (input == null || input.ProfessionalId == Guid.Empty)
+                return BadRequest("ProfessionalId is required.");
+
+            var booking = await _db.Bookings
+                .Include(b => b.Address)
+                .FirstOrDefaultAsync(b => b.Id == id, ct);
+            if (booking == null) return NotFound();
+
+            var professional = await _db.Professionals.FirstOrDefaultAsync(p => p.Id == input.ProfessionalId && !p.IsDeleted, ct);
+            if (professional == null) return BadRequest("Professional not found.");
+
+            if (booking.Address?.CityId.HasValue == true && professional.CityId.HasValue &&
+                booking.Address.CityId.Value != professional.CityId.Value)
+            {
+                return BadRequest("Selected professional is not in the booking city.");
+            }
+
+            booking.ProfessionalId = professional.Id;
+            booking.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+
+            return Ok(new { booking.Id, booking.ProfessionalId });
+        }
+
+        private static AdminBookingDto MapAdminBooking(Booking booking)
+        {
+            var items = booking.Items?.Select(i => new AdminBookingItemDto
+            {
+                ServiceId = i.ServiceId,
+                ServiceName = i.Service?.Title,
+                Price = i.Price,
+                DurationMinutes = i.DurationMinutes
+            }).ToList() ?? new List<AdminBookingItemDto>();
+
+            return new AdminBookingDto
+            {
+                Id = booking.Id,
+                BookingReference = booking.BookingReference ?? string.Empty,
+                UserId = booking.UserId,
+                UserName = booking.User?.FullName,
+                UserPhone = booking.User?.Phone,
+                ProfessionalId = booking.ProfessionalId,
+                ProfessionalName = booking.Professional?.DisplayName ?? booking.Professional?.User?.FullName,
+                CityId = booking.Address?.CityId,
+                CityName = booking.Address?.City?.Name,
+                ScheduledAt = booking.ScheduledAt,
+                Status = booking.Status ?? string.Empty,
+                TotalAmount = booking.TotalAmount,
+                PaymentStatus = booking.PaymentStatus ?? string.Empty,
+                AddressId = booking.AddressId,
+                AddressLine1 = booking.Address?.Line1,
+                AddressLine2 = booking.Address?.Line2,
+                Pincode = booking.Address?.Pincode,
+                Items = items,
+                CreatedAt = booking.CreatedAt
+            };
         }
 
         // POST: api/Bookings

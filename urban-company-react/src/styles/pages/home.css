@@ -54,6 +54,7 @@
   height: 50px;
   object-fit: contain;
   margin-bottom: 8px;
+  place-self: center;
 }
 
 .service-card p {

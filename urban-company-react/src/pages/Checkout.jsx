@@ -273,7 +273,7 @@ export default function Checkout() {
   return (
     <div className="checkout-page">
       <div className="checkout-header">
-        <button type="button" className="checkout-logo" onClick={() => navigate("/")}>
+        <button type="button" className="checkout-logo" onClick={() => navigate("/Home")}>
           UC
         </button>
         <div>

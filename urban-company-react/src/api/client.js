@@ -188,6 +188,35 @@ export const api = {
     }),
   deleteServiceOption: (id) =>
     request(`/api/ServiceOptions/${id}`, { method: "DELETE" }),
+  getProfessionals: (params = {}) => {
+    const search = new URLSearchParams();
+    if (params.cityId) search.set("cityId", params.cityId);
+    const qs = search.toString();
+    return request(`/api/Professionals${qs ? `?${qs}` : ""}`);
+  },
+  getAdminBookings: (params = {}) => {
+    const search = new URLSearchParams();
+    if (params.search) search.set("search", params.search);
+    if (params.status) search.set("status", params.status);
+    if (params.cityId) search.set("cityId", params.cityId);
+    if (params.dateFrom) search.set("dateFrom", params.dateFrom);
+    if (params.dateTo) search.set("dateTo", params.dateTo);
+    if (params.page) search.set("page", params.page);
+    if (params.pageSize) search.set("pageSize", params.pageSize);
+    const qs = search.toString();
+    return request(`/api/admin/bookings${qs ? `?${qs}` : ""}`);
+  },
+  getAdminBooking: (id) => request(`/api/admin/bookings/${id}`),
+  updateAdminBookingStatus: (id, body) =>
+    request(`/api/admin/bookings/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify(body)
+    }),
+  assignAdminBookingProfessional: (id, body) =>
+    request(`/api/admin/bookings/${id}/assign-professional`, {
+      method: "PATCH",
+      body: JSON.stringify(body)
+    }),
   uploadImage: (file) => {
     const form = new FormData();
     form.append("file", file);
