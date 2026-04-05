@@ -67,8 +67,7 @@ namespace UrbanApi.Controllers
             {
                 entity.PasswordHash = HashPassword(input.Password);
             }
-            var role = input.Role?.Trim();
-            entity.Role = string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase) ? "Admin" : "User";
+            entity.Role = "User";
             _db.Users.Add(entity);
             await _db.SaveChangesAsync(ct);
             return CreatedAtAction(nameof(Get), new { id = entity.Id }, _mapper.Map<UserDto>(entity));
@@ -85,7 +84,12 @@ namespace UrbanApi.Controllers
             entity.Email = input.Email;
             entity.Phone = input.Phone;
             if (!string.IsNullOrWhiteSpace(input.Password)) entity.PasswordHash = HashPassword(input.Password);
-            if (!string.IsNullOrWhiteSpace(input.Role)) entity.Role = input.Role!;
+            if (!string.IsNullOrWhiteSpace(input.Role))
+            {
+                entity.Role = string.Equals(input.Role.Trim(), "admin", StringComparison.OrdinalIgnoreCase)
+                    ? "Admin"
+                    : "User";
+            }
 
             entity.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);

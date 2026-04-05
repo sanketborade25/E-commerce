@@ -1,9 +1,13 @@
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using UrbanApi.Data;
 
 #nullable disable
 
 namespace UrbanApi.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260401174500_FixAvailabilityStatusAndBookingIndex")]
     public partial class FixAvailabilityStatusAndBookingIndex : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,30 +31,38 @@ namespace UrbanApi.Migrations
                       ELSE 'available'
                   END");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Bookings_AvailabilityId",
-                table: "Bookings");
+            migrationBuilder.Sql(
+                """
+                IF EXISTS (
+                    SELECT 1
+                    FROM sys.indexes
+                    WHERE name = 'IX_Bookings_AvailabilityId'
+                      AND object_id = OBJECT_ID('Bookings')
+                )
+                    DROP INDEX [IX_Bookings_AvailabilityId] ON [Bookings];
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Bookings_AvailabilityId",
-                table: "Bookings",
-                column: "AvailabilityId",
-                unique: true,
-                filter: "[AvailabilityId] IS NOT NULL AND [Status] <> 'REJECTED' AND [Status] <> 'CANCELLED'");
+                CREATE UNIQUE INDEX [IX_Bookings_AvailabilityId]
+                ON [Bookings] ([AvailabilityId])
+                WHERE [AvailabilityId] IS NOT NULL AND [Status] <> 'REJECTED' AND [Status] <> 'CANCELLED';
+                """);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_Bookings_AvailabilityId",
-                table: "Bookings");
+            migrationBuilder.Sql(
+                """
+                IF EXISTS (
+                    SELECT 1
+                    FROM sys.indexes
+                    WHERE name = 'IX_Bookings_AvailabilityId'
+                      AND object_id = OBJECT_ID('Bookings')
+                )
+                    DROP INDEX [IX_Bookings_AvailabilityId] ON [Bookings];
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Bookings_AvailabilityId",
-                table: "Bookings",
-                column: "AvailabilityId",
-                unique: true,
-                filter: "[AvailabilityId] IS NOT NULL AND [IsDeleted] = 0");
+                CREATE UNIQUE INDEX [IX_Bookings_AvailabilityId]
+                ON [Bookings] ([AvailabilityId])
+                WHERE [AvailabilityId] IS NOT NULL AND [IsDeleted] = 0;
+                """);
         }
     }
 }

@@ -6,18 +6,24 @@ import "../styles/pages/admin.css";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const [phone, setPhone] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!phone || !password) {
-      setError("Please enter phone and password.");
+    const trimmedIdentifier = identifier.trim();
+    if (!trimmedIdentifier || !password) {
+      setError("Please enter email or phone and password.");
       return;
     }
     try {
-      const res = await api.login({ phone, password });
+      const isEmail = trimmedIdentifier.includes("@");
+      const res = await api.login(
+        isEmail
+          ? { email: trimmedIdentifier, password }
+          : { phone: trimmedIdentifier, password }
+      );
       if (!res?.user?.role || res.user.role.toLowerCase() !== "admin") {
         setError("You are not authorized to access admin.");
         api.clearToken();
@@ -42,12 +48,12 @@ export default function AdminLogin() {
             Use your admin credentials to continue.
           </p>
           <form onSubmit={handleSubmit}>
-            <label>Phone</label>
+            <label>Email or Phone</label>
             <input
               type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="9999999999"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="admin@example.com or 9999999999"
             />
             <label>Password</label>
             <input

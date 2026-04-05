@@ -109,6 +109,21 @@ builder.Services.AddCors(options =>
 // ------------ BUILD APP ------------
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Automatic database migration was skipped at startup.");
+    }
+}
+
 // ------------ MIDDLEWARE ORDER (CRITICAL) ------------
 if (app.Environment.IsDevelopment())
 {

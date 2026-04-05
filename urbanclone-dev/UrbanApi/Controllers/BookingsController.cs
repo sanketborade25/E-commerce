@@ -211,14 +211,42 @@ namespace UrbanApi.Controllers
 
             var total = await query.CountAsync(ct);
 
-            var list = await query
+            var mapped = await query
                 .OrderByDescending(b => b.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .AsNoTracking()
+                .Select(b => new AdminBookingDto
+                {
+                    Id = b.Id,
+                    BookingReference = b.BookingReference ?? string.Empty,
+                    UserId = b.UserId,
+                    UserName = b.User != null ? b.User.FullName : null,
+                    UserPhone = b.User != null ? b.User.Phone : null,
+                    ProfessionalId = b.ProfessionalId,
+                    ProfessionalName = b.Professional == null
+                        ? null
+                        : (b.Professional.DisplayName ?? (b.Professional.User != null ? b.Professional.User.FullName : null)),
+                    CityId = b.Address != null ? b.Address.CityId : null,
+                    CityName = b.Address != null && b.Address.City != null ? b.Address.City.Name : null,
+                    ScheduledAt = b.ScheduledAt,
+                    Status = b.Status ?? string.Empty,
+                    TotalAmount = b.TotalAmount,
+                    PaymentStatus = b.PaymentStatus ?? string.Empty,
+                    AddressId = b.AddressId,
+                    AddressLine1 = b.Address != null ? b.Address.Line1 : null,
+                    AddressLine2 = b.Address != null ? b.Address.Line2 : null,
+                    Pincode = b.Address != null ? b.Address.Pincode : null,
+                    Items = b.Items.Select(i => new AdminBookingItemDto
+                    {
+                        ServiceId = i.ServiceId,
+                        ServiceName = i.Service != null ? i.Service.Title : null,
+                        Price = i.Price,
+                        DurationMinutes = i.DurationMinutes
+                    }).ToList(),
+                    CreatedAt = b.CreatedAt
+                })
                 .ToListAsync(ct);
-
-            var mapped = list.Select(MapAdminBooking).ToList();
 
             return Ok(new AdminBookingListResponse
             {
@@ -234,15 +262,42 @@ namespace UrbanApi.Controllers
         public async Task<IActionResult> GetAdminBooking(Guid id, CancellationToken ct)
         {
             var booking = await _db.Bookings
-                .Include(b => b.User)
-                .Include(b => b.Professional).ThenInclude(p => p!.User)
-                .Include(b => b.Address).ThenInclude(a => a!.City)
-                .Include(b => b.Items).ThenInclude(i => i.Service)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.Id == id, ct);
+                .Where(b => b.Id == id)
+                .Select(b => new AdminBookingDto
+                {
+                    Id = b.Id,
+                    BookingReference = b.BookingReference ?? string.Empty,
+                    UserId = b.UserId,
+                    UserName = b.User != null ? b.User.FullName : null,
+                    UserPhone = b.User != null ? b.User.Phone : null,
+                    ProfessionalId = b.ProfessionalId,
+                    ProfessionalName = b.Professional == null
+                        ? null
+                        : (b.Professional.DisplayName ?? (b.Professional.User != null ? b.Professional.User.FullName : null)),
+                    CityId = b.Address != null ? b.Address.CityId : null,
+                    CityName = b.Address != null && b.Address.City != null ? b.Address.City.Name : null,
+                    ScheduledAt = b.ScheduledAt,
+                    Status = b.Status ?? string.Empty,
+                    TotalAmount = b.TotalAmount,
+                    PaymentStatus = b.PaymentStatus ?? string.Empty,
+                    AddressId = b.AddressId,
+                    AddressLine1 = b.Address != null ? b.Address.Line1 : null,
+                    AddressLine2 = b.Address != null ? b.Address.Line2 : null,
+                    Pincode = b.Address != null ? b.Address.Pincode : null,
+                    Items = b.Items.Select(i => new AdminBookingItemDto
+                    {
+                        ServiceId = i.ServiceId,
+                        ServiceName = i.Service != null ? i.Service.Title : null,
+                        Price = i.Price,
+                        DurationMinutes = i.DurationMinutes
+                    }).ToList(),
+                    CreatedAt = b.CreatedAt
+                })
+                .FirstOrDefaultAsync(ct);
 
             if (booking == null) return NotFound();
-            return Ok(MapAdminBooking(booking));
+            return Ok(booking);
         }
 
         [Authorize(Roles = "Admin")]

@@ -331,8 +331,6 @@ namespace UrbanApi.Controllers
             var statuses = ResolveStatusFilter(status);
 
             var query = _db.Bookings
-                .Include(b => b.Items)
-                    .ThenInclude(i => i.Service)
                 .Where(b => b.ProfessionalId == professional.Value.professional.Id && !b.IsDeleted);
 
             if (statuses.Length > 0)
@@ -340,21 +338,10 @@ namespace UrbanApi.Controllers
                 query = query.Where(b => statuses.Contains(b.Status.ToUpper()));
             }
 
-            var bookings = await query
+            var result = await query
                 .OrderBy(b => b.ScheduledAt)
                 .AsNoTracking()
-                .ToListAsync(ct);
-
-            var result = bookings.Select(b =>
-            {
-                var serviceNames = b.Items
-                    .Select(i => i.Service?.Title)
-                    .Where(name => !string.IsNullOrWhiteSpace(name))
-                    .Cast<string>()
-                    .Distinct()
-                    .ToList();
-
-                return new ProfessionalBookingSummaryDto
+                .Select(b => new ProfessionalBookingSummaryDto
                 {
                     Id = b.Id,
                     BookingReference = b.BookingReference,
@@ -362,11 +349,20 @@ namespace UrbanApi.Controllers
                     ScheduledAt = b.ScheduledAt,
                     TotalAmount = b.TotalAmount,
                     PaymentStatus = b.PaymentStatus,
-                    ServiceName = serviceNames.FirstOrDefault() ?? "General service",
-                    ServiceNames = serviceNames,
+                    ServiceName = b.Items
+                        .Select(i => i.Service != null ? i.Service.Title : null)
+                        .Where(name => !string.IsNullOrWhiteSpace(name))
+                        .Distinct()
+                        .FirstOrDefault() ?? "General service",
+                    ServiceNames = b.Items
+                        .Select(i => i.Service != null ? i.Service.Title : null)
+                        .Where(name => !string.IsNullOrWhiteSpace(name))
+                        .Select(name => name!)
+                        .Distinct()
+                        .ToList(),
                     ItemCount = b.Items.Count
-                };
-            }).ToList();
+                })
+                .ToListAsync(ct);
 
             return Ok(result);
         }
@@ -378,18 +374,19 @@ namespace UrbanApi.Controllers
             var professional = await GetCurrentProfessionalAsync(ct);
             if (professional == null) return Forbid();
 
-            var bookings = await _db.Bookings
+            var normalizedStatuses = await _db.Bookings
                 .Where(b => b.ProfessionalId == professional.Value.professional.Id && !b.IsDeleted)
+                .Select(b => b.Status)
                 .AsNoTracking()
                 .ToListAsync(ct);
 
-            var normalizedStatuses = bookings.Select(b => NormalizeBookingStatus(b.Status)).ToList();
+            normalizedStatuses = normalizedStatuses.Select(NormalizeBookingStatus).ToList();
 
             var dto = new ProfessionalDashboardDto
             {
                 Rating = professional.Value.professional.Rating,
                 Earnings = professional.Value.professional.Earnings,
-                TotalBookings = bookings.Count,
+                TotalBookings = normalizedStatuses.Count,
                 UpcomingBookings = normalizedStatuses.Count(UpcomingStatuses.Contains),
                 OngoingBookings = normalizedStatuses.Count(OngoingStatuses.Contains),
                 CompletedBookings = normalizedStatuses.Count(CompletedStatuses.Contains),

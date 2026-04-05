@@ -1,60 +1,60 @@
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using UrbanApi.Data;
 
 #nullable disable
 
 namespace UrbanApi.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260320123000_AddProfessionalColumns")]
     /// <inheritdoc />
     public partial class AddProfessionalColumns : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<decimal>(
-                name: "Earnings",
-                table: "Professionals",
-                type: "decimal(18,2)",
-                nullable: false,
-                defaultValue: 0m);
+            migrationBuilder.Sql(
+                """
+                IF COL_LENGTH('Professionals', 'Earnings') IS NULL
+                    ALTER TABLE [Professionals] ADD [Earnings] decimal(18,2) NOT NULL CONSTRAINT [DF_Professionals_Earnings] DEFAULT (0);
 
-            migrationBuilder.AddColumn<bool>(
-                name: "IsOnline",
-                table: "Professionals",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
+                IF COL_LENGTH('Professionals', 'IsOnline') IS NULL
+                    ALTER TABLE [Professionals] ADD [IsOnline] bit NOT NULL CONSTRAINT [DF_Professionals_IsOnline] DEFAULT (0);
 
-            migrationBuilder.AddColumn<decimal>(
-                name: "Latitude",
-                table: "Professionals",
-                type: "decimal(18,2)",
-                nullable: true);
+                IF COL_LENGTH('Professionals', 'Latitude') IS NULL
+                    ALTER TABLE [Professionals] ADD [Latitude] decimal(18,2) NULL;
 
-            migrationBuilder.AddColumn<decimal>(
-                name: "Longitude",
-                table: "Professionals",
-                type: "decimal(18,2)",
-                nullable: true);
+                IF COL_LENGTH('Professionals', 'Longitude') IS NULL
+                    ALTER TABLE [Professionals] ADD [Longitude] decimal(18,2) NULL;
+                """);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Earnings",
-                table: "Professionals");
+            migrationBuilder.Sql(
+                """
+                IF COL_LENGTH('Professionals', 'Earnings') IS NOT NULL
+                BEGIN
+                    IF OBJECT_ID('DF_Professionals_Earnings', 'D') IS NOT NULL
+                        ALTER TABLE [Professionals] DROP CONSTRAINT [DF_Professionals_Earnings];
+                    ALTER TABLE [Professionals] DROP COLUMN [Earnings];
+                END
 
-            migrationBuilder.DropColumn(
-                name: "IsOnline",
-                table: "Professionals");
+                IF COL_LENGTH('Professionals', 'IsOnline') IS NOT NULL
+                BEGIN
+                    IF OBJECT_ID('DF_Professionals_IsOnline', 'D') IS NOT NULL
+                        ALTER TABLE [Professionals] DROP CONSTRAINT [DF_Professionals_IsOnline];
+                    ALTER TABLE [Professionals] DROP COLUMN [IsOnline];
+                END
 
-            migrationBuilder.DropColumn(
-                name: "Latitude",
-                table: "Professionals");
+                IF COL_LENGTH('Professionals', 'Latitude') IS NOT NULL
+                    ALTER TABLE [Professionals] DROP COLUMN [Latitude];
 
-            migrationBuilder.DropColumn(
-                name: "Longitude",
-                table: "Professionals");
+                IF COL_LENGTH('Professionals', 'Longitude') IS NOT NULL
+                    ALTER TABLE [Professionals] DROP COLUMN [Longitude];
+                """);
         }
     }
 }
