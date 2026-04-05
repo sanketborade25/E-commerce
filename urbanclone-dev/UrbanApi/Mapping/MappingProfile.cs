@@ -28,7 +28,8 @@ namespace UrbanApi.Mapping
             CreateMap<ServiceOptionCreateDto, ServiceOption>();
 
             // User
-            CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => !src.IsDeleted));
             CreateMap<UserCreateDto, User>();
 
             // Professional

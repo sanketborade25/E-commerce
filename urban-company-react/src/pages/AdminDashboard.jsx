@@ -624,6 +624,9 @@ export default function AdminDashboard() {
             <Link className="admin-btn outline" to="/admin/bookings">
               Bookings
             </Link>
+            <Link className="admin-btn outline" to="/admin/users">
+              Users
+            </Link>
             <button className="admin-btn outline admin-logout-btn" onClick={handleLogout}>
               Logout
             </button>

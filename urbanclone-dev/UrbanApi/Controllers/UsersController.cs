@@ -36,14 +36,14 @@ namespace UrbanApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {
-            var list = await _db.Users.Where(u => !u.IsDeleted).AsNoTracking().ToListAsync(ct);
+            var list = await _db.Users.AsNoTracking().OrderByDescending(u => u.CreatedAt).ToListAsync(ct);
             return Ok(_mapper.Map<List<UserDto>>(list));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id, CancellationToken ct)
         {
-            var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, ct);
+            var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ct);
             if (user == null) return NotFound();
             return Ok(_mapper.Map<UserDto>(user));
         }
@@ -76,7 +76,7 @@ namespace UrbanApi.Controllers
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UserCreateDto input, CancellationToken ct)
         {
-            var entity = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, ct);
+            var entity = await _db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
             if (entity == null) return NotFound();
 
             // update allowed fields
@@ -96,10 +96,23 @@ namespace UrbanApi.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UserStatusUpdateDto input, CancellationToken ct)
+        {
+            var entity = await _db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
+            if (entity == null) return NotFound();
+
+            entity.IsDeleted = !input.IsActive;
+            entity.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+
+            return Ok(_mapper.Map<UserDto>(entity));
+        }
+
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
-            var entity = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, ct);
+            var entity = await _db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
             if (entity == null) return NotFound();
             entity.IsDeleted = true;
             entity.UpdatedAt = DateTime.UtcNow;

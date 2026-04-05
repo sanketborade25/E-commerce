@@ -271,8 +271,15 @@ export const api = {
     request(`/api/booking/${id}/status`, { method: "PATCH", body: JSON.stringify(body) }),
   createUser: (body) =>
     request("/api/Users", { method: "POST", body: JSON.stringify(body) }),
+  getUsers: () => request("/api/Users"),
+  getUser: (id) => request(`/api/Users/${id}`),
   updateUser: (id, body) =>
     request(`/api/Users/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+  updateUserStatus: (id, isActive) =>
+    request(`/api/Users/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isActive })
+    }),
   getBookings: () => request("/api/Bookings"),
   createBooking: (body) =>
     request("/api/Bookings", { method: "POST", body: JSON.stringify(body) }),
