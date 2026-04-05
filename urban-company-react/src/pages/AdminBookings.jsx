@@ -29,6 +29,18 @@ const formatDateTime = (value) => {
   return parsed.toLocaleString();
 };
 
+const getBookingItems = (booking) =>
+  Array.isArray(booking?.items) ? booking.items.filter(Boolean) : [];
+
+const getBookingServiceLabels = (booking) => {
+  const items = getBookingItems(booking);
+  const names = items
+    .map((item) => item?.serviceName || (item?.serviceId ? `Service ${item.serviceId}` : null))
+    .filter(Boolean);
+
+  return names.length > 0 ? names : ["No service details"];
+};
+
 export default function AdminBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,6 +57,8 @@ export default function AdminBookings() {
   const [professionals, setProfessionals] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [assignments, setAssignments] = useState({});
+  const [updatingBookingId, setUpdatingBookingId] = useState(null);
+  const [assigningBookingId, setAssigningBookingId] = useState(null);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -108,10 +122,13 @@ export default function AdminBookings() {
     );
     if (!ok) return;
     try {
+      setUpdatingBookingId(booking.id);
       await api.updateAdminBookingStatus(booking.id, { status: nextStatus });
       await loadBookings();
     } catch (e) {
       alert(e?.message || "Unable to update status.");
+    } finally {
+      setUpdatingBookingId(null);
     }
   };
 
@@ -126,26 +143,37 @@ export default function AdminBookings() {
     );
     if (!ok) return;
     try {
+      setAssigningBookingId(booking.id);
       await api.assignAdminBookingProfessional(booking.id, {
         professionalId: nextProId
       });
       await loadBookings();
+      setAssignments((prev) => ({
+        ...prev,
+        [booking.id]: ""
+      }));
     } catch (e) {
       alert(e?.message || "Unable to assign professional.");
+    } finally {
+      setAssigningBookingId(null);
     }
   };
 
-  const allowedStatusOptions = (current) => {
+  const availableStatusOptions = (current) => {
     const normalized = String(current || "PENDING").toUpperCase();
     return STATUS_TRANSITIONS[normalized] || [];
   };
 
-  const filteredProfessionals = useMemo(() => {
-    if (!cityFilter) return professionals;
-    return professionals.filter(
-      (p) => String(p.cityId || "") === String(cityFilter)
-    );
-  }, [professionals, cityFilter]);
+  const filteredProfessionals = useMemo(
+    () => (booking) => {
+      const targetCityId = booking?.cityId || cityFilter;
+      if (!targetCityId) return professionals;
+      return professionals.filter(
+        (p) => String(p?.cityId || "") === String(targetCityId)
+      );
+    },
+    [professionals, cityFilter]
+  );
 
   return (
     <div className="admin-page">
@@ -262,12 +290,12 @@ export default function AdminBookings() {
                   <span className="admin-muted">{booking.id}</span>
                 </span>
                 <span>
-                  <strong>{booking.userName || "User"}</strong>
+                  <strong>{booking.userName || "Unknown user"}</strong>
                   <span className="admin-muted">{booking.userPhone || "-"}</span>
                 </span>
                 <span>
-                  {(booking.items || []).map((item, idx) => (
-                    <div key={`${item.serviceId}-${idx}`}>{item.serviceName || `Service ${item.serviceId}`}</div>
+                  {getBookingServiceLabels(booking).map((serviceName, idx) => (
+                    <div key={`${booking.id}-service-${idx}`}>{serviceName}</div>
                   ))}
                 </span>
                 <span>{booking.cityName || "-"}</span>
@@ -285,13 +313,17 @@ export default function AdminBookings() {
                   </button>
                   <select
                     value=""
+                    disabled={
+                      updatingBookingId === booking.id ||
+                      availableStatusOptions(booking.status).length === 0
+                    }
                     onChange={(e) => {
                       const next = e.target.value;
                       if (next) handleStatusUpdate(booking, next);
                     }}
                   >
                     <option value="">Update status</option>
-                    {allowedStatusOptions(booking.status).map((status) => (
+                    {availableStatusOptions(booking.status).map((status) => (
                       <option key={status} value={status}>
                         {status}
                       </option>
@@ -299,6 +331,7 @@ export default function AdminBookings() {
                   </select>
                   <select
                     value={assignments[booking.id] || ""}
+                    disabled={assigningBookingId === booking.id}
                     onChange={(e) =>
                       setAssignments((prev) => ({
                         ...prev,
@@ -307,17 +340,20 @@ export default function AdminBookings() {
                     }
                   >
                     <option value="">Assign professional</option>
-                    {filteredProfessionals.map((pro) => (
+                    {filteredProfessionals(booking).map((pro) => (
                       <option key={pro.id} value={pro.id}>
-                        {pro.displayName || pro.user?.fullName || "Professional"}
+                        {pro.displayName || pro.fullName || "Professional"}
                       </option>
                     ))}
                   </select>
                   <button
                     className="admin-btn outline"
+                    disabled={
+                      assigningBookingId === booking.id || !assignments[booking.id]
+                    }
                     onClick={() => handleAssign(booking)}
                   >
-                    Assign
+                    {assigningBookingId === booking.id ? "Assigning..." : "Assign"}
                   </button>
                 </span>
               </div>
@@ -374,7 +410,7 @@ export default function AdminBookings() {
             <div className="admin-modal-body">
               <div>
                 <strong>User</strong>
-                <p>{selectedBooking.userName || "-"}</p>
+                <p>{selectedBooking.userName || "Unknown user"}</p>
                 <p className="admin-muted">{selectedBooking.userPhone || "-"}</p>
               </div>
               <div>
@@ -399,12 +435,16 @@ export default function AdminBookings() {
               </div>
               <div className="admin-modal-items">
                 <strong>Items</strong>
-                {(selectedBooking.items || []).map((item, idx) => (
-                  <div key={`${item.serviceId}-${idx}`} className="admin-modal-item">
-                    <span>{item.serviceName || `Service ${item.serviceId}`}</span>
-                    <span>Rs {item.price || 0}</span>
-                  </div>
-                ))}
+                {getBookingItems(selectedBooking).length === 0 ? (
+                  <p className="admin-muted">No service items available.</p>
+                ) : (
+                  getBookingItems(selectedBooking).map((item, idx) => (
+                    <div key={`${selectedBooking.id}-item-${idx}`} className="admin-modal-item">
+                      <span>{item.serviceName || `Service ${item.serviceId}`}</span>
+                      <span>Rs {item.price || 0}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
