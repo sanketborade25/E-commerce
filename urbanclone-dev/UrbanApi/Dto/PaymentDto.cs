@@ -18,5 +18,25 @@ namespace UrbanApi.Dto
         public string? Provider { get; set; }
         public string? ProviderPaymentId { get; set; }
         public decimal Amount { get; set; }
+        public string? Status { get; set; }
+    }
+
+    public class PaymentProcessDto
+    {
+        public Guid BookingId { get; set; }
+        public decimal Amount { get; set; }
+        public string? Provider { get; set; }
+        public string? ProviderPaymentId { get; set; }
+    }
+
+    public class PaymentResponseDto
+    {
+        public int Id { get; set; }
+        public Guid BookingId { get; set; }
+        public decimal Amount { get; set; }
+        public string? Status { get; set; }
+        public string? Provider { get; set; }
+        public string? ProviderPaymentId { get; set; }
+        public string? Message { get; set; }
     }
 }

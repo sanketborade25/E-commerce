@@ -49,6 +49,8 @@ namespace UrbanApi.Mapping
             // Payment
             CreateMap<Payment, PaymentDto>().ReverseMap();
             CreateMap<PaymentCreateDto, Payment>();
+            CreateMap<PaymentProcessDto, Payment>();
+            CreateMap<Payment, PaymentResponseDto>();
 
             // Review
             CreateMap<Review, ReviewDto>().ReverseMap();

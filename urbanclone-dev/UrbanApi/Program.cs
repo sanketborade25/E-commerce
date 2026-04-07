@@ -59,6 +59,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ------------ AUTOMAPPER ------------
 builder.Services.AddAutoMapper(typeof(UrbanApi.Mapping.MappingProfile));
 builder.Services.AddScoped<ISlotService, SlotService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 // ------------ CONTROLLERS ------------
 builder.Services.AddControllers();

@@ -27,6 +27,9 @@ export default function Checkout() {
   const [paymentDone, setPaymentDone] = useState(false);
   const [bookingRef, setBookingRef] = useState("");
   const [paymentBusy, setPaymentBusy] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState("pending"); // "pending", "processing", "success", "failed"
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [createdBookingId, setCreatedBookingId] = useState(null);
   const [reservedSlots, setReservedSlots] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("reserved_slots") || "[]");
@@ -159,6 +162,9 @@ export default function Checkout() {
     setUpiId("");
     setUpiError("");
     setPaymentDone(false);
+    setPaymentStatus("pending");
+    setPaymentMessage("");
+    setCreatedBookingId(null);
   };
 
   const openPaymentModal = () => {
@@ -179,8 +185,10 @@ export default function Checkout() {
     }
     setUpiError("");
     setPaymentBusy(true);
+    setPaymentStatus("processing");
+    setPaymentMessage("Processing your payment...");
+
     try {
-      let nextRef = "";
       const authUserRaw = localStorage.getItem("auth_user");
       let authUser = null;
       try {
@@ -189,23 +197,60 @@ export default function Checkout() {
         authUser = null;
       }
 
+      // Step 1: Create booking with Pending payment status
+      let bookingId = null;
+      let createdBooking = null;
+
       if (authUser?.id && buildBookingPayload(authUser.id).items.length > 0) {
         try {
-          const created = await api.createBooking(buildBookingPayload(authUser.id));
-          nextRef = created?.bookingReference || "";
-        } catch {
-          nextRef = "";
+          createdBooking = await api.createBooking(buildBookingPayload(authUser.id));
+          bookingId = createdBooking?.id;
+        } catch (err) {
+          console.error("Booking creation failed:", err);
+          setPaymentStatus("failed");
+          setPaymentMessage("Failed to create booking. Please try again.");
+          return;
         }
+      } else {
+        setPaymentStatus("failed");
+        setPaymentMessage("Please login to complete the booking.");
+        return;
       }
 
-      if (!nextRef) {
-        nextRef = saveLocalBooking(authUser?.id || null);
+      // Step 2: Process payment
+      if (!bookingId) {
+        setPaymentStatus("failed");
+        setPaymentMessage("Booking creation failed. Please try again.");
+        return;
       }
 
-      reserveSelectedSlot();
-      clearCart();
-      setBookingRef(nextRef);
-      setPaymentDone(true);
+      try {
+        const paymentResponse = await api.processPayment({
+          bookingId: bookingId,
+          amount: total,
+          provider: "UPI",
+          providerPaymentId: upiId
+        });
+
+        if (paymentResponse?.status === "Completed") {
+          // Payment successful
+          setPaymentStatus("success");
+          setPaymentMessage(paymentResponse?.message || "Payment successful! Your booking is confirmed.");
+          setBookingRef(createdBooking?.bookingReference || `BK-${bookingId}`);
+          setCreatedBookingId(bookingId);
+          setPaymentDone(true);
+          reserveSelectedSlot();
+          clearCart();
+        } else {
+          // Payment failed
+          setPaymentStatus("failed");
+          setPaymentMessage(paymentResponse?.message || "Payment failed. Please try again.");
+        }
+      } catch (err) {
+        console.error("Payment processing error:", err);
+        setPaymentStatus("failed");
+        setPaymentMessage(err?.message || "Payment failed. Please try again.");
+      }
     } finally {
       setPaymentBusy(false);
     }
@@ -505,7 +550,7 @@ export default function Checkout() {
       {showPaymentModal && (
         <div className="payment-modal-overlay" onClick={closePaymentModal}>
           <div className="payment-modal-card" onClick={(e) => e.stopPropagation()}>
-            {!paymentDone ? (
+            {paymentStatus === "pending" && (
               <>
                 <h3>UPI Payment</h3>
                 <p className="checkout-meta">Amount to pay: Rs {total}</p>
@@ -534,18 +579,30 @@ export default function Checkout() {
                     onClick={handlePaymentContinue}
                     disabled={paymentBusy}
                   >
-                    {paymentBusy ? "Processing..." : "Continue"}
+                    {paymentBusy ? "Processing..." : "Pay Now"}
                   </button>
                 </div>
               </>
-            ) : (
+            )}
+
+            {paymentStatus === "processing" && (
               <>
-                <h3>Payment Successful</h3>
-                <p className="checkout-meta">
-                  Your payment of Rs {total} was completed successfully.
-                </p>
+                <h3>Processing Payment</h3>
+                <p className="checkout-meta">{paymentMessage}</p>
+                <div className="payment-loading">
+                  <div className="spinner"></div>
+                </div>
+              </>
+            )}
+
+            {paymentStatus === "success" && (
+              <>
+                <h3>✓ Payment Successful</h3>
+                <p className="checkout-meta">{paymentMessage}</p>
                 {bookingRef && (
-                  <p className="checkout-meta">Booking reference: {bookingRef}</p>
+                  <p className="checkout-meta">
+                    <strong>Booking Reference:</strong> {bookingRef}
+                  </p>
                 )}
                 <div className="payment-modal-actions">
                   <button
@@ -554,11 +611,44 @@ export default function Checkout() {
                     onClick={() => {
                       closePaymentModal();
                       navigate("/bookings", {
-                        state: { bookingReference: bookingRef, paymentStatus: "Paid" }
+                        state: { 
+                          bookingReference: bookingRef, 
+                          paymentStatus: "Completed",
+                          bookingId: createdBookingId
+                        }
                       });
                     }}
                   >
-                    View Booking
+                    View Booking Details
+                  </button>
+                </div>
+              </>
+            )}
+
+            {paymentStatus === "failed" && (
+              <>
+                <h3>✗ Payment Failed</h3>
+                <p className="checkout-meta">{paymentMessage}</p>
+                <p className="checkout-meta payment-error-note">
+                  Your booking was not confirmed. Please retry or use a different payment method.
+                </p>
+                <div className="payment-modal-actions">
+                  <button
+                    type="button"
+                    className="payment-cancel-btn"
+                    onClick={() => {
+                      resetPaymentState();
+                      setShowPaymentModal(false);
+                    }}
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    className="payment-continue-btn"
+                    onClick={() => setPaymentStatus("pending")}
+                  >
+                    Retry Payment
                   </button>
                 </div>
               </>

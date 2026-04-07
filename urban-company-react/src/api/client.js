@@ -283,6 +283,10 @@ export const api = {
   getBookings: () => request("/api/Bookings"),
   createBooking: (body) =>
     request("/api/Bookings", { method: "POST", body: JSON.stringify(body) }),
+  processPayment: (body) =>
+    request("/api/Payments/process", { method: "POST", body: JSON.stringify(body) }),
+  getPaymentsByBooking: (bookingId) =>
+    request(`/api/Payments/${bookingId}`),
   setToken: (token) => {
     localStorage.setItem(TOKEN_KEY, token);
     window.dispatchEvent(new Event("auth-token-changed"));
