@@ -5,6 +5,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminBookings from "./pages/AdminBookings";
 import AdminUsers from "./pages/AdminUsers";
+import AdminProfessionals from "./pages/AdminProfessionals";
 import Checkout from "./pages/Checkout";
 import Bookings from "./pages/Bookings";
 import ProfessionalLogin from "./pages/ProfessionalLogin";
@@ -85,6 +86,14 @@ export default function App() {
          element={
            <AdminRoute>
              <AdminUsers />
+           </AdminRoute>
+         }
+       />
+       <Route
+         path="/admin/professionals"
+         element={
+           <AdminRoute>
+             <AdminProfessionals />
            </AdminRoute>
          }
        />

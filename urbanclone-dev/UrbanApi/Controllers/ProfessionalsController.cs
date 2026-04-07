@@ -234,13 +234,61 @@ namespace UrbanApi.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int? cityId, CancellationToken ct)
         {
             var q = _db.Professionals.Where(p => !p.IsDeleted);
             if (cityId.HasValue) q = q.Where(p => p.CityId == cityId.Value);
             var list = await q.AsNoTracking().ToListAsync(ct);
-            return Ok(_mapper.Map<List<ProfessionalDto>>(list));
+            // Custom mapping to include status/verificationStatus
+            var result = list.Select(p => MapProfessionalAdminDto(p)).ToList();
+            return Ok(result);
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] ProfessionalStatusUpdateDto input, CancellationToken ct)
+        {
+            var entity = await _db.Professionals.FirstOrDefaultAsync(p => p.Id == id, ct);
+            if (entity == null) return NotFound();
+            entity.IsDeleted = !input.IsActive;
+            entity.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+            return Ok(MapProfessionalAdminDto(entity));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id:guid}/verification")]
+        public async Task<IActionResult> UpdateVerification(Guid id, [FromBody] ProfessionalVerificationUpdateDto input, CancellationToken ct)
+        {
+            var entity = await _db.Professionals.FirstOrDefaultAsync(p => p.Id == id, ct);
+            if (entity == null) return NotFound();
+            entity.IsVerified = input.IsVerified;
+            entity.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+            return Ok(MapProfessionalAdminDto(entity));
+        }
+        // Helper for admin DTO mapping
+        private static ProfessionalAdminDto MapProfessionalAdminDto(Professional p)
+        {
+            return new ProfessionalAdminDto
+            {
+                Id = p.Id,
+                UserId = p.UserId,
+                DisplayName = p.DisplayName,
+                Bio = p.Bio,
+                IsOnline = p.IsOnline,
+                Rating = p.Rating,
+                IsVerified = p.IsVerified,
+                Earnings = p.Earnings,
+                Latitude = p.Latitude,
+                Longitude = p.Longitude,
+                CityId = p.CityId,
+                CityName = p.City?.Name,
+                SkillCategoryIds = p.ProfessionalCategories?.Select(pc => pc.CategoryId).ToList() ?? new List<int>(),
+                Status = p.IsDeleted ? "Inactive" : "Active",
+                VerificationStatus = p.IsVerified ? "Approved" : "Pending"
+            };
         }
 
         [Authorize(Roles = "Admin")]

@@ -17,6 +17,22 @@ namespace UrbanApi.Dto
         public int? CityId { get; set; }
         public string? CityName { get; set; }
         public List<int> SkillCategoryIds { get; set; } = new List<int>();
+        public string Status { get; set; } = "Active";
+        public string VerificationStatus { get; set; } = "Pending";
+    }
+
+    public class ProfessionalAdminDto : ProfessionalDto
+    {
+    }
+
+    public class ProfessionalStatusUpdateDto
+    {
+        public bool IsActive { get; set; }
+    }
+
+    public class ProfessionalVerificationUpdateDto
+    {
+        public bool IsVerified { get; set; }
     }
 
     public class ProfessionalCreateDto

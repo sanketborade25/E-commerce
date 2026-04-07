@@ -658,6 +658,16 @@ export default function Navbar() {
         </Link>
       </div>
 
+      {/* Admin Panel Navigation */}
+      {authUser?.role === "admin" && (
+        <nav className="admin-nav">
+          <Link to="/admin/dashboard" className="admin-nav-link">Dashboard</Link>
+          <Link to="/admin/bookings" className="admin-nav-link">Bookings</Link>
+          <Link to="/admin/users" className="admin-nav-link">Users</Link>
+          <Link to="/admin/professionals" className="admin-nav-link">Professionals</Link>
+        </nav>
+      )}
+
       <div className="nav-center">
         <div className="nav-location" ref={locationRef}>
           <span className="nav-location-icon" aria-hidden>
