@@ -19,12 +19,14 @@ namespace UrbanApi.Controllers
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
         private readonly ISlotService _slotService;
+        private readonly INotificationService _notificationService;
 
-        public BookingsController(AppDbContext db, IMapper mapper, ISlotService slotService)
+        public BookingsController(AppDbContext db, IMapper mapper, ISlotService slotService, INotificationService notificationService)
         {
             _db = db;
             _mapper = mapper;
             _slotService = slotService;
+            _notificationService = notificationService;
         }
 
         private static readonly HashSet<string> _validPartnerStatuses = new(StringComparer.OrdinalIgnoreCase)
@@ -524,6 +526,8 @@ namespace UrbanApi.Controllers
             _db.Bookings.Add(booking);
             await _db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
+            
+            await _notificationService.CreateCustomerNotificationAsync(booking.UserId, "Booking Created", $"Your booking {booking.BookingReference} has been created and assigned!");
 
             var dto = _mapper.Map<BookingDto>(booking);
             return CreatedAtAction(nameof(Get), new { id = booking.Id }, dto);

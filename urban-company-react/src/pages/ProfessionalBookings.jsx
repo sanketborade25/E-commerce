@@ -1,3 +1,4 @@
+import { toast } from 'react-hot-toast';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProfessionalBookingBoard from "../components/ProfessionalBookingBoard";
@@ -82,7 +83,9 @@ export default function ProfessionalBookings() {
       }
 
       await load(activeTab);
+      toast.success("Booking status updated successfully!");
     } catch (updateError) {
+      toast.error(updateError?.message || "Unable to update booking status.");
       console.error(updateError);
       if (isAuthError(updateError)) {
         handleAuthFailure();

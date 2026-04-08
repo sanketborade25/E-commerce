@@ -60,6 +60,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddAutoMapper(typeof(UrbanApi.Mapping.MappingProfile));
 builder.Services.AddScoped<ISlotService, SlotService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // ------------ CONTROLLERS ------------
 builder.Services.AddControllers();

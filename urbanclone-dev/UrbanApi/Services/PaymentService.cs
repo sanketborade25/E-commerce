@@ -12,11 +12,13 @@ namespace UrbanApi.Services
     {
         private readonly AppDbContext _db;
         private readonly ILogger<PaymentService> _logger;
+        private readonly INotificationService _notificationService;
 
-        public PaymentService(AppDbContext db, ILogger<PaymentService> logger)
+        public PaymentService(AppDbContext db, ILogger<PaymentService> logger, INotificationService notificationService)
         {
             _db = db;
             _logger = logger;
+            _notificationService = notificationService;
         }
 
         /// <summary>
@@ -24,6 +26,8 @@ namespace UrbanApi.Services
         /// </summary>
         public async Task<PaymentResponseDto> ProcessPaymentAsync(PaymentProcessDto input, CancellationToken ct = default)
         {
+            _logger.LogInformation($"Processing payment for booking {input.BookingId}, amount: {input.Amount}, provider: {input.Provider ?? "unknown"}");
+
             // Validate booking exists
             var booking = await _db.Bookings.FirstOrDefaultAsync(b => b.Id == input.BookingId && !b.IsDeleted, ct);
             if (booking == null)
@@ -88,6 +92,29 @@ namespace UrbanApi.Services
             {
                 await _db.SaveChangesAsync(ct);
                 _logger.LogInformation($"Payment processed successfully for booking: {input.BookingId}, Status: {paymentStatus}");
+
+                if (paymentStatus == "Completed")
+                {
+                    try 
+                    {
+                        await _notificationService.CreateCustomerNotificationAsync(booking.UserId, "Payment Successful", $"Your booking {booking.BookingReference} has been confirmed!");
+                    }
+                    catch (Exception notifEx)
+                    {
+                        _logger.LogWarning($"Notification failed for booking {input.BookingId}: {notifEx.Message}");
+                    }
+                }
+                else if (paymentStatus == "Failed")
+                {
+                    try 
+                    {
+                        await _notificationService.CreateCustomerNotificationAsync(booking.UserId, "Payment Failed", "Your payment attempt failed. Please try again.");
+                    }
+                    catch (Exception notifEx)
+                    {
+                        _logger.LogWarning($"Notification failed for booking {input.BookingId}: {notifEx.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -137,21 +164,38 @@ namespace UrbanApi.Services
         /// </summary>
         private string SimulatePaymentProcessing(PaymentProcessDto input)
         {
+            // Force outcome for testing (takes precedence)
+            var force = input.ForceOutcome?.ToLowerInvariant();
+            if (force == "always-success") 
+            {
+                _logger.LogInformation($"Payment forced to SUCCESS for booking {input.BookingId}");
+                return "Completed";
+            }
+            if (force == "always-fail")
+            {
+                _logger.LogWarning($"Payment forced to FAIL for booking {input.BookingId}");
+                return "Failed"; 
+            }
+
             // Validate amount first (fail immediately for invalid amounts)
             if (input.Amount <= 0)
+            {
+                _logger.LogWarning($"Invalid amount {input.Amount} for booking {input.BookingId}");
                 return "Failed";
+            }
 
-            // Mock payment processing with ~90% success rate
-            // You can adjust this rate or make it configurable
+            // Mock payment processing with ~90% success rate (random mode)
             var random = new Random();
             var successChance = random.NextDouble();
             
             // 10% failure rate for demo purposes to test error scenarios
             if (successChance < 0.1)
             {
+                _logger.LogInformation($"Payment random FAIL (chance={successChance:F3}) for booking {input.BookingId}");
                 return "Failed";
             }
 
+            _logger.LogInformation($"Payment random SUCCESS (chance={successChance:F3}) for booking {input.BookingId}");
             return "Completed";
         }
 

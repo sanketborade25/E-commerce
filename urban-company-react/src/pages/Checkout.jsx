@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from 'react-hot-toast';
 import { useCart } from "../context/CartContext";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
@@ -233,6 +234,7 @@ export default function Checkout() {
         });
 
         if (paymentResponse?.status === "Completed") {
+          toast.success(paymentResponse?.message || "Payment successful! Booking confirmed.");
           // Payment successful
           setPaymentStatus("success");
           setPaymentMessage(paymentResponse?.message || "Payment successful! Your booking is confirmed.");
@@ -242,6 +244,7 @@ export default function Checkout() {
           reserveSelectedSlot();
           clearCart();
         } else {
+          toast.error(paymentResponse?.message || "Payment failed. Please try again.");
           // Payment failed
           setPaymentStatus("failed");
           setPaymentMessage(paymentResponse?.message || "Payment failed. Please try again.");

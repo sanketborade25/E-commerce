@@ -54,10 +54,13 @@ namespace UrbanApi.Controllers
         /// <summary>
         /// Process a payment for a booking. This is a mock payment processor that simulates payment success/failure.
         /// In real world, this would integrate with a payment gateway (Stripe, Razorpay, PayPal, etc.)
+        /// Supports forceOutcome="always-success/fail/random" for testing
         /// </summary>
         [HttpPost("process")]
         public async Task<IActionResult> ProcessPayment([FromBody] PaymentProcessDto input, CancellationToken ct)
         {
+            _logger.LogInformation($"Payment process request - BookingId: {input.BookingId}, Amount: {input.Amount}, ForceOutcome: {input.ForceOutcome ?? "random"}");
+            
             try
             {
                 // Use payment service to process payment
@@ -66,21 +69,23 @@ namespace UrbanApi.Controllers
                 // Return appropriate status code and response
                 if (response.Status == "Completed")
                 {
+                    _logger.LogInformation($"Payment SUCCESS - BookingId: {input.BookingId}");
                     return Ok(response);
                 }
                 else
                 {
+                    _logger.LogWarning($"Payment FAILED - BookingId: {input.BookingId}, Status: {response.Status}");
                     return BadRequest(response);
                 }
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Invalid payment operation");
+                _logger.LogWarning(ex, $"Payment validation failed for BookingId: {input.BookingId}");
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error processing payment");
+                _logger.LogError(ex, $"Payment processing crashed for BookingId: {input.BookingId}"); 
                 return StatusCode(500, new { message = "An unexpected error occurred while processing your payment. Please try again." });
             }
         }

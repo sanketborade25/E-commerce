@@ -287,6 +287,8 @@ export const api = {
     request("/api/Payments/process", { method: "POST", body: JSON.stringify(body) }),
   getPaymentsByBooking: (bookingId) =>
     request(`/api/Payments/${bookingId}`),
+  getNotifications: (userId) => request(`/api/notifications/user/${userId}`),
+  getUnreadCount: (userId) => request(`/api/notifications/user/${userId}`).then(notifs => notifs.filter(n => !n.isRead).length),
   setToken: (token) => {
     localStorage.setItem(TOKEN_KEY, token);
     window.dispatchEvent(new Event("auth-token-changed"));

@@ -27,6 +27,7 @@ namespace UrbanApi.Dto
         public decimal Amount { get; set; }
         public string? Provider { get; set; }
         public string? ProviderPaymentId { get; set; }
+        public string? ForceOutcome { get; set; } // "always-success", "always-fail", "random" for testing
     }
 
     public class PaymentResponseDto
