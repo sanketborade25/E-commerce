@@ -57,6 +57,46 @@
   gap: 6px;
 }
 
+.pro-login-city-trigger {
+  width: 100%;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  cursor: pointer;
+}
+
+.pro-login-city-trigger.open {
+  border-color: #111827;
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.12);
+}
+
+.pro-login-city-value,
+.pro-login-city-placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pro-login-city-placeholder {
+  color: #6b7280;
+}
+
+.pro-login-city-caret {
+  font-size: 12px;
+  color: #4b5563;
+  transition: transform 0.2s ease;
+}
+
+.pro-login-city-caret.open {
+  transform: rotate(180deg);
+}
+
 .pro-login-city-dropdown {
   position: absolute;
   top: calc(100% + 6px);
@@ -70,6 +110,12 @@
   overflow-y: auto;
   z-index: 20;
   padding: 6px;
+}
+
+.pro-login-city-empty {
+  padding: 10px 12px;
+  color: #6b7280;
+  font-size: 13px;
 }
 
 .pro-login-city-item {
@@ -114,6 +160,11 @@
 .pro-login-error {
   color: #c62828;
   font-size: 12px;
+}
+
+.pro-login-subtle {
+  font-size: 12px;
+  color: #4b5563;
 }
 
 .pro-login-primary {

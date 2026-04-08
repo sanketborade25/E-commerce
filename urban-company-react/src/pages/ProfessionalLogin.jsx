@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthNavbar from "../components/AuthNavbar";
 import { api } from "../api/client";
@@ -14,11 +14,11 @@ export default function ProfessionalLogin() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [selectedCityId, setSelectedCityId] = useState("");
-  const [selectedCityName, setSelectedCityName] = useState("");
   const [cities, setCities] = useState([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const cityDropdownRef = useRef(null);
 
   useEffect(() => {
     let mounted = true;
@@ -38,13 +38,21 @@ export default function ProfessionalLogin() {
     };
   }, []);
 
-  const filteredCities = useMemo(() => {
-    const q = selectedCityName.trim().toLowerCase();
-    if (!q) return cities;
-    return cities.filter((c) =>
-      String(c?.name || "").toLowerCase().includes(q)
-    );
-  }, [cities, selectedCityName]);
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!cityDropdownRef.current?.contains(event.target)) {
+        setShowCityDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const selectedCity = useMemo(
+    () => cities.find((city) => String(city?.id) === String(selectedCityId)) || null,
+    [cities, selectedCityId]
+  );
 
   const isValidEmail = (value) => {
     const trimmed = String(value || "").trim();
@@ -139,6 +147,22 @@ export default function ProfessionalLogin() {
     }
   };
 
+  const handleCityChange = (value) => {
+    const nextCity = cities.find((city) => String(city?.id) === String(value)) || null;
+
+    console.log("Selected city:", {
+      selectedCityId: value,
+      selectedCityName: nextCity?.name || ""
+    });
+
+    setSelectedCityId(value);
+    setFieldErrors((prev) => ({
+      ...prev,
+      city: ""
+    }));
+    setShowCityDropdown(false);
+  };
+
   return (
     <>
       <AuthNavbar />
@@ -178,49 +202,47 @@ export default function ProfessionalLogin() {
                   <span className="pro-login-error">{fieldErrors.phone}</span>
                 )}
                 <label className="pro-login-label-text">City</label>
-                <div className="pro-login-city">
-                  <input
-                    className="pro-login-input"
-                    type="text"
-                    value={selectedCityName}
-                    onChange={(e) => {
-                      setSelectedCityName(e.target.value);
-                      setSelectedCityId("");
-                    }}
-                    onFocus={() => setShowCityDropdown(true)}
-                    onBlur={() => {
-                      window.setTimeout(() => setShowCityDropdown(false), 120);
-                    }}
-                    placeholder="Search city"
-                    required
-                  />
-                  {showCityDropdown && filteredCities.length > 0 && (
-                    <div className="pro-login-city-dropdown">
-                      {filteredCities.map((city) => (
-                        <button
-                          type="button"
-                          key={city.id}
-                          className={`pro-login-city-item${
-                            String(city.id) === String(selectedCityId)
-                              ? " active"
-                              : ""
-                          }`}
-                          onClick={() => {
-                            setSelectedCityId(String(city.id));
-                            setSelectedCityName(city.name || "");
-                            setShowCityDropdown(false);
-                            console.log("Selected city:", {
-                              selectedCityName: city.name || "",
-                              selectedCityId: city.id
-                            });
-                          }}
-                        >
-                          {city.name}
-                        </button>
-                      ))}
+                <div className="pro-login-city" ref={cityDropdownRef}>
+                  <button
+                    type="button"
+                    className={`pro-login-input pro-login-city-trigger${
+                      showCityDropdown ? " open" : ""
+                    }`}
+                    onClick={() => setShowCityDropdown((prev) => !prev)}
+                    aria-haspopup="listbox"
+                    aria-expanded={showCityDropdown}
+                  >
+                    <span className={selectedCity ? "pro-login-city-value" : "pro-login-city-placeholder"}>
+                      {selectedCity ? selectedCity.name : "Select your city"}
+                    </span>
+                    <span className={`pro-login-city-caret${showCityDropdown ? " open" : ""}`}>
+                      ▾
+                    </span>
+                  </button>
+                  {showCityDropdown ? (
+                    <div className="pro-login-city-dropdown" role="listbox" aria-label="Select city">
+                      {cities.length === 0 ? (
+                        <div className="pro-login-city-empty">No cities available</div>
+                      ) : (
+                        cities.map((city) => (
+                          <button
+                            type="button"
+                            key={city.id}
+                            className={`pro-login-city-item${
+                              String(city.id) === String(selectedCityId) ? " active" : ""
+                            }`}
+                            onClick={() => handleCityChange(String(city.id))}
+                          >
+                            {city.name}
+                          </button>
+                        ))
+                      )}
                     </div>
-                  )}
+                  ) : null}
                 </div>
+                {selectedCity ? (
+                  <span className="pro-login-subtle">Selected: {selectedCity.name}</span>
+                ) : null}
                 {fieldErrors?.city && (
                   <span className="pro-login-error">{fieldErrors.city}</span>
                 )}
