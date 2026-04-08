@@ -55,6 +55,20 @@ namespace UrbanApi.Controllers
             return string.IsNullOrWhiteSpace(status) ? "PENDING" : status.Trim().ToUpperInvariant();
         }
 
+        private static string GetStatusNotificationMessage(Booking booking, string status)
+        {
+            var reference = booking.BookingReference ?? booking.Id.ToString();
+            return status switch
+            {
+                "ACCEPTED" => $"Your booking {reference} has been accepted.",
+                "COMPLETED" => $"Your booking {reference} has been completed.",
+                "CANCELLED" => $"Your booking {reference} has been cancelled.",
+                "ON_THE_WAY" => $"Your professional is on the way for booking {reference}.",
+                "STARTED" => $"Your service for booking {reference} has started.",
+                _ => $"Your booking {reference} status changed to {status}."
+            };
+        }
+
         private async Task<Guid?> GetProfessionalIdFromClaims(CancellationToken ct)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
@@ -338,6 +352,21 @@ namespace UrbanApi.Controllers
             }
 
             await _db.SaveChangesAsync(ct);
+
+            try
+            {
+                await _notificationService.CreateCustomerNotificationAsync(
+                    booking.UserId,
+                    "Booking Status Updated",
+                    GetStatusNotificationMessage(booking, next),
+                    ct
+                );
+            }
+            catch
+            {
+                // Keep admin action successful even if notification write fails.
+            }
+
             return Ok(new { booking.Id, booking.Status });
         }
 
@@ -628,6 +657,21 @@ namespace UrbanApi.Controllers
             }
 
             await _db.SaveChangesAsync(ct);
+
+            try
+            {
+                await _notificationService.CreateCustomerNotificationAsync(
+                    booking.UserId,
+                    "Booking Status Updated",
+                    GetStatusNotificationMessage(booking, status),
+                    ct
+                );
+            }
+            catch
+            {
+                // Keep partner flow simple if notification write fails.
+            }
+
             return NoContent();
         }
 
@@ -661,4 +705,3 @@ namespace UrbanApi.Controllers
         }
     }
 }
-

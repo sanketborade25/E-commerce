@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useNotifications } from "../context/NotificationContext";
 import { api } from "../api/client";
 import { resolveImage } from "../utils/image";
 import AppLogo from "./AppLogo";
@@ -11,6 +12,7 @@ export default function Navbar() {
   const [query, setQuery] = useState("");
   const [showCart, setShowCart] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [profileView, setProfileView] = useState("login");
   const [authUser, setAuthUser] = useState(() => {
     const raw = localStorage.getItem("auth_user");
@@ -56,9 +58,17 @@ export default function Navbar() {
     }
   });
   const locationRef = useRef(null);
+  const notificationRef = useRef(null);
   const adminVersionRef = useRef(
     localStorage.getItem("admin_data_version") || ""
   );
+  const {
+    notifications,
+    unreadCount,
+    loading: notificationsLoading,
+    fetchNotifications,
+    markAsRead
+  } = useNotifications();
   const totalQty = cartItems.reduce((sum, item) => sum + item.qty, 0);
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.qty,
@@ -137,6 +147,21 @@ export default function Navbar() {
       })
       .slice(0, 8);
   }, [query, searchIndex]);
+
+  const visibleNotifications = useMemo(
+    () => (notifications || []).slice(0, 6),
+    [notifications]
+  );
+
+  const formatNotificationTime = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -241,6 +266,49 @@ export default function Navbar() {
       setProfileView("login");
     }
   }, [showProfile, isAuthed]);
+
+  useEffect(() => {
+    if (!authUser?.id) return;
+    fetchNotifications(authUser.id);
+  }, [authUser?.id, fetchNotifications]);
+
+  useEffect(() => {
+    const syncAuthUser = () => {
+      const raw = localStorage.getItem("auth_user");
+      if (!raw) {
+        setAuthUser(null);
+        return;
+      }
+      try {
+        setAuthUser(JSON.parse(raw));
+      } catch {
+        setAuthUser(null);
+      }
+    };
+
+    window.addEventListener("auth-token-changed", syncAuthUser);
+    return () => window.removeEventListener("auth-token-changed", syncAuthUser);
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!notificationRef.current?.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const toggleNotifications = () => {
+    const nextOpen = !showNotifications;
+    setShowNotifications(nextOpen);
+
+    if (nextOpen && unreadCount > 0) {
+      markAsRead(notifications.filter((item) => !item.isRead).map((item) => item.id));
+    }
+  };
 
   useEffect(() => {
     if (!authUser) return;
@@ -790,6 +858,44 @@ export default function Navbar() {
       </div>
 
       <div className="nav-right">
+        <div className="nav-notification-wrap" ref={notificationRef}>
+          <button
+            type="button"
+            className="nav-icon-button"
+            onClick={toggleNotifications}
+            aria-label="Open notifications"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.104-14.804A1 1 0 0 0 7 2v.09a5 5 0 0 0-4 4.9v2.573l-.87 1.742A.5.5 0 0 0 2.577 12h10.846a.5.5 0 0 0 .447-.695L13 9.564V6.99a5 5 0 0 0-4-4.9z"/>
+            </svg>
+            {unreadCount > 0 && <span className="cart-badge">{unreadCount}</span>}
+          </button>
+          {showNotifications && (
+            <div className="nav-notification-dropdown">
+              <div className="nav-notification-header">
+                <strong>Notifications</strong>
+              </div>
+              {!isAuthed ? (
+                <div className="nav-notification-empty">Login to see your notifications.</div>
+              ) : notificationsLoading ? (
+                <div className="nav-notification-empty">Loading notifications...</div>
+              ) : visibleNotifications.length === 0 ? (
+                <div className="nav-notification-empty">No notifications yet.</div>
+              ) : (
+                visibleNotifications.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`nav-notification-item${item.isRead ? "" : " unread"}`}
+                  >
+                    <strong>{item.title}</strong>
+                    <p>{item.message || "You have a new update."}</p>
+                    <span>{formatNotificationTime(item.createdAt)}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
         <button
           type="button"
           className="nav-icon-button"

@@ -10,6 +10,7 @@ namespace UrbanApi.Dto
         public string Title { get; set; } = null!;
         public string? Message { get; set; }
         public bool IsRead { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 
     public class NotificationCreateDto

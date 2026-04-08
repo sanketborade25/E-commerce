@@ -25,7 +25,11 @@ namespace UrbanApi.Controllers
         [HttpGet("user/{userId:guid}")]
         public async Task<IActionResult> GetByUser(Guid userId, CancellationToken ct)
         {
-            var list = await _db.Notifications.Where(n => n.UserId == userId && !n.IsDeleted).AsNoTracking().ToListAsync(ct);
+            var list = await _db.Notifications
+                .Where(n => n.UserId == userId && !n.IsDeleted)
+                .OrderByDescending(n => n.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync(ct);
             return Ok(_mapper.Map<List<NotificationDto>>(list));
         }
 

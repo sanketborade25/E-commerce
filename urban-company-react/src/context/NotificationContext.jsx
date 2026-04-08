@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { api } from '../api/client';
 
@@ -9,24 +9,31 @@ export function NotificationProvider({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const fetchNotifications = async (userId) => {
+  const fetchNotifications = useCallback(async (userId) => {
     if (!userId) return;
     setLoading(true);
     try {
       const data = await api.getNotifications(userId);
-      setNotifications(data || []);
-      setUnreadCount(data.filter(n => !n.isRead).length);
+      const sorted = [...(data || [])].sort(
+        (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      );
+      setNotifications(sorted);
+      setUnreadCount(sorted.filter((n) => !n.isRead).length);
     } catch (err) {
       toast.error('Failed to load notifications');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const markAsRead = async (ids) => {
+  const markAsRead = useCallback(async (ids) => {
     // Backend mark read not implemented yet, local only
-    setNotifications(notifs => notifs.map(n => ids.includes(n.id) ? {...n, isRead: true} : n));
-  };
+    setNotifications((notifs) => {
+      const next = notifs.map((n) => (ids.includes(n.id) ? { ...n, isRead: true } : n));
+      setUnreadCount(next.filter((n) => !n.isRead).length);
+      return next;
+    });
+  }, []);
 
   return (
     <NotificationContext.Provider value={{
