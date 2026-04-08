@@ -304,10 +304,11 @@ export default function Navbar() {
   const toggleNotifications = () => {
     const nextOpen = !showNotifications;
     setShowNotifications(nextOpen);
+  };
 
-    if (nextOpen && unreadCount > 0) {
-      markAsRead(notifications.filter((item) => !item.isRead).map((item) => item.id));
-    }
+  const handleNotificationClick = (notificationId) => {
+    if (!notificationId) return;
+    markAsRead([notificationId]);
   };
 
   useEffect(() => {
@@ -886,6 +887,15 @@ export default function Navbar() {
                   <div
                     key={item.id}
                     className={`nav-notification-item${item.isRead ? "" : " unread"}`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleNotificationClick(item.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleNotificationClick(item.id);
+                      }
+                    }}
                   >
                     <strong>{item.title}</strong>
                     <p>{item.message || "You have a new update."}</p>
