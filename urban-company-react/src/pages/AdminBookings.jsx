@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { api } from "../api/client";
-import AppLogo from "../components/AppLogo";
-import "../styles/pages/admin.css";
+import AdminLayout from "../components/admin/AdminLayout";
 
 const STATUS_LABELS = ["PENDING", "ASSIGNED", "ACCEPTED", "COMPLETED", "CANCELLED"];
 const STATUS_TRANSITIONS = {
@@ -176,34 +174,10 @@ export default function AdminBookings() {
   );
 
   return (
-    <div className="admin-page">
-      <div className="admin-topbar">
-        <div className="admin-brand">
-          <Link to="/home" className="admin-logo">
-            <AppLogo />
-          </Link>
-          <div>
-            <p className="admin-console-kicker">Operations workspace</p>
-            <h2>Admin Console</h2>
-          </div>
-        </div>
-        <div className="admin-top-actions">
-          <Link className="admin-btn outline" to="/admin/dashboard">
-            Back to Dashboard
-          </Link>
-        </div>
-      </div>
-
-      <div className="admin-hero">
-        <div>
-          <p className="admin-console-kicker">Bookings module</p>
-          <h3>Bookings</h3>
-          <p className="admin-hero-subtitle">
-            Monitor, filter, and update bookings with proper audit control.
-          </p>
-        </div>
-      </div>
-
+    <AdminLayout
+      title="Bookings"
+      subtitle="Monitor, filter, and update bookings with proper audit control."
+    >
       <div className="admin-card">
         <div className="admin-row-filters">
           <input
@@ -306,7 +280,7 @@ export default function AdminBookings() {
                 <span>{booking.professionalName || "-"}</span>
                 <span className="admin-actions">
                   <button
-                    className="admin-btn outline admin-btn-secondary"
+                    className="admin-btn admin-btn-ghost"
                     onClick={() => setSelectedBooking(booking)}
                   >
                     View
@@ -347,7 +321,7 @@ export default function AdminBookings() {
                     ))}
                   </select>
                   <button
-                    className="admin-btn outline"
+                    className="admin-btn admin-btn-primary"
                     disabled={
                       assigningBookingId === booking.id || !assignments[booking.id]
                     }
@@ -363,7 +337,7 @@ export default function AdminBookings() {
 
         <div className="admin-pagination">
           <button
-            className="admin-btn outline"
+            className="admin-btn admin-btn-ghost"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
@@ -384,7 +358,7 @@ export default function AdminBookings() {
             Page {page} of {totalPages}
           </span>
           <button
-            className="admin-btn outline"
+            className="admin-btn admin-btn-ghost"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
           >
@@ -403,7 +377,7 @@ export default function AdminBookings() {
                   {selectedBooking.bookingReference || selectedBooking.id}
                 </p>
               </div>
-              <button className="admin-btn outline" onClick={() => setSelectedBooking(null)}>
+              <button className="admin-btn admin-btn-ghost" onClick={() => setSelectedBooking(null)}>
                 Close
               </button>
             </div>
@@ -450,6 +424,6 @@ export default function AdminBookings() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

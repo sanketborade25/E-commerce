@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
-import AppLogo from "../components/AppLogo";
-import "../styles/pages/admin.css";
+import AdminLayout from "../components/admin/AdminLayout";
 
 const formatRole = (role) => {
   const value = String(role || "User").trim();
@@ -10,7 +8,6 @@ const formatRole = (role) => {
 };
 
 export default function AdminUsers() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [users, setUsers] = useState([]);
@@ -79,47 +76,11 @@ export default function AdminUsers() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth_user");
-    api.clearToken();
-    navigate("/admin");
-  };
-
   return (
-    <div className="admin-page">
-      <div className="admin-topbar">
-        <div className="admin-brand">
-          <Link to="/home" className="admin-logo">
-            <AppLogo />
-          </Link>
-          <div>
-            <p className="admin-console-kicker">Operations workspace</p>
-            <h2>Admin Console</h2>
-          </div>
-        </div>
-        <div className="admin-top-actions">
-          <Link className="admin-btn outline" to="/admin/dashboard">
-            Dashboard
-          </Link>
-          <Link className="admin-btn outline" to="/admin/bookings">
-            Bookings
-          </Link>
-          <button className="admin-btn outline admin-logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </div>
-
-      <div className="admin-hero">
-        <div>
-          <p className="admin-console-kicker">Users module</p>
-          <h3>Users</h3>
-          <p className="admin-hero-subtitle">
-            Review user accounts, search quickly, and activate or deactivate access.
-          </p>
-        </div>
-      </div>
-
+    <AdminLayout
+      title="Users"
+      subtitle="Review user accounts, search quickly, and activate or deactivate access."
+    >
       <div className="admin-card">
         <div className="admin-row-filters">
           <input
@@ -143,7 +104,7 @@ export default function AdminUsers() {
           <p className="admin-muted">No users found.</p>
         ) : (
           <div className="admin-table">
-            <div className="admin-table-row admin-table-head">
+            <div className="admin-table-row admin-table-head admin-table-6">
               <span>User ID</span>
               <span>Name</span>
               <span>Phone / Email</span>
@@ -152,7 +113,7 @@ export default function AdminUsers() {
               <span>Actions</span>
             </div>
             {filteredUsers.map((user) => (
-              <div key={user.id} className="admin-table-row">
+              <div key={user.id} className="admin-table-row admin-table-6">
                 <span className="admin-muted">{user.id}</span>
                 <span>{user.fullName || "Unknown user"}</span>
                 <span>
@@ -165,13 +126,13 @@ export default function AdminUsers() {
                 <span>{formatRole(user.role)}</span>
                 <span className="admin-actions">
                   <button
-                    className="admin-btn outline admin-btn-secondary"
+                    className="admin-btn admin-btn-ghost"
                     onClick={() => setSelectedUser(user)}
                   >
                     View
                   </button>
                   <button
-                    className="admin-btn outline"
+                    className="admin-btn admin-btn-secondary"
                     disabled={updatingUserId === user.id}
                     onClick={() => handleToggleStatus(user)}
                   >
@@ -196,7 +157,7 @@ export default function AdminUsers() {
                 <h3>User details</h3>
                 <p className="admin-muted">{selectedUser.id}</p>
               </div>
-              <button className="admin-btn outline" onClick={() => setSelectedUser(null)}>
+              <button className="admin-btn admin-btn-ghost" onClick={() => setSelectedUser(null)}>
                 Close
               </button>
             </div>
@@ -225,6 +186,6 @@ export default function AdminUsers() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

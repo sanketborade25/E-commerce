@@ -13,6 +13,11 @@ import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import ProfessionalBookings from "./pages/ProfessionalBookings";
 import ProfessionalAvailability from "./pages/ProfessionalAvailability";
 import ProfessionalEarnings from "./pages/ProfessionalEarnings";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminSubcategories from "./pages/admin/AdminSubcategories";
+import AdminServices from "./pages/admin/AdminServices";
+import AdminServiceOptions from "./pages/admin/AdminServiceOptions";
+import AdminCities from "./pages/admin/AdminCities";
 
 function getRoleFromToken() {
   const token = localStorage.getItem("auth_token");
@@ -70,6 +75,46 @@ export default function App() {
          element={
            <AdminRoute>
              <AdminDashboard />
+           </AdminRoute>
+         }
+       />
+       <Route
+         path="/admin/categories"
+         element={
+           <AdminRoute>
+             <AdminCategories />
+           </AdminRoute>
+         }
+       />
+       <Route
+         path="/admin/subcategories"
+         element={
+           <AdminRoute>
+             <AdminSubcategories />
+           </AdminRoute>
+         }
+       />
+       <Route
+         path="/admin/services"
+         element={
+           <AdminRoute>
+             <AdminServices />
+           </AdminRoute>
+         }
+       />
+       <Route
+         path="/admin/service-options"
+         element={
+           <AdminRoute>
+             <AdminServiceOptions />
+           </AdminRoute>
+         }
+       />
+       <Route
+         path="/admin/cities"
+         element={
+           <AdminRoute>
+             <AdminCities />
            </AdminRoute>
          }
        />

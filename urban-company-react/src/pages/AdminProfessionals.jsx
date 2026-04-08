@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
-import AppLogo from "../components/AppLogo";
-import "../styles/pages/admin.css";
+import AdminLayout from "../components/admin/AdminLayout";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All statuses" },
@@ -30,7 +28,6 @@ const verificationBadgeClass = (status) => {
 };
 
 export default function AdminProfessionals() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [professionals, setProfessionals] = useState([]);
@@ -150,50 +147,11 @@ export default function AdminProfessionals() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth_user");
-    api.clearToken();
-    navigate("/admin");
-  };
-
   return (
-    <div className="admin-page">
-      <div className="admin-topbar">
-        <div className="admin-brand">
-          <Link to="/home" className="admin-logo">
-            <AppLogo />
-          </Link>
-          <div>
-            <p className="admin-console-kicker">Operations workspace</p>
-            <h2>Admin Console</h2>
-          </div>
-        </div>
-        <div className="admin-top-actions">
-          <Link className="admin-btn outline" to="/admin/dashboard">
-            Dashboard
-          </Link>
-          <Link className="admin-btn outline" to="/admin/bookings">
-            Bookings
-          </Link>
-          <Link className="admin-btn outline" to="/admin/users">
-            Users
-          </Link>
-          <button className="admin-btn outline admin-logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </div>
-
-      <div className="admin-hero">
-        <div>
-          <p className="admin-console-kicker">Professionals module</p>
-          <h3>Professionals</h3>
-          <p className="admin-hero-subtitle">
-            Review professional accounts, search quickly, and manage verification and activation status.
-          </p>
-        </div>
-      </div>
-
+    <AdminLayout
+      title="Professionals"
+      subtitle="Review professional accounts, search quickly, and manage verification and activation status."
+    >
       <div className="admin-card">
         <div className="admin-row-filters">
           <input
@@ -251,13 +209,13 @@ export default function AdminProfessionals() {
                 </span>
                 <span className="admin-actions">
                   <button
-                    className="admin-btn outline admin-btn-secondary"
+                    className="admin-btn admin-btn-ghost"
                     onClick={() => setSelectedProfessional(professional)}
                   >
                     View
                   </button>
                   <button
-                    className="admin-btn outline"
+                    className="admin-btn admin-btn-secondary"
                     disabled={updatingProfessionalId === professional.id}
                     onClick={() => handleToggleStatus(professional)}
                   >
@@ -268,7 +226,7 @@ export default function AdminProfessionals() {
                         : "Activate"}
                   </button>
                   <button
-                    className="admin-btn outline"
+                    className="admin-btn admin-btn-secondary"
                     disabled={updatingProfessionalId === professional.id}
                     onClick={() => handleToggleVerification(professional)}
                   >
@@ -293,7 +251,7 @@ export default function AdminProfessionals() {
                 <h3>Professional details</h3>
                 <p className="admin-muted">{selectedProfessional.id}</p>
               </div>
-              <button className="admin-btn outline" onClick={() => setSelectedProfessional(null)}>
+              <button className="admin-btn admin-btn-ghost" onClick={() => setSelectedProfessional(null)}>
                 Close
               </button>
             </div>
@@ -336,6 +294,6 @@ export default function AdminProfessionals() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

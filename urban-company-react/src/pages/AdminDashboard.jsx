@@ -1,1281 +1,150 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
-import { MiniIcon } from "../components/ProfessionalShell";
-import AppLogo from "../components/AppLogo";
+import AdminLayout from "../components/admin/AdminLayout";
+import { notifyAdminDataChanged } from "./admin/adminUtils";
 import "../styles/pages/admin.css";
 
-function AdminFileInput({ inputKey, label, onChange }) {
-  return (
-    <label className="admin-file-input">
-      <input
-        key={inputKey}
-        type="file"
-        accept="image/*"
-        onChange={(e) => onChange(e.target.files?.[0])}
-      />
-      <span className="admin-file-input-icon">
-        <MiniIcon name="image" />
-      </span>
-      <span className="admin-file-input-text">{label}</span>
-    </label>
-  );
-}
+const ACTIVE_BOOKING_STATUSES = ["PENDING", "ASSIGNED", "ACCEPTED", "ON_THE_WAY", "STARTED"];
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const [activeAdminSection, setActiveAdminSection] = useState("admin-categories");
-  const [cities, setCities] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [services, setServices] = useState([]);
-  const [serviceOptions, setServiceOptions] = useState([]);
-  const [cityPage, setCityPage] = useState(1);
-  const [popupCategoryPage, setPopupCategoryPage] = useState(1);
-  const [servicePage, setServicePage] = useState(1);
-  const [optionPage, setOptionPage] = useState(1);
-  const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const [selectedServiceId, setSelectedServiceId] = useState("");
-  const [popupCategories, setPopupCategories] = useState([]);
-
-  const [cityInput, setCityInput] = useState("");
-  const [cityError, setCityError] = useState("");
-  const [citySearch, setCitySearch] = useState("");
-  const [editingCityId, setEditingCityId] = useState("");
-  const [editingCityName, setEditingCityName] = useState("");
-  const [categoryInput, setCategoryInput] = useState({
-    name: "",
-    imageUrl: ""
+  const [stats, setStats] = useState({
+    categories: 0,
+    subcategories: 0,
+    services: 0,
+    serviceOptions: 0,
+    cities: 0,
+    users: 0,
+    professionals: 0,
+    bookings: 0,
+    activeBookings: 0
   });
-  const [serviceInput, setServiceInput] = useState({
-    title: "",
-    imageUrl: "",
-    bannerImageUrl: ""
-  });
-  const [serviceCityId, setServiceCityId] = useState("");
-  const [serviceSubCategoryId, setServiceSubCategoryId] = useState("");
-  const [toggleCityId, setToggleCityId] = useState("");
-  const [popupCategoryInput, setPopupCategoryInput] = useState({
-    categoryId: "",
-    title: "",
-    imageUrl: ""
-  });
-  const [editingPopupCategoryId, setEditingPopupCategoryId] = useState("");
-  const [optionInput, setOptionInput] = useState({
-    name: "",
-    imageUrl: "",
-    price: ""
-  });
-  const [uploading, setUploading] = useState({
-    category: false,
-    service: false,
-    serviceBanner: false,
-    option: false,
-    popupCategory: false
-  });
-  const [uploadError, setUploadError] = useState({
-    category: "",
-    service: "",
-    serviceBanner: "",
-    option: "",
-    popupCategory: ""
-  });
-  const [fileInputKey, setFileInputKey] = useState({
-    category: 0,
-    service: 0,
-    serviceBanner: 0,
-    option: 0,
-    popupCategory: 0
-  });
-  const adminChannel = useMemo(() => {
-    if (typeof BroadcastChannel === "undefined") return null;
-    return new BroadcastChannel("admin-data");
-  }, []);
+  const [loading, setLoading] = useState(true);
 
   const loadAll = async () => {
-    const [citiesRes, categoriesRes, optionsRes, servicesRes, publicServicesRes, subCatsRes] =
+    setLoading(true);
+    const bookingCountRequests = ACTIVE_BOOKING_STATUSES.map((status) =>
+      api.getAdminBookings({ status, page: 1, pageSize: 1 })
+    );
+
+    const [
+      citiesRes,
+      categoriesRes,
+      optionsRes,
+      servicesRes,
+      subCatsRes,
+      usersRes,
+      professionalsRes,
+      bookingsRes,
+      ...activeBookingRes
+    ] =
       await Promise.allSettled([
         api.getCities({ includeInactive: true }),
         api.getCategories(),
         api.getServiceOptions(),
         api.getAdminServices(),
-        api.getServices(),
-        api.getSubCategories()
+        api.getSubCategories(),
+        api.getUsers(),
+        api.getProfessionals(),
+        api.getAdminBookings({ page: 1, pageSize: 1 }),
+        ...bookingCountRequests
       ]);
 
-    if (citiesRes.status === "fulfilled") {
-      const orderedCities = [...(citiesRes.value || [])].sort(
-        (a, b) => Number(a.id) - Number(b.id)
-      );
-      setCities(orderedCities);
-    }
-    if (categoriesRes.status === "fulfilled") {
-      const onlyParents = (categoriesRes.value || []).filter(
-        (c) => c.parentCategoryId == null
-      );
-      setCategories(onlyParents);
-    }
-    if (servicesRes.status === "fulfilled" && Array.isArray(servicesRes.value)) {
-      setServices(servicesRes.value);
-    } else if (
-      publicServicesRes.status === "fulfilled" &&
-      Array.isArray(publicServicesRes.value)
-    ) {
-      setServices(publicServicesRes.value);
-    } else {
-      setServices([]);
-    }
-    if (optionsRes.status === "fulfilled") {
-      setServiceOptions(optionsRes.value || []);
-    }
-    if (subCatsRes.status === "fulfilled") {
-      setPopupCategories(subCatsRes.value || []);
-    }
-  };
+    const activeBookings = activeBookingRes.reduce((total, result) => {
+      if (result.status !== "fulfilled") return total;
+      return total + Number(result.value?.total || 0);
+    }, 0);
 
-  const notifyDataChanged = () => {
-    localStorage.setItem("admin_data_version", String(Date.now()));
-    window.dispatchEvent(new Event("admin-data-changed"));
-    adminChannel?.postMessage({ type: "refresh", ts: Date.now() });
+    setStats({
+      categories:
+        categoriesRes.status === "fulfilled"
+          ? (categoriesRes.value || []).filter((c) => c.parentCategoryId == null).length
+          : 0,
+      subcategories: subCatsRes.status === "fulfilled" ? (subCatsRes.value || []).length : 0,
+      services: servicesRes.status === "fulfilled" ? (servicesRes.value || []).length : 0,
+      serviceOptions: optionsRes.status === "fulfilled" ? (optionsRes.value || []).length : 0,
+      cities: citiesRes.status === "fulfilled" ? (citiesRes.value || []).length : 0,
+      users: usersRes.status === "fulfilled" ? (usersRes.value || []).length : 0,
+      professionals:
+        professionalsRes.status === "fulfilled" ? (professionalsRes.value || []).length : 0,
+      bookings: bookingsRes.status === "fulfilled" ? Number(bookingsRes.value?.total || 0) : 0,
+      activeBookings
+    });
+    setLoading(false);
   };
 
   useEffect(() => {
     loadAll();
-    return () => {
-      adminChannel?.close();
-    };
+
+    const onChange = () => loadAll();
+    window.addEventListener("admin-data-changed", onChange);
+    return () => window.removeEventListener("admin-data-changed", onChange);
   }, []);
 
-  const handleToggleService = async (svc) => {
-    try {
-      if (svc.isActive) {
-        await api.disableService(svc.id);
-      } else {
-        const cityIdUsed = Number(toggleCityId || svc.cityId || cities[0]?.id);
-        if (!cityIdUsed) {
-          alert("Select a city to enable service.");
-          return;
-        }
-        await api.enableService(svc.id, cityIdUsed);
-      }
-      await loadAll();
-      notifyDataChanged();
-    } catch (error) {
-      console.error(error);
-      alert("Unable to toggle service: " + error?.message);
-    }
-  };
-
-  const handleToggleServiceForCity = async (svc) => {
-    if (!toggleCityId) {
-      alert("Choose a city to apply city-specific enable/disable.");
-      return;
-    }
-
-    const cityIdUsed = Number(toggleCityId);
-    const status = svc.cityStatuses?.find((s) => Number(s.cityId) === cityIdUsed);
-
-    try {
-      if (status && status.isEnabled) {
-        await api.disableService(svc.id, cityIdUsed);
-      } else {
-        await api.enableService(svc.id, cityIdUsed);
-      }
-      await loadAll();
-      notifyDataChanged();
-    } catch (error) {
-      console.error(error);
-      alert("Unable to toggle city status: " + error?.message);
-    }
-  };
-
-  const handleAddCategory = async () => {
-    const name = categoryInput.name.trim();
-    if (!name) return;
-    await api.createCategory({ name, imageUrl: categoryInput.imageUrl || null });
-    setCategoryInput({ name: "", imageUrl: "" });
-    setFileInputKey((prev) => ({ ...prev, category: prev.category + 1 }));
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleAddService = async () => {
-    if (!selectedCategoryId) return;
-    if (!serviceSubCategoryId) {
-      alert("Please select a sub category.");
-      return;
-    }
-    const title = serviceInput.title.trim();
-    if (!title) return;
-    await api.createService({
-      categoryId: Number(selectedCategoryId),
-      subCategoryId: Number(serviceSubCategoryId),
-      title,
-      cityId: serviceCityId ? Number(serviceCityId) : null,
-      imageUrl: serviceInput.imageUrl || null,
-      bannerImageUrl: serviceInput.bannerImageUrl || null,
-      isActive: true
-    });
-    setServiceInput({
-      title: "",
-      imageUrl: "",
-      bannerImageUrl: ""
-    });
-    setFileInputKey((prev) => ({ ...prev, service: prev.service + 1, serviceBanner: prev.serviceBanner + 1 }));
-    setServiceSubCategoryId("");
-    setServiceCityId("");
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleAddOption = async () => {
-    const optionName = optionInput.name.trim();
-    if (!selectedServiceId) {
-      alert("Please select a service first.");
-      return;
-    }
-    if (!optionName) return;
-    await api.createServiceOption({
-      serviceId: Number(selectedServiceId),
-      name: optionName,
-      imageUrl: optionInput.imageUrl || null,
-      price: Number(optionInput.price) || 0,
-      durationMinutes: null
-    });
-    setOptionInput({ name: "", imageUrl: "", price: "" });
-    setFileInputKey((prev) => ({ ...prev, option: prev.option + 1 }));
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleAddPopupCategory = async () => {
-    if (!popupCategoryInput.categoryId) return;
-    const title = popupCategoryInput.title.trim();
-    if (!title) return;
-    const isEditing = Boolean(editingPopupCategoryId);
-    if (isEditing) {
-      await api.updateSubCategory(editingPopupCategoryId, {
-        name: title,
-        imageUrl: popupCategoryInput.imageUrl || null,
-        parentCategoryId: Number(popupCategoryInput.categoryId)
-      });
-    } else {
-      await api.createSubCategory({
-        name: title,
-        imageUrl: popupCategoryInput.imageUrl || null,
-        parentCategoryId: Number(popupCategoryInput.categoryId)
-      });
-    }
-    setPopupCategoryInput({ categoryId: "", title: "", imageUrl: "" });
-    setEditingPopupCategoryId("");
-    setFileInputKey((prev) => ({
-      ...prev,
-      popupCategory: prev.popupCategory + 1
-    }));
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleEditPopupCategory = (item) => {
-    setPopupCategoryInput({
-      categoryId: String(item.parentCategoryId || ""),
-      title: item.name || "",
-      imageUrl: item.imageUrl || ""
-    });
-    setEditingPopupCategoryId(String(item.id));
-  };
-
-  const handleDeletePopupCategory = async (id) => {
-    await api.deleteSubCategory(id);
-    if (String(editingPopupCategoryId) === String(id)) {
-      setEditingPopupCategoryId("");
-      setPopupCategoryInput({ categoryId: "", title: "", imageUrl: "" });
-      setFileInputKey((prev) => ({
-        ...prev,
-        popupCategory: prev.popupCategory + 1
-      }));
-    }
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleImageUpload = async (file, target) => {
-    if (!file) return;
-    setUploading((prev) => ({ ...prev, [target]: true }));
-    setUploadError((prev) => ({ ...prev, [target]: "" }));
-    try {
-      const res = await api.uploadImage(file);
-      const url = res?.url;
-      if (!url) throw new Error("Upload failed.");
-      if (target === "category") {
-        setCategoryInput((prev) => ({ ...prev, imageUrl: url }));
-      }
-      if (target === "service") {
-        setServiceInput((prev) => ({ ...prev, imageUrl: url }));
-      }
-      if (target === "serviceBanner") {
-        setServiceInput((prev) => ({ ...prev, bannerImageUrl: url }));
-      }
-      if (target === "option") {
-        setOptionInput((prev) => ({ ...prev, imageUrl: url }));
-      }
-      if (target === "popupCategory") {
-        setPopupCategoryInput((prev) => ({ ...prev, imageUrl: url }));
-      }
-    } catch (e) {
-      setUploadError((prev) => ({
-        ...prev,
-        [target]: e?.message || "Upload failed."
-      }));
-    } finally {
-      setUploading((prev) => ({ ...prev, [target]: false }));
-    }
-  };
-
-  const handleDeleteService = async (id) => {
-    await api.deleteService(id);
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleDeleteOption = async (id) => {
-    await api.deleteServiceOption(id);
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleAddCity = async () => {
-    const name = cityInput.trim();
-    if (!name) return;
-    const normalized = name.toLowerCase();
-    const exists = cities.some((city) => String(city.name || "").toLowerCase() === normalized);
-    if (exists) {
-      setCityError("City already exists.");
-      return;
-    }
-    setCityError("");
-    try {
-      await api.createCity({ name });
-      setCityInput("");
-      await loadAll();
-      notifyDataChanged();
-    } catch (e) {
-      setCityError(e?.message || "Unable to add city.");
-    }
-  };
-
-  const handleDeleteCity = async (id) => {
-    const city = cities.find((item) => String(item.id) === String(id));
-    const ok = window.confirm(
-      `Delete ${city?.name || "this city"}? This will soft-delete related services and categories.`
-    );
-    if (!ok) return;
-    await api.deleteCity(id);
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleToggleCityStatus = async (city) => {
-    await api.updateCityStatus(city.id, !city.isActive);
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleEditCity = (city) => {
-    setEditingCityId(String(city.id));
-    setEditingCityName(city.name || "");
-  };
-
-  const handleCancelCityEdit = () => {
-    setEditingCityId("");
-    setEditingCityName("");
-  };
-
-  const handleSaveCityEdit = async (city) => {
-    const name = editingCityName.trim();
-    if (!name) {
-      setCityError("City name is required.");
-      return;
-    }
-    const normalized = name.toLowerCase();
-    const exists = cities.some(
-      (item) => String(item.id) !== String(city.id) && String(item.name || "").toLowerCase() === normalized
-    );
-    if (exists) {
-      setCityError("City already exists.");
-      return;
-    }
-    await api.updateCity(city.id, { name });
-    setEditingCityId("");
-    setEditingCityName("");
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleDeleteCategory = async (id) => {
-    setCategories((prev) => prev.filter((cat) => cat.id !== id));
-    if (String(selectedCategoryId) === String(id)) {
-      setSelectedCategoryId("");
-    }
-    await api.deleteCategory(id);
-    await loadAll();
-    notifyDataChanged();
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("auth_user");
-    api.clearToken();
-    navigate("/admin");
-  };
-
-  const enabledCount = useMemo(
-    () => services.filter((s) => s.isActive).length,
-    [services]
+  const configurationCards = useMemo(
+    () => [
+      { label: "Categories", value: stats.categories, to: "/admin/categories" },
+      { label: "Subcategories", value: stats.subcategories, to: "/admin/subcategories" },
+      { label: "Services", value: stats.services, to: "/admin/services" },
+      { label: "Service Options", value: stats.serviceOptions, to: "/admin/service-options" },
+      { label: "Cities", value: stats.cities, to: "/admin/cities" }
+    ],
+    [stats]
   );
 
-  const filteredServices = services.filter((s) => {
-    if (selectedCategoryId && String(s.categoryId) !== String(selectedCategoryId))
-      return false;
-    if (selectedServiceId && String(s.id) !== String(selectedServiceId))
-      return false;
-    return true;
-  });
-
-  const filteredOptions = selectedServiceId
-    ? serviceOptions.filter(
-        (o) => String(o.serviceId) === String(selectedServiceId)
-      )
-    : serviceOptions;
-  const adminHighlights = [
-    { label: "Categories", value: categories.length },
-    { label: "Subcategories", value: popupCategories.length },
-    { label: "Services", value: services.length },
-    { label: "Active Services", value: enabledCount },
-    { label: "Cities", value: cities.length }
-  ];
-  const adminNavItems = [
-    { id: "admin-categories", label: "Categories", icon: "folder" },
-    { id: "admin-popup-categories", label: "Subcategories", icon: "list" },
-    { id: "admin-services", label: "Services", icon: "tools" },
-    { id: "admin-options", label: "Service Options", icon: "settings" },
-    { id: "admin-cities", label: "Cities", icon: "location" }
-  ];
-
-  const pageSize = 10;
-
-  const popupTotalPages = Math.max(
-    1,
-    Math.ceil(popupCategories.length / pageSize)
+  const businessCards = useMemo(
+    () => [
+      { label: "Total Users", value: stats.users, to: "/admin/users" },
+      { label: "Total Professionals", value: stats.professionals, to: "/admin/professionals" },
+      { label: "Total Bookings", value: stats.bookings, to: "/admin/bookings" },
+      { label: "Active Bookings", value: stats.activeBookings, to: "/admin/bookings" }
+    ],
+    [stats]
   );
-  const pagedPopupCategories = popupCategories.slice(
-    (popupCategoryPage - 1) * pageSize,
-    popupCategoryPage * pageSize
-  );
-  const popupPageNumbers = Array.from(
-    { length: popupTotalPages },
-    (_, i) => i + 1
-  );
-
-  const serviceTotalPages = Math.max(
-    1,
-    Math.ceil(filteredServices.length / pageSize)
-  );
-  const pagedServices = filteredServices.slice(
-    (servicePage - 1) * pageSize,
-    servicePage * pageSize
-  );
-  const servicePageNumbers = Array.from(
-    { length: serviceTotalPages },
-    (_, i) => i + 1
-  );
-
-  const optionTotalPages = Math.max(
-    1,
-    Math.ceil(filteredOptions.length / pageSize)
-  );
-  const pagedOptions = filteredOptions.slice(
-    (optionPage - 1) * pageSize,
-    optionPage * pageSize
-  );
-  const optionPageNumbers = Array.from(
-    { length: optionTotalPages },
-    (_, i) => i + 1
-  );
-
-  const filteredCities = cities.filter((city) =>
-    String(city.name || "").toLowerCase().includes(citySearch.trim().toLowerCase())
-  );
-  const totalCityPages = Math.max(1, Math.ceil(filteredCities.length / pageSize));
-  const pagedCities = filteredCities.slice(
-    (cityPage - 1) * pageSize,
-    cityPage * pageSize
-  );
-  const cityPageNumbers = Array.from(
-    { length: totalCityPages },
-    (_, i) => i + 1
-  );
-
-  useEffect(() => {
-    if (cityPage > totalCityPages) {
-      setCityPage(totalCityPages);
-    }
-  }, [cityPage, totalCityPages]);
-
-  useEffect(() => {
-    if (popupCategoryPage > popupTotalPages) {
-      setPopupCategoryPage(popupTotalPages);
-    }
-  }, [popupCategoryPage, popupTotalPages]);
-
-  useEffect(() => {
-    if (servicePage > serviceTotalPages) {
-      setServicePage(serviceTotalPages);
-    }
-  }, [servicePage, serviceTotalPages]);
-
-  useEffect(() => {
-    if (optionPage > optionTotalPages) {
-      setOptionPage(optionTotalPages);
-    }
-  }, [optionPage, optionTotalPages]);
-
-  useEffect(() => {
-    setCityPage(1);
-  }, [citySearch]);
-
-  useEffect(() => {
-    setPopupCategoryPage(1);
-  }, [popupCategories.length]);
-
-  useEffect(() => {
-    setServicePage(1);
-  }, [selectedCategoryId, selectedServiceId, services.length]);
-
-  useEffect(() => {
-    setOptionPage(1);
-  }, [selectedServiceId, serviceOptions.length]);
-
-  useEffect(() => {
-    if (!selectedServiceId) return;
-    const exists = services.some(
-      (s) => String(s.id) === String(selectedServiceId)
-    );
-    if (!exists) {
-      setSelectedServiceId("");
-    }
-  }, [selectedServiceId, services]);
-
-  useEffect(() => {
-    const sectionIds = adminNavItems.map((item) => item.id);
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter(Boolean);
-
-    if (sections.length === 0) return undefined;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visible[0]?.target?.id) {
-          setActiveAdminSection(visible[0].target.id);
-        }
-      },
-      {
-        rootMargin: "-30% 0px -55% 0px",
-        threshold: [0.2, 0.45, 0.7]
-      }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
 
   return (
-    <>
-      <div className="admin-page">
-        <div className="admin-topbar">
-          <div className="admin-brand">
-            <Link to="/home" className="admin-logo">
-              <AppLogo />
-            </Link>
-            <div>
-              <p className="admin-console-kicker">Operations workspace</p>
-              <h2>Admin Console</h2>
-            </div>
-          </div>
-
-          <nav className="admin-top-nav">
-            {adminNavItems.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                className={`admin-top-nav-link${activeAdminSection === item.id ? " active" : ""}`}
-                onClick={() => setActiveAdminSection(item.id)}
-              >
-                <MiniIcon name={item.icon} />
-                <span>{item.label}</span>
-              </a>
-            ))}
-          </nav>
-          <div className="admin-top-actions">
-            <Link className="admin-btn outline" to="/admin/bookings">
-              Bookings
-            </Link>
-            <Link className="admin-btn outline" to="/admin/users">
-              Users
-            </Link>
-            <Link className="admin-btn outline" to="/admin/professionals">
-              Professionals
-            </Link>
-            <button className="admin-btn outline admin-logout-btn" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </div>
-
-        <div className="admin-hero">
-          <div>
-            <p className="admin-console-kicker">Platform controls</p>
-            <h3>Dashboard</h3>
-            <p className="admin-hero-subtitle">
-              Manage categories, services, cities, and platform data efficiently.
-            </p>
-          </div>
+    <AdminLayout
+      title="Dashboard"
+      subtitle="Overview of configuration modules and live business activity across the system."
+      actions={
+        <button className="admin-btn admin-btn-ghost" onClick={() => notifyAdminDataChanged()}>
+          Refresh
+        </button>
+      }
+    >
+      <div className="admin-card">
+        <h3>Configuration</h3>
+        <p className="admin-muted">Core catalog and location setup for the admin console.</p>
+        {loading ? (
+          <p className="admin-muted">Loading dashboard metrics...</p>
+        ) : (
           <div className="admin-summary-grid">
-            {adminHighlights.map((item) => (
-              <div key={item.label} className="admin-summary-card">
+            {configurationCards.map((item) => (
+              <Link to={item.to} key={item.label} className="admin-summary-card admin-summary-link">
                 <span>{item.label}</span>
                 <strong>{item.value}</strong>
-              </div>
+              </Link>
             ))}
           </div>
-        </div>
-
-        <div className="admin-grid">
-          <div className="admin-card" id="admin-categories">
-            <h3>Categories</h3>
-            <div className="admin-input-row admin-input-row-small">
-              <input
-                type="text"
-                placeholder="Add category"
-                value={categoryInput.name}
-                onChange={(e) =>
-                  setCategoryInput((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-              <input
-                type="text"
-                placeholder="Image URL (optional)"
-                value={categoryInput.imageUrl}
-                onChange={(e) =>
-                  setCategoryInput((prev) => ({
-                    ...prev,
-                    imageUrl: e.target.value
-                  }))
-                }
-              />
-              <AdminFileInput
-                inputKey={`category-file-${fileInputKey.category}`}
-                label="Upload image"
-                onChange={(file) => handleImageUpload(file, "category")}
-              />
-              <button className="admin-btn admin-btn-add" onClick={handleAddCategory}>
-                Add
-              </button>
-            </div>
-            <hr/>
-            {uploading.category && (
-              <p className="admin-muted">Uploading category image...</p>
-            )}
-            {uploadError.category && (
-              <p className="admin-error">{uploadError.category}</p>
-            )}
-            <div className="admin-list admin-list-grid">
-              {categories.map((cat) => (
-                <div key={cat.id} className="admin-list-item">
-                  <div>{cat.name}</div>
-                  <button
-                    className="admin-btn outline admin-btn-danger"
-                    onClick={() => handleDeleteCategory(cat.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="admin-card" id="admin-popup-categories">
-            <h3>Sub Categories</h3>
-            <div className="admin-input-row admin-input-row-small">
-              <select
-                value={popupCategoryInput.categoryId}
-                onChange={(e) =>
-                  setPopupCategoryInput((prev) => ({
-                    ...prev,
-                    categoryId: e.target.value
-                  }))
-                }
-              >
-                <option value="">Select category</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                placeholder="Sub-category title"
-                value={popupCategoryInput.title}
-                onChange={(e) =>
-                  setPopupCategoryInput((prev) => ({
-                    ...prev,
-                    title: e.target.value
-                  }))
-                }
-              />
-              <AdminFileInput
-                inputKey={`popup-category-file-${fileInputKey.popupCategory}`}
-                label="Upload image"
-                onChange={(file) => handleImageUpload(file, "popupCategory")}
-              />
-              <input
-                type="text"
-                placeholder="Image URL (optional)"
-                value={popupCategoryInput.imageUrl}
-                onChange={(e) =>
-                  setPopupCategoryInput((prev) => ({
-                    ...prev,
-                    imageUrl: e.target.value
-                  }))
-                }
-              />
-              <button
-                className="admin-btn admin-btn-add"
-                onClick={handleAddPopupCategory}
-              >
-                {editingPopupCategoryId ? "Update" : "Add"}
-              </button>
-            </div>
-            <hr/>
-            {uploading.popupCategory && (
-              <p className="admin-muted">Uploading image...</p>
-            )}
-            {uploadError.popupCategory && (
-              <p className="admin-error">{uploadError.popupCategory}</p> 
-            )}
-            <div className="admin-list admin-list-grid">
-              {popupCategories.length === 0 ? (
-                <p className="admin-muted">No sub-categories yet.</p>
-              ) : (
-                pagedPopupCategories.map((item) => (
-                  <div key={item.id} className="admin-list-item">
-                    <div>
-                      <strong>{item.name}</strong>
-                      <div className="admin-muted">
-                        {categories.find(
-                          (cat) => String(cat.id) === String(item.parentCategoryId)
-                        )?.name || "Unknown category"}
-                      </div>
-                    </div>
-                    <div className="admin-actions">
-                      <button
-                        className="admin-btn outline admin-btn-secondary"
-                        onClick={() => handleEditPopupCategory(item)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="admin-btn outline admin-btn-danger"
-                        onClick={() => handleDeletePopupCategory(item.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="admin-pagination">
-              <button
-                className="admin-btn outline"
-                onClick={() =>
-                  setPopupCategoryPage((p) => Math.max(1, p - 1))
-                }
-                disabled={popupCategoryPage === 1}
-              >
-                Prev
-              </button>
-              <div className="admin-page-numbers">
-                {popupPageNumbers.map((p) => (
-                  <button
-                    key={p}
-                    className={`admin-page-btn ${popupCategoryPage === p ? "active" : ""}`}
-                    onClick={() => setPopupCategoryPage(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-              <span className="admin-muted">
-                Page {popupCategoryPage} of {popupTotalPages}
-              </span>
-              <button
-                className="admin-btn outline"
-                onClick={() =>
-                  setPopupCategoryPage((p) => Math.min(popupTotalPages, p + 1))
-                }
-                disabled={popupCategoryPage === popupTotalPages}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
-          <div className="admin-card" id="admin-services">
-            <h3>Services ({enabledCount} active)</h3>
-            <p className="admin-muted">Create services with flexible, well-grouped fields.</p>
-            <div className="admin-service-form">
-              <div className="admin-input-row">
-              <select
-                value={selectedCategoryId}
-                onChange={(e) => {
-                  setSelectedCategoryId(e.target.value);
-                  setServiceSubCategoryId("");
-                }}
-              >
-                <option value="">All categories</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={serviceSubCategoryId}
-                onChange={(e) => setServiceSubCategoryId(e.target.value)}
-              >
-                <option value="">Select sub category</option>
-                {popupCategories
-                  .filter(
-                    (sc) =>
-                      String(sc.parentCategoryId) ===
-                      String(selectedCategoryId)
-                  )
-                  .map((sc) => (
-                    <option key={sc.id} value={String(sc.id)}>
-                    {sc.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="admin-input-row">
-              <input
-                type="text"
-                placeholder="Service title"
-                value={serviceInput.title}
-                onChange={(e) =>
-                  setServiceInput((prev) => ({ ...prev, title: e.target.value }))
-                }
-              />
-              <select
-                value={serviceCityId}
-                onChange={(e) => setServiceCityId(e.target.value)}
-              >
-                <option value="">Select city</option>
-                {cities.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="admin-input-row">
-              <select
-                value={selectedServiceId}
-                onChange={(e) => setSelectedServiceId(e.target.value)}
-              >
-                <option value="">Filter by service</option>
-                {services.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {s.title}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={toggleCityId}
-                onChange={(e) => setToggleCityId(e.target.value)}
-              >
-                <option value="">City for status actions</option>
-                {cities.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="admin-input-row">
-              <input
-                type="text"
-                placeholder="Service Image URL (optional)"
-                value={serviceInput.imageUrl}
-                onChange={(e) =>
-                  setServiceInput((prev) => ({
-                    ...prev,
-                    imageUrl: e.target.value
-                  }))
-                }
-              />
-              <input
-                type="text"
-                placeholder="Banner Image URL (optional)"
-                value={serviceInput.bannerImageUrl}
-                onChange={(e) =>
-                  setServiceInput((prev) => ({
-                    ...prev,
-                    bannerImageUrl: e.target.value
-                  }))
-                }
-              />
-            </div>
-            <div className="admin-input-row">
-              <AdminFileInput
-                inputKey={`service-file-${fileInputKey.service}`}
-                label="Upload service image"
-                onChange={(file) => handleImageUpload(file, "service")}
-              />
-              <AdminFileInput
-                inputKey={`service-banner-file-${fileInputKey.serviceBanner}`}
-                label="Upload banner image"
-                onChange={(file) => handleImageUpload(file, "serviceBanner")}
-              />
-            </div>
-            <div className="admin-input-row admin-input-row-actions">
-              <button className="admin-btn admin-btn-add" onClick={handleAddService}>
-                Add
-              </button>
-            </div>
-            </div>
-             <hr/>
-            {uploading.service && (
-              <p className="admin-muted">Uploading service image...</p>
-            )}
-            {uploadError.service && (
-              <p className="admin-error">{uploadError.service}</p>
-            )}
-            {uploading.serviceBanner && (
-              <p className="admin-muted">Uploading banner image...</p>
-            )}
-            {uploadError.serviceBanner && (
-              <p className="admin-error">{uploadError.serviceBanner}</p>
-            )}
-            <div className="admin-list admin-list-grid">
-              {pagedServices.map((service) => {
-                const cityStatus = toggleCityId
-                  ? service.cityStatuses?.find((cs) => String(cs.cityId) === toggleCityId)
-                  : null;
-                const cityStatusLabel = cityStatus
-                  ? cityStatus.isEnabled
-                    ? "Enabled in city"
-                    : "Disabled in city"
-                  : toggleCityId
-                  ? "Not mapped"
-                  : "No specific city selected";
-                return (
-                  <div key={service.id} className="admin-list-item">
-                    <div>
-                      <strong>{service.title}</strong>
-                      <span className="admin-pill">
-                        {service.isActive ? "Active" : "Inactive"}
-                      </span>
-                      <span className="admin-pill" style={{ marginLeft: 8 }}>
-                        {cityStatusLabel}
-                      </span>
-                    </div>
-                    <div className="admin-actions">
-                      <button
-                        className="admin-btn outline admin-btn-secondary"
-                        onClick={() => handleToggleService(service)}
-                      >
-                        {service.isActive ? "Disable" : "Enable"}
-                      </button>
-                      <button
-                        className="admin-btn outline admin-btn-secondary"
-                        onClick={() => handleToggleServiceForCity(service)}
-                      >
-                        {cityStatus?.isEnabled ? "City Disable" : "City Enable"}
-                      </button>
-                      <button
-                        className="admin-btn outline admin-btn-danger"
-                        onClick={() => handleDeleteService(service.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="admin-pagination">
-              <button
-                className="admin-btn outline"
-                onClick={() => setServicePage((p) => Math.max(1, p - 1))}
-                disabled={servicePage === 1}
-              >
-                Prev
-              </button>
-              <div className="admin-page-numbers">
-                {servicePageNumbers.map((p) => (
-                  <button
-                    key={p}
-                    className={`admin-page-btn ${servicePage === p ? "active" : ""}`}
-                    onClick={() => setServicePage(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-              <span className="admin-muted">
-                Page {servicePage} of {serviceTotalPages}
-              </span>
-              <button
-                className="admin-btn outline"
-                onClick={() =>
-                  setServicePage((p) => Math.min(serviceTotalPages, p + 1))
-                }
-                disabled={servicePage === serviceTotalPages}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
- <div className="admin-card" id="admin-options">
-            <h3>Service Options</h3>
-            <div className="admin-input-row admin-input-row-small">
-              <select
-                value={selectedServiceId}
-                onChange={(e) => setSelectedServiceId(e.target.value)}
-              >
-                <option value="">Select a service</option>
-                {services.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {s.title}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                placeholder="Service option name"
-                value={optionInput.name}
-                onChange={(e) =>
-                  setOptionInput((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-              <AdminFileInput
-                inputKey={`option-file-${fileInputKey.option}`}
-                label="Upload image"
-                onChange={(file) => handleImageUpload(file, "option")}
-              />
-              <input
-                type="text"
-                placeholder="Option image URL (optional)"
-                value={optionInput.imageUrl}
-                onChange={(e) =>
-                  setOptionInput((prev) => ({ ...prev, imageUrl: e.target.value }))
-                }
-              />
-              <input
-                type="number"
-                placeholder="Price"
-                value={optionInput.price}
-                onChange={(e) =>
-                  setOptionInput((prev) => ({ ...prev, price: e.target.value }))
-                }
-              />
-              <button className="admin-btn admin-btn-add" onClick={handleAddOption}>
-                Add
-              </button>
-            </div>
-             <hr/>
-            {uploading.option && (
-              <p className="admin-muted">Uploading option image...</p>
-            )}
-            {uploadError.option && (
-              <p className="admin-error">{uploadError.option}</p>
-            )}
-            <div className="admin-list admin-list-grid">
-              {filteredOptions.length === 0 ? (
-              <p className="admin-muted">No options for this service.</p>
-            ) : (
-              pagedOptions.map((opt) => (
-                <div key={opt.id} className="admin-list-item">
-                  <div>
-                    <strong>{opt.name || "Option"}</strong>
-                  </div>
-                    <button
-                      className="admin-btn outline admin-btn-danger"
-                      onClick={() => handleDeleteOption(opt.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="admin-pagination">
-              <button
-                className="admin-btn outline"
-                onClick={() => setOptionPage((p) => Math.max(1, p - 1))}
-                disabled={optionPage === 1}
-              >
-                Prev
-              </button>
-              <div className="admin-page-numbers">
-                {optionPageNumbers.map((p) => (
-                  <button
-                    key={p}
-                    className={`admin-page-btn ${optionPage === p ? "active" : ""}`}
-                    onClick={() => setOptionPage(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-              <span className="admin-muted">
-                Page {optionPage} of {optionTotalPages}
-              </span>
-              <button
-                className="admin-btn outline"
-                onClick={() =>
-                  setOptionPage((p) => Math.min(optionTotalPages, p + 1))
-                }
-                disabled={optionPage === optionTotalPages}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
-          <div className="admin-card" id="admin-cities">
-            <h3>Cities</h3>
-            <div className="admin-input-row admin-input-row-small">
-              <input
-                type="text"
-                placeholder="Add new city"
-                value={cityInput}
-                onChange={(e) => {
-                  setCityInput(e.target.value);
-                  if (cityError) setCityError("");
-                }}
-              />
-              <button className="admin-btn admin-btn-add" onClick={handleAddCity}>
-                Add
-              </button>
-            </div>
-            <div className="admin-input-row admin-input-row-small">
-              <input
-                type="text"
-                placeholder="Search cities"
-                value={citySearch}
-                onChange={(e) => setCitySearch(e.target.value)}
-              />
-              <div className="admin-form-spacer" />
-            </div>
-            {cityError && <p className="admin-error">{cityError}</p>}
-             <hr/>
-            <div className="admin-list admin-list-grid">
-              {pagedCities.length === 0 ? (
-                <p className="admin-muted">No cities found.</p>
-              ) : (
-                pagedCities.map((city) => (
-                  <div key={city.id} className="admin-list-item">
-                    <div>
-                      {String(editingCityId) === String(city.id) ? (
-                        <input
-                          type="text"
-                          className="admin-inline-input"
-                          value={editingCityName}
-                          onChange={(e) => setEditingCityName(e.target.value)}
-                        />
-                      ) : (
-                        <strong>{city.name}</strong>
-                      )}
-                      <div className="admin-pill-row">
-                        <span className={`admin-pill ${city.isActive ? "is-active" : "is-inactive"}`}>
-                          {city.isActive ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="admin-actions">
-                      {String(editingCityId) === String(city.id) ? (
-                        <>
-                          <button className="admin-btn outline admin-btn-secondary" onClick={() => handleSaveCityEdit(city)}>
-                            Save
-                          </button>
-                          <button className="admin-btn outline" onClick={handleCancelCityEdit}>
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button className="admin-btn outline admin-btn-secondary" onClick={() => handleEditCity(city)}>
-                            Edit
-                          </button>
-                          <button className="admin-btn outline" onClick={() => handleToggleCityStatus(city)}>
-                            {city.isActive ? "Disable" : "Enable"}
-                          </button>
-                          <button
-                            className="admin-btn outline admin-btn-danger"
-                            onClick={() => handleDeleteCity(city.id)}
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="admin-pagination">
-              <button
-                className="admin-btn outline"
-                onClick={() => setCityPage((p) => Math.max(1, p - 1))}
-                disabled={cityPage === 1}
-              >
-                Prev
-              </button>
-              <div className="admin-page-numbers">
-                {cityPageNumbers.map((p) => (
-                  <button
-                    key={p}
-                    className={`admin-page-btn ${cityPage === p ? "active" : ""}`}
-                    onClick={() => setCityPage(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-              <span className="admin-muted">
-                Page {cityPage} of {totalCityPages}
-              </span>
-              <button
-                className="admin-btn outline"
-                onClick={() => setCityPage((p) => Math.min(totalCityPages, p + 1))}
-                disabled={cityPage === totalCityPages}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
-        </div>
+        )}
       </div>
-    </>
+
+      <div className="admin-card">
+        <h3>Business Metrics</h3>
+        <p className="admin-muted">Live activity and account totals for overall system visibility.</p>
+        {loading ? (
+          <p className="admin-muted">Loading dashboard metrics...</p>
+        ) : (
+          <div className="admin-summary-grid">
+            {businessCards.map((item) => (
+              <Link to={item.to} key={item.label} className="admin-summary-card admin-summary-link">
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </AdminLayout>
   );
 }

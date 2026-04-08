@@ -63,7 +63,7 @@ export default function AdminLogin() {
               placeholder="admin123"
             />
             {error && <p className="admin-error">{error}</p>}
-            <button type="submit" className="admin-btn">
+            <button type="submit" className="admin-btn admin-btn-primary">
               Login
             </button>
           </form>
