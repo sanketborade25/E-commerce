@@ -6,6 +6,7 @@ export default function ProfessionalBookingBoard({
   servicesById = {},
   activeTab,
   onTabChange,
+  tabCounts = {},
   busyActionKey,
   onAction
 }) {
@@ -24,7 +25,8 @@ export default function ProfessionalBookingBoard({
               className={`pro-tab${activeTab === tab.key ? " active" : ""}`}
               onClick={() => onTabChange(tab.key)}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              <strong>{tabCounts[tab.key] ?? 0}</strong>
             </button>
           ))}
         </div>
