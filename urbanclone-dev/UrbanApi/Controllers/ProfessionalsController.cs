@@ -82,6 +82,24 @@ namespace UrbanApi.Controllers
             return "User";
         }
 
+        private static bool LooksLikeEmail(string value)
+        {
+            return !string.IsNullOrWhiteSpace(value) && value.Contains('@');
+        }
+
+        private static bool IsValidEmail(string value)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(value);
+                return string.Equals(addr.Address, value, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private async Task<(User user, Professional professional)?> GetCurrentProfessionalAsync(CancellationToken ct, bool tracked = false)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -148,14 +166,34 @@ namespace UrbanApi.Controllers
                 return BadRequest("Full name, phone, and password are required.");
             }
 
-            var existingUser = await _db.Users.AnyAsync(u => u.Phone == input.Phone && !u.IsDeleted, ct);
-            if (existingUser) return Conflict("A professional with this phone number already exists.");
+            var normalizedPhone = input.Phone.Trim();
+            var normalizedEmail = string.IsNullOrWhiteSpace(input.Email)
+                ? null
+                : input.Email.Trim().ToLowerInvariant();
+
+            if (normalizedEmail != null && !IsValidEmail(normalizedEmail))
+            {
+                return BadRequest("Email is invalid.");
+            }
+
+            var existingPhoneUser = await _db.Users.AnyAsync(
+                u => !u.IsDeleted && u.Phone == normalizedPhone,
+                ct);
+            if (existingPhoneUser) return Conflict("A user with this phone number already exists.");
+
+            if (normalizedEmail != null)
+            {
+                var existingEmailUser = await _db.Users.AnyAsync(
+                    u => !u.IsDeleted && u.Email != null && u.Email.ToLower() == normalizedEmail,
+                    ct);
+                if (existingEmailUser) return Conflict("A user with this email already exists.");
+            }
 
             var user = new User
             {
                 FullName = input.FullName.Trim(),
-                Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim(),
-                Phone = input.Phone.Trim(),
+                Email = normalizedEmail,
+                Phone = normalizedPhone,
                 PasswordHash = HashPassword(input.Password),
                 Role = "Professional"
             };
@@ -195,10 +233,17 @@ namespace UrbanApi.Controllers
             if (req == null || string.IsNullOrWhiteSpace(req.Password))
                 return BadRequest("Email or phone and password are required.");
 
-            var email = string.IsNullOrWhiteSpace(req.Email) ? null : req.Email.Trim().ToLowerInvariant();
-            var phone = string.IsNullOrWhiteSpace(req.Phone) ? null : req.Phone.Trim();
-            if (email == null && phone == null)
+            var rawIdentifier = string.IsNullOrWhiteSpace(req.Identifier)
+                ? (string.IsNullOrWhiteSpace(req.Email) ? req.Phone : req.Email)
+                : req.Identifier;
+            var normalizedIdentifier = rawIdentifier?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedIdentifier))
                 return BadRequest("Email or phone and password are required.");
+
+            var email = LooksLikeEmail(normalizedIdentifier)
+                ? normalizedIdentifier.ToLowerInvariant()
+                : null;
+            var phone = email == null ? normalizedIdentifier : null;
 
             var user = await _db.Users
                 .AsNoTracking()
@@ -206,11 +251,11 @@ namespace UrbanApi.Controllers
                     !u.IsDeleted &&
                     ((email != null && u.Email != null && u.Email.ToLower() == email) ||
                      (phone != null && u.Phone == phone)), ct);
-            if (user == null) return Unauthorized("Invalid email or password.");
+            if (user == null) return Unauthorized("Invalid email or phone or password.");
 
             var hashed = HashPassword(req.Password);
             if (!string.Equals(hashed, user.PasswordHash ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-                return Unauthorized("Invalid email or password.");
+                return Unauthorized("Invalid email or phone or password.");
 
             var hasProfessionalProfile = await _db.Professionals.AnyAsync(p => p.UserId == user.Id && !p.IsDeleted, ct);
             if (!hasProfessionalProfile) return NotFound("Professional profile not found.");

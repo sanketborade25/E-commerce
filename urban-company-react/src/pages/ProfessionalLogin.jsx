@@ -10,6 +10,7 @@ export default function ProfessionalLogin() {
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -79,6 +80,11 @@ export default function ProfessionalLogin() {
           setLoading(false);
           return;
         }
+        if (email.trim() && !isValidEmail(email.trim())) {
+          setFieldErrors({ email: "Enter a valid email address." });
+          setLoading(false);
+          return;
+        }
         if (!password.trim()) {
           setFieldErrors({ password: "Password is required." });
           setLoading(false);
@@ -91,6 +97,7 @@ export default function ProfessionalLogin() {
         }
         const response = await api.professionalSignupV2({
           fullName: name,
+          email: email.trim() || undefined,
           phone,
           password,
           cityId: selectedCityId ? Number(selectedCityId) || undefined : undefined,
@@ -107,8 +114,8 @@ export default function ProfessionalLogin() {
         navigate("/professional/dashboard");
         return;
       } else {
-        if (!isValidEmail(email)) {
-          setFieldErrors({ email: "Invalid email." });
+        if (!identifier.trim()) {
+          setFieldErrors({ identifier: "Email or phone is required." });
           setLoading(false);
           return;
         }
@@ -119,7 +126,7 @@ export default function ProfessionalLogin() {
         }
 
         const response = await api.professionalLoginV2({
-          email: email.trim(),
+          identifier: identifier.trim(),
           password
         });
         if (response?.accessToken) {
@@ -137,10 +144,14 @@ export default function ProfessionalLogin() {
       const message = String(err?.message || "");
       if (message.toLowerCase().includes("password")) {
         setFieldErrors({ password: "Incorrect password." });
+      } else if (message.toLowerCase().includes("phone number")) {
+        setFieldErrors({ phone: message });
       } else if (message.toLowerCase().includes("email")) {
-        setFieldErrors({ email: "Invalid email." });
+        setFieldErrors(isSignup ? { email: message } : { identifier: "Invalid email or phone." });
+      } else if (message.toLowerCase().includes("phone")) {
+        setFieldErrors(isSignup ? { phone: message } : { identifier: "Invalid email or phone." });
       } else {
-        setFieldErrors({ form: "Professional auth failed." });
+        setFieldErrors({ form: message || "Professional auth failed." });
       }
     } finally {
       setLoading(false);
@@ -201,6 +212,17 @@ export default function ProfessionalLogin() {
                 {fieldErrors?.phone && (
                   <span className="pro-login-error">{fieldErrors.phone}</span>
                 )}
+                <label className="pro-login-label-text">Email (Optional)</label>
+                <input
+                  className="pro-login-input"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                />
+                {fieldErrors?.email && (
+                  <span className="pro-login-error">{fieldErrors.email}</span>
+                )}
                 <label className="pro-login-label-text">City</label>
                 <div className="pro-login-city" ref={cityDropdownRef}>
                   <button
@@ -251,17 +273,16 @@ export default function ProfessionalLogin() {
 
             {!isSignup && (
               <>
-                <label className="pro-login-label-text">Email</label>
+                <label className="pro-login-label-text">Email or Phone</label>
                 <input
                   className="pro-login-input"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="Enter email or phone"
                   required
                 />
-                {fieldErrors?.email && (
-                  <span className="pro-login-error">{fieldErrors.email}</span>
+                {fieldErrors?.identifier && (
+                  <span className="pro-login-error">{fieldErrors.identifier}</span>
                 )}
               </>
             )}
