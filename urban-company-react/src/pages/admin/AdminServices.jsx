@@ -9,7 +9,6 @@ const emptyForm = {
   categoryId: "",
   subCategoryId: "",
   cityId: "",
-  imageUrl: "",
   serviceBanner: "",
   isActive: true
 };
@@ -99,7 +98,6 @@ export default function AdminServices() {
       categoryId: service?.categoryId ? String(service.categoryId) : "",
       subCategoryId: service?.subCategoryId ? String(service.subCategoryId) : "",
       cityId: service?.cityId ? String(service.cityId) : "",
-      imageUrl: service?.imageUrl || "",
       serviceBanner: service?.bannerImageUrl || "",
       isActive: Boolean(service?.isActive)
     });
@@ -152,7 +150,6 @@ export default function AdminServices() {
         categoryId,
         subCategoryId,
         cityId: form.cityId ? Number(form.cityId) : null,
-        imageUrl: form.imageUrl || null,
         bannerImageUrl: form.serviceBanner || null,
         isActive: Boolean(form.isActive)
       };
@@ -211,62 +208,70 @@ export default function AdminServices() {
               <span>Status</span>
               <span>Actions</span>
             </div>
-            {services.map((service) => (
-              <div key={service.id} className="admin-table-row admin-table-service">
-                <span className="admin-muted">{service.id}</span>
-                <span>
-                  {service.imageUrl ? (
-                    <button
-                      type="button"
-                      className="admin-image-button"
-                      onClick={() => openImagePreview(service.imageUrl)}
-                      title="Open full image"
-                    >
-                      <img
-                        src={service.imageUrl}
-                        alt={service.title || "Service"}
-                        className="admin-thumbnail"
-                      />
-                    </button>
-                  ) : (
-                    <span className="admin-thumbnail admin-thumbnail-placeholder">No image</span>
-                  )}
-                </span>
-                <span>
-                  <strong>{service.title}</strong>
-                  <span className="admin-muted">
-                    {Array.isArray(service.cityStatuses) ? service.cityStatuses.length : 0} city
-                    {Array.isArray(service.cityStatuses) && service.cityStatuses.length === 1
-                      ? ""
-                      : "ies"}
+            {services.map((service) => {
+              const serviceOptionImage = service.options?.find((opt) => opt.imageUrl)?.imageUrl;
+              return (
+                <div key={service.id} className="admin-table-row admin-table-service">
+                  <span className="admin-muted">{service.id}</span>
+                  <span>
+                    {serviceOptionImage ? (
+                      <button
+                        type="button"
+                        className="admin-image-button"
+                        onClick={() => openImagePreview(serviceOptionImage)}
+                        title="Open full image"
+                      >
+                        <img
+                          src={serviceOptionImage}
+                          alt={service.title || "Service"}
+                          className="admin-thumbnail"
+                        />
+                      </button>
+                    ) : (
+                      <span className="admin-thumbnail admin-thumbnail-placeholder">No image</span>
+                    )}
                   </span>
-                </span>
-                <span>{categoryMap.get(String(service.categoryId))?.name || "-"}</span>
-                <span>{subcategoryMap.get(String(service.subCategoryId))?.name || "-"}</span>
-                <span>{cityMap.get(String(service.cityId))?.name || "All / mapped"}</span>
-                <span
-                  className={`admin-status-badge ${
-                    service.isActive ? "is-success" : "is-danger"
-                  }`}
-                >
-                  {service.isActive ? "Active" : "Inactive"}
-                </span>
-                <span className="admin-actions">
-                  <button
-                    className="admin-btn admin-btn-primary"
-                    onClick={() => openEditModal(service)}
+                  <span>
+                    <strong>{service.title}</strong>
+                    <span className="admin-muted">
+                      {(() => {
+                        const cityStatusCount = Array.isArray(service.cityStatuses) ? service.cityStatuses.length : 0;
+                        const totalCities = service.cityId ? cityStatusCount + 1 : cityStatusCount;
+                        return (
+                          <>
+                            {totalCities} {totalCities === 1 ? "city" : "cities"}
+                          </>
+                        );
+                      })()}
+                    </span>
+                  </span>
+                  <span>{categoryMap.get(String(service.categoryId))?.name || "-"}</span>
+                  <span>{subcategoryMap.get(String(service.subCategoryId))?.name || "-"}</span>
+                  <span>{cityMap.get(String(service.cityId))?.name || "All / mapped"}</span>
+                  <span
+                    className={`admin-status-badge ${
+                      service.isActive ? "is-success" : "is-danger"
+                    }`}
                   >
-                    Edit
-                  </button>
-                  <button
-                    className="admin-btn admin-btn-danger"
-                    onClick={() => handleDelete(service)}
-                  >
-                    Delete
-                  </button>
-                </span>
-              </div>
-            ))}
+                    {service.isActive ? "Active" : "Inactive"}
+                  </span>
+                  <span className="admin-actions">
+                    <button
+                      className="admin-btn admin-btn-primary"
+                      onClick={() => openEditModal(service)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="admin-btn admin-btn-danger"
+                      onClick={() => handleDelete(service)}
+                    >
+                      Delete
+                    </button>
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -327,15 +332,7 @@ export default function AdminServices() {
                   </option>
                 ))}
               </select>
-              <input
-                type="text"
-                placeholder="Card image URL (optional)"
-                value={form.imageUrl}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, imageUrl: event.target.value }))
-                }
-              />
-              <input
+                      <input
                 type="text"
                 placeholder="Service banner URL (optional)"
                 value={form.serviceBanner}
@@ -352,11 +349,6 @@ export default function AdminServices() {
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
               </select>
-              <AdminFileInput
-                inputKey={`service-image-${fileInputKey}`}
-                label="Upload service image"
-                onChange={(file) => handleUpload("imageUrl", file)}
-              />
               <AdminFileInput
                 inputKey={`service-banner-${fileInputKey}`}
                 label="Upload service banner"

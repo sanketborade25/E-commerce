@@ -14,7 +14,6 @@
         public int? SubCategoryId { get; set; }
         public int? CityId { get; set; }
         public string Title { get; set; } = null!;
-        public string? ImageUrl { get; set; }
         public string? BannerImageUrl { get; set; }
         public bool IsActive { get; set; }
 
@@ -24,6 +23,7 @@
         public int PartnerCount { get; set; }
         public int AvailableSlots { get; set; }
         public List<ServiceCityStatusDto> CityStatuses { get; set; } = new List<ServiceCityStatusDto>();
+        public List<ServiceOptionDto> Options { get; set; } = new List<ServiceOptionDto>();
     }
 
     public class ServiceCreateDto
@@ -32,7 +32,6 @@
         public int? SubCategoryId { get; set; }
         public int? CityId { get; set; }
         public string Title { get; set; } = null!;
-        public string? ImageUrl { get; set; }
         public string? BannerImageUrl { get; set; }
         public bool IsActive { get; set; } = true;
     }

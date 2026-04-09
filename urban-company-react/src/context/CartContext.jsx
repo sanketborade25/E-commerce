@@ -49,7 +49,7 @@ export function CartProvider({ children }) {
         serviceId: item.serviceId,
         serviceOptionId: item.serviceOptionId,
         name: option?.name || service?.title || "Service",
-        img: option?.imageUrl || service?.imageUrl || "",
+        img: option?.imageUrl || "",
         price: item.unitPrice,
         qty: item.quantity,
         key: `cart-${item.id}`

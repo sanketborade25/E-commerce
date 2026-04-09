@@ -134,6 +134,11 @@ export default function AdminServiceOptions() {
     notifyAdminDataChanged();
   };
 
+  const openImagePreview = (imageUrl) => {
+    if (!imageUrl) return;
+    window.open(imageUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <AdminLayout
       title="Service Options"
@@ -151,8 +156,9 @@ export default function AdminServiceOptions() {
           <p className="admin-muted">No service options found.</p>
         ) : (
           <div className="admin-table">
-            <div className="admin-table-row admin-table-head admin-table-6">
+            <div className="admin-table-row admin-table-head admin-table-7">
               <span>ID</span>
+              <span>Image</span>
               <span>Name</span>
               <span>Service</span>
               <span>Price</span>
@@ -160,11 +166,28 @@ export default function AdminServiceOptions() {
               <span>Actions</span>
             </div>
             {options.map((option) => (
-              <div key={option.id} className="admin-table-row admin-table-6">
+              <div key={option.id} className="admin-table-row admin-table-7">
                 <span className="admin-muted">{option.id}</span>
                 <span>
+                  {option.imageUrl ? (
+                    <button
+                      type="button"
+                      className="admin-image-button"
+                      onClick={() => openImagePreview(option.imageUrl)}
+                      title="Open full image"
+                    >
+                      <img
+                        src={option.imageUrl}
+                        alt={option.name || "Service Option"}
+                        className="admin-thumbnail"
+                      />
+                    </button>
+                  ) : (
+                    <span className="admin-thumbnail admin-thumbnail-placeholder">No image</span>
+                  )}
+                </span>
+                <span>
                   <strong>{option.name || "Unnamed option"}</strong>
-                  <span className="admin-muted admin-ellipsis">{option.imageUrl || "-"}</span>
                 </span>
                 <span>{serviceMap.get(String(option.serviceId))?.title || `Service ${option.serviceId}`}</span>
                 <span>Rs {option.price || 0}</span>
@@ -238,14 +261,6 @@ export default function AdminServiceOptions() {
                 value={form.durationMinutes}
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, durationMinutes: event.target.value }))
-                }
-              />
-              <input
-                type="text"
-                placeholder="Image URL (optional)"
-                value={form.imageUrl}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, imageUrl: event.target.value }))
                 }
               />
               <AdminFileInput

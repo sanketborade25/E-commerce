@@ -66,7 +66,6 @@ export default function ServicePage() {
       const svcOptions = optionsByService.get(svc.id) || [];
       const menuImage =
         svcOptions.find((opt) => opt.imageUrl)?.imageUrl ||
-        svc.imageUrl ||
         svc.bannerImageUrl ||
         "";
       const items =
@@ -74,7 +73,7 @@ export default function ServicePage() {
           ? svcOptions.map((opt) => ({
               serviceId: svc.id,
               serviceOptionId: opt.id,
-              img: pickImageForService(svc.title, opt.imageUrl || svc.imageUrl),
+              img: pickImageForService(svc.title, opt.imageUrl || svc.bannerImageUrl),
               name: opt.name || svc.title,
               desc: buildLongDesc(opt.name || svc.title),
               price: Number(opt.price) || 0
@@ -83,7 +82,7 @@ export default function ServicePage() {
               {
                 serviceId: svc.id,
                 serviceOptionId: null,
-                img: pickImageForService(svc.title, svc.imageUrl),
+                img: pickImageForService(svc.title, svc.bannerImageUrl),
                 name: svc.title,
                 desc: buildLongDesc(svc.title),
                 price: 0
