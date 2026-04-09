@@ -20,10 +20,23 @@
 
 /* Title */
 .service-page .left-sidebar h4 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 15px;
   color: #222;
+}
+
+.service-page .left-sidebar h4 span {
+  flex: 1;
+}
+
+.service-page .left-sidebar h4 hr {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #bfc5cc;
 }
 
 /* SERVICE ITEM */
@@ -31,12 +44,24 @@
   width: auto;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 10px;
   background: transparent;
-  text-align: center;
   font-size: 12px;
   font-weight: 300;
   color: #333;
+}
+
+.service-page .left-sidebar .item {
+  display: grid;
+  grid-template-rows: 70px minmax(34px, auto);
+  justify-items: center;
+  align-items: start;
+  gap: 10px;
+  padding: 8px 6px;
+  text-align: center;
   cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
 }
 
 /* Hover Effect */
@@ -44,7 +69,6 @@
   background: #f2f4f7;
   color: #000000;
   transform: translateY(-2px);
-  border-radius: 4px;
 }
 
 /* Active (optional for future) */
@@ -58,8 +82,19 @@
 .service-page .left-sidebar .menu-item img {
   width: 70px;
   height: 70px;
+  display: block;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 8px;
+}
+
+.service-page .left-sidebar .item p {
+  margin: 0;
+  width: 100%;
+  line-height: 1.35;
+  font-size: 12px;
+  font-weight: 400;
+  color: inherit;
+  word-break: break-word;
 }
 
 /* RIGHT SIDEBAR CONTAINER */
