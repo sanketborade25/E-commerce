@@ -10,7 +10,7 @@ const emptyForm = {
   subCategoryId: "",
   cityId: "",
   imageUrl: "",
-  bannerImageUrl: "",
+  serviceBanner: "",
   isActive: true
 };
 
@@ -100,7 +100,7 @@ export default function AdminServices() {
       subCategoryId: service?.subCategoryId ? String(service.subCategoryId) : "",
       cityId: service?.cityId ? String(service.cityId) : "",
       imageUrl: service?.imageUrl || "",
-      bannerImageUrl: service?.bannerImageUrl || "",
+      serviceBanner: service?.bannerImageUrl || "",
       isActive: Boolean(service?.isActive)
     });
     setUploadError("");
@@ -153,7 +153,7 @@ export default function AdminServices() {
         subCategoryId,
         cityId: form.cityId ? Number(form.cityId) : null,
         imageUrl: form.imageUrl || null,
-        bannerImageUrl: form.bannerImageUrl || null,
+        bannerImageUrl: form.serviceBanner || null,
         isActive: Boolean(form.isActive)
       };
 
@@ -337,10 +337,10 @@ export default function AdminServices() {
               />
               <input
                 type="text"
-                placeholder="Banner image URL (optional)"
-                value={form.bannerImageUrl}
+                placeholder="Service banner URL (optional)"
+                value={form.serviceBanner}
                 onChange={(event) =>
-                  setForm((prev) => ({ ...prev, bannerImageUrl: event.target.value }))
+                  setForm((prev) => ({ ...prev, serviceBanner: event.target.value }))
                 }
               />
               <select
@@ -359,8 +359,8 @@ export default function AdminServices() {
               />
               <AdminFileInput
                 inputKey={`service-banner-${fileInputKey}`}
-                label="Upload banner image"
-                onChange={(file) => handleUpload("bannerImageUrl", file)}
+                label="Upload service banner"
+                onChange={(file) => handleUpload("serviceBanner", file)}
               />
             </div>
 

@@ -10,8 +10,8 @@ export default function ServiceCenterSection({ sections = [] }) {
       {sections.map((section) => (
         <div key={section.id} id={section.id} className="service-section">
           {/*Here banner image should display */}
-          {section.img && (
-            <img src={resolveImage(section.img)} alt={section.title} />
+          {section.bannerImg && (
+            <img src={resolveImage(section.bannerImg)} alt={section.title} />
           )}
           <h3>{section.title}</h3>
 

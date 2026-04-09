@@ -64,6 +64,11 @@ export default function ServicePage() {
 
     return services.map((svc) => {
       const svcOptions = optionsByService.get(svc.id) || [];
+      const menuImage =
+        svcOptions.find((opt) => opt.imageUrl)?.imageUrl ||
+        svc.imageUrl ||
+        svc.bannerImageUrl ||
+        "";
       const items =
         svcOptions.length > 0
           ? svcOptions.map((opt) => ({
@@ -87,7 +92,8 @@ export default function ServicePage() {
 
       return {
         id: slugify(svc.title),
-        img: pickImageForService(svc.title, svc.bannerImageUrl || svc.imageUrl),
+        img: pickImageForService(svc.title, menuImage),
+        bannerImg: pickImageForService(svc.title, svc.bannerImageUrl),
         title: svc.title,
         items
       };
