@@ -283,6 +283,9 @@ export const api = {
   getBookings: () => request("/api/Bookings"),
   createBooking: (body) =>
     request("/api/Bookings", { method: "POST", body: JSON.stringify(body) }),
+  getAddressesByUser: (userId) => request(`/api/Addresses/${userId}`),
+  createAddress: (body) =>
+    request("/api/Addresses", { method: "POST", body: JSON.stringify(body) }),
   processPayment: (body) =>
     request("/api/Payments/process", { method: "POST", body: JSON.stringify(body) }),
   getPaymentsByBooking: (bookingId) =>

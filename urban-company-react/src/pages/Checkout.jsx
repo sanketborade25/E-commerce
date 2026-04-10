@@ -8,13 +8,15 @@ import "../styles/pages/checkout.css";
 export default function Checkout() {
   const navigate = useNavigate();
   const { cartItems, updateQty, clearCart } = useCart();
+  const [cityId, setCityId] = useState(() => localStorage.getItem("selected_city_id") || "");
+  const [cityName, setCityName] = useState(() => localStorage.getItem("selected_city_name") || "");
 
   const [avoidCall, setAvoidCall] = useState(true);
   const [selectedTip, setSelectedTip] = useState(100);
 
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState([]);
-  const [selectedAddress, setSelectedAddress] = useState("");
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddAddressForm, setShowAddAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState("");
   const [showSlotModal, setShowSlotModal] = useState(false);
@@ -57,6 +59,16 @@ export default function Checkout() {
   };
   const selectedTimeValue = getSlotValue(selectedTime);
   const slotSelected = Boolean(selectedDay && selectedTimeValue);
+  const selectedAddressText = selectedAddress?.line1 || "";
+  const selectedAddressCity = selectedAddress?.city || cityName || "";
+  const normalizeText = (value) => {
+    const text = String(value || "").trim();
+    return text || undefined;
+  };
+  const sanitizeObject = (value) =>
+    Object.fromEntries(
+      Object.entries(value).filter(([, entry]) => entry !== undefined && entry !== null && entry !== "")
+    );
   const parseTime12h = (value) => {
     const [timePart, modifier] = String(value || "").trim().split(" ");
     if (!timePart || !modifier) return { hour: 0, minute: 0 };
@@ -103,33 +115,161 @@ export default function Checkout() {
 
   const slotIsReserved = (dayKey, timeValue) =>
     reservedSlots.some(
-      (s) => s.address === selectedAddress && s.day === dayKey && s.time === timeValue
+      (s) => s.address === selectedAddressText && s.day === dayKey && s.time === timeValue
     );
 
   const reserveSelectedSlot = () => {
-    if (!selectedAddress || !selectedDay || !selectedTimeValue) return;
+    if (!selectedAddressText || !selectedDay || !selectedTimeValue) return;
     const next = [
       ...reservedSlots,
-      { address: selectedAddress, day: selectedDay, time: selectedTimeValue }
+      { address: selectedAddressText, day: selectedDay, time: selectedTimeValue }
     ];
     setReservedSlots(next);
     localStorage.setItem("reserved_slots", JSON.stringify(next));
   };
 
-  const buildBookingPayload = (userId) => ({
-    userId,
-    professionalId: null,
-    scheduledAt: buildScheduledAt(),
-    addressId: null,
-    items: (cartItems || [])
+  useEffect(() => {
+    const fetchSelectedCityName = async (nextCityId) => {
+      if (!nextCityId) {
+        setCityName("");
+        localStorage.removeItem("selected_city_name");
+        return "";
+      }
+
+      try {
+        const cities = await api.getCities();
+        const matchedCity = (cities || []).find((city) => String(city?.id) === String(nextCityId));
+        const nextCityName = normalizeText(matchedCity?.name) || "";
+        setCityName(nextCityName);
+        if (nextCityName) {
+          localStorage.setItem("selected_city_name", nextCityName);
+        }
+        return nextCityName;
+      } catch (error) {
+        console.error("Unable to load cities for checkout:", error);
+        return "";
+      }
+    };
+
+    const handleCityChanged = async (event) => {
+      const nextCityId = String(event.detail?.cityId || localStorage.getItem("selected_city_id") || "");
+      setCityId(nextCityId);
+      await fetchSelectedCityName(nextCityId);
+    };
+
+    const loadCheckoutContext = async () => {
+      const selectedCityId = String(localStorage.getItem("selected_city_id") || "");
+      setCityId(selectedCityId);
+      const nextCityName = await fetchSelectedCityName(selectedCityId);
+
+      const authUserRaw = localStorage.getItem("auth_user");
+      let authUser = null;
+
+      try {
+        authUser = authUserRaw ? JSON.parse(authUserRaw) : null;
+      } catch {
+        authUser = null;
+      }
+
+      if (!authUser?.id) return;
+
+      try {
+        const addresses = await api.getAddressesByUser(authUser.id);
+        const mapped = (addresses || []).map((address) =>
+          sanitizeObject({
+            id: address?.id ?? null,
+            line1: normalizeText(address?.line1),
+            city: nextCityName || normalizeText(cityName),
+            cityId: address?.cityId ?? (selectedCityId ? Number(selectedCityId) : undefined)
+          })
+        );
+        setSavedAddresses(mapped.filter((address) => address.line1));
+      } catch (error) {
+        console.error("Unable to load saved addresses:", error);
+      }
+    };
+
+    loadCheckoutContext();
+    window.addEventListener("city-changed", handleCityChanged);
+
+    return () => window.removeEventListener("city-changed", handleCityChanged);
+  }, []);
+
+  const ensureBookingAddress = async (userId) => {
+    const address = normalizeText(selectedAddress?.line1 || newAddress);
+    const city = normalizeText(selectedAddress?.city || cityName);
+    const parsedCityId = Number(selectedAddress?.cityId || cityId);
+
+    if (!address || !city || !Number.isFinite(parsedCityId) || parsedCityId <= 0) {
+      return null;
+    }
+
+    if (selectedAddress?.id) {
+      return {
+        addressId: selectedAddress.id,
+        address,
+        city,
+        cityId: parsedCityId
+      };
+    }
+
+    const createdAddress = await api.createAddress({
+      userId,
+      line1: address,
+      cityId: parsedCityId,
+      isDefault: false
+    });
+
+    const nextAddress = sanitizeObject({
+      id: createdAddress?.id,
+      line1: normalizeText(createdAddress?.line1) || address,
+      city,
+      cityId: createdAddress?.cityId ?? parsedCityId
+    });
+
+    setSavedAddresses((prev) => {
+      const exists = prev.some((entry) => entry.id === nextAddress.id || entry.line1 === nextAddress.line1);
+      return exists ? prev : [...prev, nextAddress];
+    });
+    setSelectedAddress(nextAddress);
+
+    return {
+      addressId: nextAddress.id,
+      address: nextAddress.line1,
+      city: nextAddress.city,
+      cityId: Number(nextAddress.cityId)
+    };
+  };
+
+  const buildBookingPayload = async (userId) => {
+    const location = await ensureBookingAddress(userId);
+    const scheduledAt = buildScheduledAt();
+    const items = (cartItems || [])
       .filter((i) => Number.isFinite(Number(i.serviceId)))
-      .map((i) => ({
-        serviceId: Number(i.serviceId),
-        serviceOptionId: i.serviceOptionId ?? null,
-        price: Number(i.price) * Number(i.qty || 1),
-        durationMinutes: 45
-      }))
-  });
+      .map((i) =>
+        sanitizeObject({
+          serviceId: Number(i.serviceId),
+          serviceOptionId: i.serviceOptionId ?? null,
+          price: Number(i.price) * Number(i.qty || 1),
+          durationMinutes: 45
+        })
+      );
+
+    if (!location?.addressId || !location.address || !location.city || !scheduledAt) {
+      return null;
+    }
+
+    return sanitizeObject({
+      userId,
+      professionalId: null,
+      scheduledAt,
+      addressId: location.addressId,
+      address: location.address,
+      city: location.city,
+      cityId: location.cityId,
+      items
+    });
+  };
 
   const saveLocalBooking = (userId = null) => {
     const ref = `BK-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
@@ -146,7 +286,9 @@ export default function Checkout() {
         serviceOptionId: i.serviceOptionId ?? null,
         price: Number(i.price) * Number(i.qty || 1),
         durationMinutes: 45
-      }))
+      })),
+      address: selectedAddressText,
+      city: selectedAddressCity
     };
     let list = [];
     try {
@@ -198,13 +340,31 @@ export default function Checkout() {
         authUser = null;
       }
 
+      const address = normalizeText(selectedAddressText || newAddress);
+      const city = normalizeText(selectedAddressCity || cityName);
+      const scheduledAt = buildScheduledAt();
+
+      if (!address || !city || !scheduledAt) {
+        setPaymentStatus("failed");
+        setPaymentMessage("Please select a valid address, city, date, and time before continuing.");
+        return;
+      }
+
       // Step 1: Create booking with Pending payment status
       let bookingId = null;
       let createdBooking = null;
 
-      if (authUser?.id && buildBookingPayload(authUser.id).items.length > 0) {
+      if (authUser?.id) {
         try {
-          createdBooking = await api.createBooking(buildBookingPayload(authUser.id));
+          const bookingPayload = await buildBookingPayload(authUser.id);
+          if (!bookingPayload?.items?.length) {
+            setPaymentStatus("failed");
+            setPaymentMessage("Your cart is empty or booking details are incomplete.");
+            return;
+          }
+
+          console.log("Final booking payload:", bookingPayload);
+          createdBooking = await api.createBooking(bookingPayload);
           bookingId = createdBooking?.id;
         } catch (err) {
           console.error("Booking creation failed:", err);
@@ -260,15 +420,15 @@ export default function Checkout() {
   };
 
   const handleAddressProceed = () => {
-    if (!selectedAddress) return;
+    if (!selectedAddressText || !selectedAddressCity) return;
     const noSlotAvailable = availableDays.every((day) =>
       times.every((time) =>
         reservedSlots.some(
-          (s) => s.address === selectedAddress && s.day === day.key && s.time === time
+          (s) => s.address === selectedAddressText && s.day === day.key && s.time === time
         )
       )
     );
-    const unavailable = /busy|unavailable|no slot/i.test(selectedAddress) || noSlotAvailable;
+    const unavailable = /busy|unavailable|no slot/i.test(selectedAddressText) || noSlotAvailable;
     setProfessionalsUnavailable(unavailable);
     setShowAddressModal(false);
     setShowAddAddressForm(false);
@@ -279,23 +439,30 @@ export default function Checkout() {
 
   const handleAddAddress = () => {
     const value = newAddress.trim();
-    if (!value) return;
-    setSavedAddresses((prev) => [...prev, value]);
-    setSelectedAddress(value);
+    const nextCity = normalizeText(cityName);
+    const parsedCityId = Number(cityId);
+    if (!value || !nextCity || !Number.isFinite(parsedCityId) || parsedCityId <= 0) return;
+    const nextAddress = {
+      line1: value,
+      city: nextCity,
+      cityId: parsedCityId
+    };
+    setSavedAddresses((prev) => [...prev, nextAddress]);
+    setSelectedAddress(nextAddress);
     setNewAddress("");
     setShowAddAddressForm(false);
   };
 
   const openSlotPicker = () => {
-    if (!selectedAddress) return;
+    if (!selectedAddressText) return;
     const noSlotAvailable = availableDays.every((day) =>
       times.every((time) =>
         reservedSlots.some(
-          (s) => s.address === selectedAddress && s.day === day.key && s.time === time
+          (s) => s.address === selectedAddressText && s.day === day.key && s.time === time
         )
       )
     );
-    const unavailable = /busy|unavailable|no slot/i.test(selectedAddress) || noSlotAvailable;
+    const unavailable = /busy|unavailable|no slot/i.test(selectedAddressText) || noSlotAvailable;
     setProfessionalsUnavailable(unavailable);
     if (!selectedDay && availableDays[0]?.key) {
       setSelectedDay(availableDays[0].key);
@@ -349,7 +516,7 @@ export default function Checkout() {
               <div>
                 <div className="checkout-row-head">
                   <p className="checkout-title">Address</p>
-                  {selectedAddress && (
+                  {selectedAddressText && (
                     <button
                       type="button"
                       className="checkout-edit-btn"
@@ -359,9 +526,10 @@ export default function Checkout() {
                     </button>
                   )}
                 </div>
-                {selectedAddress ? (
+                {selectedAddressText ? (
                   <p className="checkout-meta checkout-address-preview">
-                    {selectedAddress}
+                    {selectedAddressText}
+                    {selectedAddressCity ? `, ${selectedAddressCity}` : ""}
                   </p>
                 ) : (
                   <button
@@ -375,7 +543,7 @@ export default function Checkout() {
               </div>
             </div>
 
-            <div className={`checkout-row ${!selectedAddress ? "muted" : ""}`}>
+            <div className={`checkout-row ${!selectedAddressText ? "muted" : ""}`}>
               <div className="checkout-icon" aria-hidden>
                 T
               </div>
@@ -392,7 +560,7 @@ export default function Checkout() {
                     </button>
                   )}
                 </div>
-                {selectedAddress && !slotSelected && (
+                {selectedAddressText && !slotSelected && (
                   <button
                     type="button"
                     className="checkout-select-address"
@@ -700,16 +868,19 @@ export default function Checkout() {
             {savedAddresses.length > 0 && (
               <div className="address-list">
                 {savedAddresses.map((addr, idx) => (
-                  <label key={`${addr}-${idx}`} className="address-item">
+                  <label key={`${addr.id || addr.line1}-${idx}`} className="address-item">
                     <input
                       type="radio"
                       name="saved-address"
-                      checked={selectedAddress === addr}
+                      checked={selectedAddress?.id ? selectedAddress.id === addr.id : selectedAddress?.line1 === addr.line1}
                       onChange={() => setSelectedAddress(addr)}
                     />
                     <div>
                       <strong>Address {idx + 1}</strong>
-                      <span>{addr}</span>
+                      <span>
+                        {addr.line1}
+                        {addr.city ? `, ${addr.city}` : ""}
+                      </span>
                     </div>
                   </label>
                 ))}
@@ -720,7 +891,7 @@ export default function Checkout() {
             <button
               type="button"
               className="address-proceed"
-              disabled={!selectedAddress}
+              disabled={!selectedAddressText || !selectedAddressCity}
               onClick={handleAddressProceed}
             >
               Proceed
